@@ -305,6 +305,189 @@ a { color: var(--link); }
 .spunta input { width: 22px; height: 22px; margin: 0.1rem 0 0; accent-color: var(--blu); flex-shrink: 0; }
 .azioni-modulo { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 
+
+/* ================================================================ PASSO 2 */
+.pulsante-grande { min-height: 54px; padding: 0.7rem 1.4rem; font-size: 1.125rem; }
+.vuoto-piccolo { padding: 1rem 1.25rem; text-align: left; }
+
+/* ---------------------------------------------------- toast (messaggio breve) */
+.toast {
+  position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 50;
+  width: max-content; max-width: min(92vw, 560px);
+  background: #1C2830; color: #fff; padding: 0.8rem 1.1rem; border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25); font-weight: 500;
+}
+.toast-errore { background: #8F1F1B; }
+
+/* ---------------------------------------------------- filtri a pulsante */
+button.filtro {
+  font: inherit; font-size: var(--piccolo); font-weight: 500; color: var(--ink-soft);
+  background: none; border: 0; border-radius: 999px; padding: 0.55rem 0.9rem; min-height: 40px; cursor: pointer;
+}
+button.filtro:hover { color: var(--ink); background: var(--linea); }
+button.filtro[aria-pressed="true"] { color: var(--pannello); background: var(--ink); }
+
+/* ---------------------------------------------------- Oggi: entrati oggi */
+.elenco-ingressi { list-style: none; margin: 0; padding: 0; background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); }
+.elenco-ingressi li { display: grid; grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 1.2fr); gap: 0.75rem; padding: 0.6rem 1rem; border-top: 1px solid var(--linea); align-items: baseline; }
+.elenco-ingressi li:first-child { border-top: 0; }
+.elenco-ingressi a { color: var(--ink); font-weight: 600; text-decoration: none; }
+.ingresso-ora { font-weight: 600; }
+.ingresso-come { color: var(--ink-soft); font-size: var(--piccolo); }
+.riga-abbonamento { color: var(--ink); font-weight: 500; }
+
+/* ---------------------------------------------------- scheda: abbonamento */
+.box-abbonamento { background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); padding: 1.25rem 1.5rem; }
+.coperture { margin: 0 0 0.5rem; padding-left: 1.2rem; }
+.coperture li { margin-bottom: 0.25rem; }
+.box-abbonamento .azioni-modulo { margin-top: 0.75rem; }
+.pannello {
+  margin-top: 1.25rem; padding: 1.25rem; background: var(--sfondo);
+  border: 1px solid var(--linea); border-top: 4px solid var(--blu); border-radius: var(--raggio);
+}
+.pannello h3 { font-size: var(--medio); margin: 0 0 0.75rem; }
+.copertura-scelta { font-size: 1.0625rem; }
+.da-pagare .totale { margin-top: 0.25rem; }
+.totale { font-size: 1.0625rem; }
+
+/* scelte a elenco (cosa paga, cosa compra, tipo di voce) */
+.scelta { border: 0; margin: 0 0 1rem; padding: 0; min-width: 0; }
+.scelta legend { font-weight: 600; margin-bottom: 0.4rem; padding: 0; }
+.opzioni { background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); }
+.opzione {
+  display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 0.75rem; align-items: center;
+  min-height: 50px; padding: 0.5rem 1rem; border-top: 1px solid var(--linea); cursor: pointer;
+}
+.opzione:first-child { border-top: 0; }
+.opzione input { width: 22px; height: 22px; margin: 0; accent-color: var(--blu); }
+.opzione-nome { font-weight: 500; }
+.opzione-nome .aiuto { display: block; font-weight: 400; }
+.opzione-prezzo { font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.opzione-quantita { grid-template-columns: minmax(0, 1fr) auto auto; cursor: default; }
+.contatore { display: inline-flex; align-items: center; gap: 0.35rem; }
+.contatore input { width: 3.2em; text-align: center; font: inherit; padding: 0.45rem 0.2rem; min-height: 44px; border: 1.5px solid var(--ink-soft); border-radius: var(--raggio); background: var(--pannello); color: var(--ink); }
+.contatore .pulsante { min-width: 44px; font-size: 1.25rem; }
+
+/* pillole: contanti / carta / bonifico */
+.pillole { display: inline-flex; flex-wrap: wrap; border: 1.5px solid var(--ink); border-radius: var(--raggio); overflow: hidden; margin-bottom: 0.5rem; }
+.pillola { position: relative; cursor: pointer; }
+.pillola input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.pillola span { display: inline-flex; align-items: center; min-height: 44px; padding: 0.4rem 1rem; font-weight: 600; border-left: 1.5px solid var(--ink); }
+.pillola:first-child span { border-left: 0; }
+.pillola input:checked + span { background: var(--ink); color: var(--pannello); }
+.pillola input:focus-visible + span { outline: 3px solid var(--link); outline-offset: -3px; }
+
+/* annulla con conferma */
+.pulsante-testo {
+  font: inherit; font-size: var(--piccolo); color: var(--link); background: none; border: 0;
+  padding: 0.4rem 0.25rem; min-height: 44px; text-decoration: underline; cursor: pointer;
+}
+.conferma-riga { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; font-size: var(--piccolo); }
+
+/* ---------------------------------------------------- storico ed elenchi di movimenti */
+.storico .filtri { margin-bottom: 0.5rem; }
+.mese { font-size: 1rem; font-weight: 600; color: var(--ink-soft); margin: 1.25rem 0 0.4rem; }
+.eventi { list-style: none; margin: 0; padding: 0; background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); }
+.evento {
+  display: grid; grid-template-columns: 7.5rem minmax(0, 1fr) auto auto; gap: 0.75rem; align-items: baseline;
+  padding: 0.6rem 1rem; border-top: 1px solid var(--linea);
+}
+.evento:first-child { border-top: 0; }
+.evento-quando { color: var(--ink-soft); font-size: var(--piccolo); white-space: nowrap; }
+.evento-testo .aiuto { margin-left: 0.25rem; }
+.evento-importo { font-weight: 600; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+.evento-azioni { text-align: right; }
+.evento-annullato .evento-testo, .evento-annullato .evento-importo { color: var(--ink-soft); text-decoration: line-through; }
+.evento-annullato .etichetta { text-decoration: none; }
+
+/* ---------------------------------------------------- cassa */
+.saldo-cassa { background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); padding: 1.25rem 1.5rem; margin-bottom: 2rem; }
+.saldo-etichetta { margin: 0; color: var(--ink-soft); font-weight: 500; }
+.saldo-valore { margin: 0.1rem 0 0.4rem; font-size: clamp(2.5rem, 7vw, 3.5rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: normal; }
+.saldo-cassa .pannello { background: var(--sfondo); }
+.modulo-compatto { background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); padding: 1.25rem; align-self: start; }
+.modulo-compatto .opzioni { margin-bottom: 1rem; }
+.campo select {
+  width: 100%; font: inherit; font-size: 16px; padding: 0.6rem 0.8rem; min-height: 46px;
+  border: 1.5px solid var(--ink-soft); border-radius: var(--raggio); background: var(--pannello); color: var(--ink);
+}
+.campo-inline { display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 500; }
+.campo-inline input { font: inherit; font-size: 16px; padding: 0.45rem 0.6rem; min-height: 44px; border: 1.5px solid var(--ink-soft); border-radius: var(--raggio); background: var(--pannello); color: var(--ink); }
+.tabella-scorre { overflow-x: auto; margin-bottom: 1rem; }
+.tabella { width: 100%; border-collapse: collapse; background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); font-size: 0.9375rem; }
+.tabella th, .tabella td { padding: 0.55rem 0.8rem; border-top: 1px solid var(--linea); text-align: left; white-space: nowrap; }
+.tabella thead th { border-top: 0; color: var(--ink-soft); font-weight: 500; font-size: var(--piccolo); }
+.tabella .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------- dashboard */
+.numeri { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin: 1rem 0 2rem; }
+.numero { background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); padding: 1rem 1.1rem; }
+.numero-principale { grid-column: span 2; }
+.numero-etichetta { margin: 0; color: var(--ink-soft); font-size: var(--piccolo); font-weight: 500; }
+.numero-valore { margin: 0.15rem 0; font-size: 2rem; font-weight: 700; line-height: 1.15; font-variant-numeric: normal; }
+.numero-principale .numero-valore { font-size: clamp(2.5rem, 6vw, 3.25rem); letter-spacing: -0.02em; }
+.numero-confronto { margin: 0; color: var(--ink-soft); font-size: var(--piccolo); }
+.grafici { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.grafico { margin: 0; background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); padding: 1rem 1.25rem 0.75rem; }
+.grafico figcaption { font-weight: 600; margin-bottom: 1.25rem; }
+.grafico-corpo { position: relative; height: 170px; margin-left: 2.75rem; }
+.linea-griglia { position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid var(--linea); }
+.linea-griglia span { position: absolute; right: 100%; top: -0.6em; padding-right: 0.4rem; font-size: 0.75rem; color: var(--ink-soft); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.colonne { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; }
+.colonna { position: relative; flex: 1; display: flex; align-items: flex-end; justify-content: center; padding: 0 1px; outline: none; }
+.colonna-barra { display: block; width: 100%; max-width: 24px; height: var(--h); background: var(--blu); border-radius: 4px 4px 0 0; }
+.colonna:hover .colonna-barra, .colonna:focus .colonna-barra { background: var(--link); }
+.colonna:focus-visible { box-shadow: inset 0 0 0 2px var(--link); border-radius: 4px; }
+.colonna:hover::after, .colonna:focus::after {
+  content: attr(data-valore) "\A" attr(data-etichetta); white-space: pre; text-align: center;
+  position: absolute; bottom: calc(var(--h) + 8px); left: 50%; transform: translateX(-50%); z-index: 3;
+  background: var(--pannello); color: var(--ink); border: 1px solid var(--linea); border-radius: 6px;
+  padding: 0.35rem 0.6rem; font-size: 0.8125rem; font-weight: 600; line-height: 1.35;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12); pointer-events: none;
+}
+.colonna.tip-sx::after { left: 0; transform: none; text-align: left; }
+.colonna.tip-dx::after { left: auto; right: 0; transform: none; text-align: right; }
+.asse-x { display: flex; margin-left: 2.75rem; padding-top: 0.35rem; height: 1.6rem; }
+.asse-x span { flex: 1; text-align: center; font-size: 0.75rem; color: var(--ink-soft); white-space: nowrap; overflow: visible; width: 0; }
+.dati-grafico { margin-top: 0.25rem; font-size: var(--piccolo); }
+.dati-grafico summary { cursor: pointer; color: var(--link); padding: 0.4rem 0; }
+.dati-grafico .tabella { margin-top: 0.5rem; }
+.barre-orizzontali { display: grid; gap: 0.75rem; padding-bottom: 0.5rem; }
+.riga-barra { display: grid; grid-template-columns: minmax(6.5rem, 9.5rem) minmax(0, 1fr) auto; gap: 0.75rem; align-items: center; }
+.riga-barra-nome { font-size: var(--piccolo); }
+.riga-barra-pista { display: block; min-width: 0; }
+.barra-o { display: block; height: 16px; min-width: 2px; background: var(--blu); border-radius: 0 4px 4px 0; }
+.riga-barra-valore { font-size: var(--piccolo); font-weight: 600; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+.lista-semplice { margin: 0; padding-left: 1.2rem; }
+.lista-semplice li { margin-bottom: 0.4rem; }
+.lista-semplice .aiuto { display: block; }
+
+/* ---------------------------------------------------- listino */
+.riga-listino {
+  display: grid; grid-template-columns: minmax(10rem, 1.3fr) minmax(0, 1fr) auto; gap: 1rem; align-items: center;
+  padding: 0.85rem 1rem; color: inherit; text-decoration: none; border-top: 1px solid var(--linea);
+}
+.riga-listino:first-child { border-top: 0; }
+.riga-listino:hover { background: var(--sopra); }
+.riga-prezzo { font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.riga-spenta { opacity: 0.65; }
+
+@media (max-width: 900px) {
+  .grafici { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .evento { grid-template-columns: minmax(0, 1fr) auto; }
+  .evento-quando { grid-column: 1 / -1; }
+  .evento-azioni { grid-column: 1 / -1; text-align: left; }
+  .elenco-ingressi li { grid-template-columns: 3.5rem minmax(0, 1fr); }
+  .ingresso-come { grid-column: 2; }
+  .riga-listino { grid-template-columns: minmax(0, 1fr) auto; }
+  .riga-listino .riga-dati { grid-column: 1; }
+  .numero-principale { grid-column: 1 / -1; }
+  .riga-barra { grid-template-columns: minmax(0, 1fr) auto; gap: 0.2rem 0.75rem; }
+  .riga-barra-nome { grid-column: 1 / -1; }
+}
+
 /* ---------------------------------------------- tablet stretto e telefono */
 @media (max-width: 860px) {
   body { display: block; }
@@ -313,8 +496,8 @@ a { color: var(--link); }
     gap: 0.5rem 1rem; padding: 0.6rem 1rem;
   }
   .marchio { padding: 0; font-size: 1rem; flex: 1; }
-  .menu { flex-direction: row; order: 3; width: 100%; overflow-x: auto; }
-  .menu a { padding: 0.55rem 0.9rem; font-size: 1rem; white-space: nowrap; }
+  .menu { flex-direction: row; flex-wrap: wrap; order: 3; width: 100%; gap: 0.15rem; }
+  .menu a { padding: 0.5rem 0.75rem; font-size: 1rem; white-space: nowrap; min-height: 44px; }
   .operatore { margin: 0; padding: 0; }
   .contenuto { padding: 1.25rem 1rem 3rem; }
   .riga-cliente { grid-template-columns: 12px minmax(0, 1fr); gap: 0.15rem 0.9rem; }
@@ -334,6 +517,8 @@ a { color: var(--link); }
     <nav class="menu" aria-label="Menu principale">
       <a href="#oggi" data-vista="oggi">Oggi</a>
       <a href="#clienti" data-vista="clienti">Clienti</a>
+      <a href="#cassa" data-vista="cassa">Cassa</a>
+      <a href="#dashboard" data-vista="dashboard">Dashboard</a>
       <a href="#impostazioni" data-vista="impostazioni">Impostazioni</a>
     </nav>
     <p class="operatore"></p>
@@ -345,7 +530,10 @@ a { color: var(--link); }
     <div id="contenuto"></div>
   </main>
 
-  <!-- L'ordine conta: prima le regole, poi il database, poi le schermate, infine l'app -->
+  <!-- Messaggi brevi dopo un'azione (ingresso registrato, vendita…) -->
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- L'ordine conta: regole, database, operazioni, schermate, infine l'app -->
   <script>
 /* =====================================================================
    REGOLE DELLA PALESTRA
@@ -369,9 +557,10 @@ const Regole = (() => {
     return `${d.getFullYear()}-${due(d.getMonth() + 1)}-${due(d.getDate())}`;
   }
 
+  // data e ora al millesimo di secondo: serve a mettere in ordine certo due operazioni vicine
   function adessoISO() {
     const d = new Date();
-    return `${oggiISO()} ${due(d.getHours())}:${due(d.getMinutes())}:${due(d.getSeconds())}`;
+    return `${oggiISO()} ${due(d.getHours())}:${due(d.getMinutes())}:${due(d.getSeconds())}.${String(d.getMilliseconds()).padStart(3, "0")}`;
   }
 
   // '2026-11-20' -> oggetto data, oppure null se vuoto o non valido
@@ -497,7 +686,98 @@ const Regole = (() => {
     numero_tessera: "Questo numero di tessera è già assegnato.",
   };
 
-  return { oggiISO, dataTra, adessoISO, aData, dataIt, giorniDaOggi, eta, avvisi, colore,
+  /* ====================================================== PASSO 2 */
+
+  /* ---------------------------------------------- date e orari */
+  // '2026-11-20' + 30 giorni -> '2026-12-20'
+  function aggiungiGiorni(testo, giorni) {
+    const d = aData(testo);
+    d.setDate(d.getDate() + giorni);
+    return `${d.getFullYear()}-${due(d.getMonth() + 1)}-${due(d.getDate())}`;
+  }
+  function oraAdesso() {
+    const d = new Date();
+    return `${due(d.getHours())}:${due(d.getMinutes())}`;
+  }
+  const MESI = ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio",
+                "agosto", "settembre", "ottobre", "novembre", "dicembre"];
+  const GIORNI = ["dom", "lun", "mar", "mer", "gio", "ven", "sab"];
+  const meseAnno = (testo) => { const d = aData(testo); return d ? `${MESI[d.getMonth()]} ${d.getFullYear()}` : ""; };
+  const giornoBreve = (testo) => { const d = aData(testo); return d ? `${GIORNI[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}` : ""; };
+
+  /* ----------------------------------------------------- denaro */
+  // Gli importi si salvano in CENTESIMI interi: 12,50 € = 1250 (niente errori di arrotondamento)
+  // 265700 -> "2.657,00 €" (scritto a mano: i browser non mettono tutti il punto delle migliaia)
+  function euro(centesimi) {
+    const c = Math.round(Math.abs(centesimi || 0));
+    const intero = String(Math.floor(c / 100)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return (centesimi < 0 ? "−" : "") + intero + "," + String(c % 100).padStart(2, "0") + " €";
+  }
+  // "12,50" / "12.5" / "1.200" / "12 €" -> centesimi, oppure null se non è un importo
+  function leggiEuro(testo) {
+    if (testo === null || testo === undefined) return null;
+    let t = String(testo).replace(/[\s€]/g, "");
+    if (t === "") return null;
+    if (t.indexOf(",") >= 0) t = t.replace(/\./g, "").replace(",", ".");
+    else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, "");
+    if (!/^\d+(\.\d{1,2})?$/.test(t)) return null;
+    return Math.round(parseFloat(t) * 100);
+  }
+
+  /* ---------------------------------------------------- listino */
+  const TIPI_LISTINO = {
+    singolo:  { nome: "Ingresso singolo",       aiuto: "Un ingresso pagato sul momento." },
+    prova:    { nome: "Ingresso di prova",       aiuto: "Per chi viene a provare la prima volta." },
+    carnet:   { nome: "Carnet a ingressi",       aiuto: "Un numero di ingressi da usare entro una scadenza." },
+    periodo:  { nome: "Abbonamento a tempo",     aiuto: "Ingressi liberi per un certo numero di giorni." },
+    prodotto: { nome: "Noleggio o prodotto",     aiuto: "Scarpette, imbrago, magnesite e altro venduto in cassa." },
+  };
+  const METODI = { contanti: "contanti", carta: "carta", bonifico: "bonifico", altro: "altro" };
+  // Movimenti di cassa: cosa conta come incasso (il fondo cassa e i versamenti no)
+  const CATEGORIE = {
+    abbonamento: "Abbonamenti e carnet", ingresso: "Ingressi", prodotto: "Noleggi e prodotti",
+    altro: "Altre entrate", fondo: "Fondo cassa", spesa: "Spese", versamento: "Versamenti in banca", uscita: "Altre uscite",
+  };
+  const eIncasso = (m) => !m.annullato && m.verso === "entrata" && m.categoria !== "fondo";
+
+  /* ------------------------------------------- abbonamenti e carnet */
+  function statoAbbonamento(a, oggi) {
+    oggi = oggi || oggiISO();
+    if (a.annullato) return "annullato";
+    if (a.data_inizio > oggi) return "futuro";
+    if (a.data_fine && a.data_fine < oggi) return "scaduto";
+    if (a.tipo === "carnet" && (a.ingressi_usati || 0) >= a.ingressi_totali) return "esaurito";
+    return "attivo";
+  }
+  const rimasti = (a) => (a.tipo === "carnet" ? Math.max(0, a.ingressi_totali - (a.ingressi_usati || 0)) : null);
+  const primaChiScade = (x, y) => ((x.data_fine || "9999") < (y.data_fine || "9999") ? -1 : 1);
+
+  // Cosa copre l'ingresso di oggi: prima l'abbonamento a tempo (non consuma nulla),
+  // poi il carnet che scade per primo.
+  function copertura(abbonamentiCliente, oggi) {
+    const attivi = abbonamentiCliente.filter((a) => statoAbbonamento(a, oggi) === "attivo");
+    return attivi.filter((a) => a.tipo === "periodo").sort(primaChiScade)[0]
+      || attivi.filter((a) => a.tipo === "carnet").sort(primaChiScade)[0]
+      || null;
+  }
+
+  /* -------------------------------------------------------- cassa */
+  // Contanti in cassa adesso = fondo lasciato all'ultima chiusura
+  //                           + entrate in contanti dopo la chiusura − uscite in contanti
+  function saldoContanti(movimenti, chiusure) {
+    const ultima = chiusure.slice().sort((a, b) => (a.creato_il < b.creato_il ? 1 : -1))[0] || null;
+    let saldo = ultima ? ultima.fondo_cent : 0;
+    movimenti.forEach((m) => {
+      if (m.annullato || m.metodo !== "contanti") return;
+      if (ultima && m.creato_il <= ultima.creato_il) return;
+      saldo += m.verso === "entrata" ? m.importo_cent : -m.importo_cent;
+    });
+    return { saldo, ultima };
+  }
+
+  return { oggiISO, dataTra, adessoISO, aggiungiGiorni, oraAdesso, meseAnno, giornoBreve,
+           euro, leggiEuro, TIPI_LISTINO, METODI, CATEGORIE, eIncasso,
+           statoAbbonamento, rimasti, copertura, saldoContanti, aData, dataIt, giorniDaOggi, eta, avvisi, colore,
            corrisponde, perCognome, leggiModuloCliente, CAMPI_UNICI };
 })();
 
@@ -516,6 +796,11 @@ const ArchivioLocale = (() => {
   const copia = (o) => JSON.parse(JSON.stringify(o));
   const ultimo = (percorso) => percorso.split("/").pop();
   const pari = (percorso) => percorso.split("/").length % 2 === 0;
+
+  const CONFRONTI = {
+    "==": (a, b) => a === b, "!=": (a, b) => a !== b,
+    "<": (a, b) => a < b, "<=": (a, b) => a <= b, ">": (a, b) => a > b, ">=": (a, b) => a >= b,
+  };
 
   function crea() {
     let memoriaOk = true;
@@ -568,23 +853,27 @@ const ArchivioLocale = (() => {
       };
     }
 
-    function ricerca(percorso, filtri, massimo) {
+    function ricerca(percorso, filtri, ordine, massimo) {
       const esegui = () => {
         const livello = percorso.split("/").length + 1;
-        const docs = Object.keys(dati).sort()
+        let righe = Object.keys(dati).sort()
           .filter((p) => p.indexOf(percorso + "/") === 0 && p.split("/").length === livello)
-          .map(fotoDoc)
-          .filter((d) => filtri.every(([campo, op, valore]) => {
-            const v = d.data()[campo];
-            return op === "==" ? v === valore : op === "!=" ? v !== valore : true;
-          }))
-          .slice(0, massimo);
+          .filter((p) => filtri.every(([campo, op, valore]) => CONFRONTI[op](dati[p][campo], valore)));
+        if (ordine) {
+          const [campo, verso] = ordine;
+          righe.sort((x, y) => {
+            const a = dati[x][campo], b = dati[y][campo];
+            const r = a === b ? 0 : a === undefined ? 1 : b === undefined ? -1 : a < b ? -1 : 1;
+            return verso === "desc" ? -r : r;
+          });
+        }
+        const docs = righe.slice(0, massimo).map(fotoDoc);
         return { docs, size: docs.length, empty: !docs.length, docChanges: () => [], metadata: info };
       };
       return {
-        where: (campo, op, valore) => ricerca(percorso, filtri.concat([[campo, op, valore]]), massimo),
-        orderBy: () => ricerca(percorso, filtri, massimo),
-        limit: (n) => ricerca(percorso, filtri, n),
+        where: (campo, op, valore) => ricerca(percorso, filtri.concat([[campo, op, valore]]), ordine, massimo),
+        orderBy: (campo, verso) => ricerca(percorso, filtri, [campo, verso || "asc"], massimo),
+        limit: (n) => ricerca(percorso, filtri, ordine, n),
         get: async () => esegui(),
         onSnapshot: (dopo) => ascolta(() => dopo(esegui())),
       };
@@ -592,13 +881,31 @@ const ArchivioLocale = (() => {
 
     function collezione(percorso) {
       if (pari(percorso)) throw new TypeError("Percorso di collezione non valido: " + percorso);
-      return Object.assign(ricerca(percorso, [], 1000), {
+      return Object.assign(ricerca(percorso, [], null, Infinity), {
         path: percorso,
         doc: (id) => documento(percorso + "/" + (id || Math.random().toString(36).slice(2))),
       });
     }
 
-    return { db: { doc: documento, collection: collezione }, memoriaOk: () => memoriaOk };
+    return {
+      db: { doc: documento, collection: collezione },
+      memoriaOk: () => memoriaOk,
+      // tanti documenti in un colpo solo (dati di esempio, ripristino): un solo salvataggio
+      scriviMolti: (elenco) => { elenco.forEach(([percorso, dato]) => { dati[percorso] = copia(dato); }); salva(); },
+      eliminaMolti: (percorsi) => { percorsi.forEach((p) => { delete dati[p]; }); salva(); },
+      // copia di sicurezza: tutto l'archivio come testo, e ritorno indietro
+      esporta: () => JSON.stringify({ app: "gestionale-palestra", versione: 2, creato: new Date().toISOString(), dati }),
+      importa: (testo) => {
+        const pacchetto = JSON.parse(testo);
+        if (!pacchetto || pacchetto.app !== "gestionale-palestra" || typeof pacchetto.dati !== "object")
+          throw new Error("Questo file non è una copia del gestionale.");
+        const prima = dati;
+        dati = pacchetto.dati;
+        try { salva(); } catch (e) { dati = prima; throw e; }
+      },
+      // spazio occupato, in kilobyte (il browser ne concede circa 5000)
+      dimensioneKB: () => Math.round((localStorage.getItem(CHIAVE) || "").length * 2 / 1024),
+    };
   }
 
   return { crea };
@@ -617,13 +924,19 @@ const ArchivioLocale = (() => {
    questo file, per usare un database pubblico come Firestore di Google,
    che funziona allo stesso modo (collezioni e documenti).
 
-   Struttura dei dati:
-     clienti/<id>              un documento per cliente
-     impostazioni/palestra     nome della palestra e preferenze
+   Struttura dei dati (una "collezione" per tipo, un documento per riga):
+     clienti/<id>        anagrafica e documenti
+     listino/<id>        cosa si vende: ingressi, carnet, abbonamenti, noleggi
+     abbonamenti/<id>    carnet e abbonamenti venduti a un cliente
+     ingressi/<id>       ogni passaggio in reception
+     movimenti/<id>      ogni euro che entra o esce dalla cassa
+     chiusure/<id>       le chiusure di cassa (contanti contati a fine giornata)
+     impostazioni/palestra
    ===================================================================== */
 const Archivio = (() => {
   let db = null;
   let utente = null;
+  let locale = null;
 
   const stato = {
     modalita: "claude",   // "claude" = database online di claude.ai, "locale" = prova nel browser
@@ -641,19 +954,23 @@ const Archivio = (() => {
     giorni_preavviso: 30,       // da quanti giorni prima segnalare una scadenza
   };
 
+  const PREFISSI = { clienti: "c", listino: "l", abbonamenti: "a", ingressi: "i", movimenti: "m", chiusure: "k" };
+
   const pausa = (ms) => new Promise((ok) => setTimeout(ok, ms));
   const conTempoMassimo = (promessa, ms) =>
     Promise.race([promessa, pausa(ms).then(() => null)]);
 
-  // Codice univoco per ogni nuovo cliente, es. "c-lq3k9x-4f2a"
-  const nuovoId = () =>
-    "c-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
+  // Codice univoco per ogni nuovo documento, es. "i-lq3k9x-4f2a"
+  let contatore = 0;
+  const nuovoId = (collezione) =>
+    (PREFISSI[collezione] || "x") + "-" + Date.now().toString(36) + "-"
+    + (contatore++ % 1296).toString(36) + Math.random().toString(36).slice(2, 5);
 
   async function avvia() {
     const c = window.claude;
     if (!c || typeof c.use !== "function") {
       // Pagina aperta fuori da claude.ai: versione di prova con i dati nel browser
-      const locale = ArchivioLocale.crea();
+      locale = ArchivioLocale.crea();
       db = locale.db;
       stato.modalita = "locale";
       stato.memoriaOk = locale.memoriaOk();
@@ -692,7 +1009,9 @@ const Archivio = (() => {
       case "invalid_argument":
         return "Non è stato possibile salvare: serve il permesso di modifica su questa pagina.";
       case "quota_exceeded":
-        return "Il database è pieno. Archivia o elimina i clienti che non servono più.";
+        return stato.modalita === "locale"
+          ? "La memoria del browser è piena. Scarica una copia di sicurezza da Impostazioni e libera spazio."
+          : "Il database è pieno. Archivia o elimina i dati che non servono più.";
       case "resource_exhausted":
         return "Troppe operazioni in poco tempo. Aspetta qualche secondo e riprova.";
       case "revoked":
@@ -702,18 +1021,64 @@ const Archivio = (() => {
     }
   }
 
-  const conId = (doc) => ({ id: doc.id, ...doc.data() });
+  const conId = (doc) => Object.assign({ id: doc.id }, doc.data());
+  // Il database di claude.ai consegna al massimo 1000 righe per richiesta; l'archivio locale tutte.
+  const massimo = () => (stato.modalita === "locale" ? 1000000 : 1000);
 
-  /* ------------------------------------------------------- clienti */
-  // Ascolta i clienti attivi: la funzione viene richiamata a ogni modifica,
-  // anche quelle fatte da un altro computer della palestra.
+  /* ------------------------------------------------ operazioni generali */
+  // Ascolta un'intera collezione: la funzione viene richiamata a ogni modifica,
+  // anche quelle fatte da un altro computer o da un'altra scheda.
+  function ascolta(collezione, suDati, suErrore) {
+    return db.collection(collezione).limit(massimo())
+      .onSnapshot((snap) => suDati(snap.docs.map(conId), snap.metadata), suErrore);
+  }
+
+  async function crea(collezione, dati, id) {
+    id = id || nuovoId(collezione);
+    await scrivi(() => db.doc(collezione + "/" + id).set(Object.assign({}, dati, {
+      creato_il: dati.creato_il || Regole.adessoISO(),
+      creato_da: stato.idUtente,
+    })));
+    return id;
+  }
+
+  async function aggiorna(collezione, id, modifiche) {
+    await scrivi(() => db.doc(collezione + "/" + id).update(Object.assign({}, modifiche, {
+      modificato_il: Regole.adessoISO(),
+      modificato_da: stato.idUtente,
+    })));
+  }
+
+  async function elimina(collezione, id) {
+    await scrivi(() => db.doc(collezione + "/" + id).delete());
+  }
+
+  // Tanti documenti insieme (dati di esempio, ripristino): veloce nell'archivio locale,
+  // uno alla volta sul database online.
+  async function creaMolti(elenco) {
+    const pronti = elenco.map(([collezione, dati, id]) => [
+      collezione + "/" + (id || nuovoId(collezione)),
+      Object.assign({ creato_da: stato.idUtente }, dati, { creato_il: dati.creato_il || Regole.adessoISO() }),
+    ]);
+    if (locale) return locale.scriviMolti(pronti);
+    for (const [percorso, dati] of pronti) await scrivi(() => db.doc(percorso).set(dati));
+  }
+
+  async function eliminaMolti(elenco) {
+    const percorsi = elenco.map(([collezione, id]) => collezione + "/" + id);
+    if (locale) return locale.eliminaMolti(percorsi);
+    for (const p of percorsi) await scrivi(() => db.doc(p).delete());
+  }
+
+  /* ----------------------------------------------------------- clienti */
+  // I clienti archiviati non si caricano sempre: servono di rado.
   function ascoltaClientiAttivi(suDati, suErrore) {
-    return db.collection("clienti").where("attivo", "==", true).limit(1000)
+    return db.collection("clienti").where("attivo", "==", true).limit(massimo())
       .onSnapshot((snap) => suDati(snap.docs.map(conId), snap.metadata), suErrore);
   }
 
   async function clientiArchiviati() {
-    const snap = await db.collection("clienti").where("attivo", "==", false).limit(1000).get();
+    const snap = await db.collection("clienti").where("attivo", "==", false).limit(massimo()).get();
     return snap.docs.map(conId);
   }
 
@@ -728,33 +1093,14 @@ const Archivio = (() => {
     return snap.docs.map((d) => d.id);
   }
 
-  async function creaCliente(dati) {
-    const id = nuovoId();
-    await scrivi(() => db.doc("clienti/" + id).set({
-      ...dati,
-      attivo: true,
-      creato_il: Regole.adessoISO(),
-      creato_da: stato.idUtente,
-    }));
-    return id;
-  }
+  const creaCliente = (dati) => crea("clienti", Object.assign({}, dati, { attivo: true }));
+  const aggiornaCliente = (id, modifiche) => aggiorna("clienti", id, modifiche);
+  const eliminaCliente = (id) => elimina("clienti", id);
 
-  async function aggiornaCliente(id, modifiche) {
-    await scrivi(() => db.doc("clienti/" + id).update({
-      ...modifiche,
-      modificato_il: Regole.adessoISO(),
-      modificato_da: stato.idUtente,
-    }));
-  }
-
-  async function eliminaCliente(id) {
-    await scrivi(() => db.doc("clienti/" + id).delete());
-  }
-
-  /* --------------------------------------------------- impostazioni */
+  /* ------------------------------------------------------ impostazioni */
   function ascoltaImpostazioni(suDati, suErrore) {
     return db.doc("impostazioni/palestra").onSnapshot(
-      (doc) => suDati({ ...IMPOSTAZIONI_PREDEFINITE, ...(doc.exists ? doc.data() : {}) }),
+      (doc) => suDati(Object.assign({}, IMPOSTAZIONI_PREDEFINITE, doc.exists ? doc.data() : {})),
       suErrore);
   }
 
@@ -762,16 +1108,393 @@ const Archivio = (() => {
     await scrivi(() => db.doc("impostazioni/palestra").set(dati));
   }
 
-  return { stato, IMPOSTAZIONI_PREDEFINITE, avvia, messaggioErrore,
+  /* ------------------------------------- copia di sicurezza (solo prova) */
+  const copiaSicurezza = {
+    disponibile: () => !!locale,
+    esporta: () => locale.esporta(),
+    importa: (testo) => locale.importa(testo),
+    dimensioneKB: () => (locale ? locale.dimensioneKB() : 0),
+  };
+
+  return { stato, IMPOSTAZIONI_PREDEFINITE, avvia, messaggioErrore, nuovoId,
+           ascolta, crea, aggiorna, elimina, creaMolti, eliminaMolti,
            ascoltaClientiAttivi, clientiArchiviati, leggiCliente, clientiCon,
            creaCliente, aggiornaCliente, eliminaCliente,
-           ascoltaImpostazioni, salvaImpostazioni };
+           ascoltaImpostazioni, salvaImpostazioni, copiaSicurezza };
 })();
 
 </script>
   <script>
 /* =====================================================================
-   VISTE: l'HTML di ogni schermata.
+   AZIONI: le operazioni della reception che scrivono nel database.
+   Ogni funzione riceve lo stato (S) con i dati già caricati e restituisce
+   il messaggio da mostrare a chi lavora.
+   ===================================================================== */
+const Azioni = (() => {
+  const R = Regole;
+  const A = Archivio;
+  const adesso = () => ({ data: R.oggiISO(), ora: R.oraAdesso(), creato_il: R.adessoISO() });
+  const voce = (S, id) => S.listino.find((v) => v.id === id);
+  const nomeCliente = (c) => `${c.nome} ${c.cognome}`;
+
+  /* ----------------------------------------------------------- ingresso */
+  // scelta.modo: "copertura" (abbonamento o carnet), "pagato" (voce del listino), "omaggio"
+  async function registraIngresso(S, cliente, scelta) {
+    const t = adesso();
+    const idIngresso = A.nuovoId("ingressi");
+    const ingresso = {
+      cliente_id: cliente.id, data: t.data, ora: t.ora, creato_il: t.creato_il,
+      modo: "omaggio", nome: "Ingresso omaggio", abbonamento_id: null, listino_id: null,
+      prezzo_cent: 0, movimento_id: null, fuori_regola: !!scelta.fuori_regola, annullato: false,
+    };
+    const movimenti = [];
+    let abbonamento = null;
+
+    if (scelta.modo === "copertura") {
+      abbonamento = S.abbonamenti.find((a) => a.id === scelta.abbonamento_id);
+      if (!abbonamento || R.statoAbbonamento(abbonamento) !== "attivo")
+        throw { messaggio: "Questo abbonamento non è più valido. Riapri la scheda e riprova." };
+      Object.assign(ingresso, { modo: abbonamento.tipo, nome: abbonamento.nome, abbonamento_id: abbonamento.id });
+    } else if (scelta.modo === "pagato") {
+      const v = voce(S, scelta.listino_id);
+      if (!v) throw { messaggio: "Scegli quale ingresso far pagare." };
+      const idMov = A.nuovoId("movimenti");
+      Object.assign(ingresso, { modo: v.tipo, nome: v.nome, listino_id: v.id, prezzo_cent: v.prezzo_cent, movimento_id: idMov });
+      movimenti.push([idMov, { verso: "entrata", categoria: "ingresso", descrizione: v.nome, importo_cent: v.prezzo_cent }]);
+    }
+    // noleggi pagati insieme all'ingresso (scarpette, imbrago…)
+    (scelta.noleggi || []).forEach((id) => {
+      const v = voce(S, id);
+      if (v) movimenti.push([A.nuovoId("movimenti"), { verso: "entrata", categoria: "prodotto", descrizione: v.nome, importo_cent: v.prezzo_cent }]);
+    });
+
+    for (const [id, m] of movimenti) {
+      if (m.importo_cent <= 0) continue;
+      await A.crea("movimenti", Object.assign(m, {
+        data: t.data, ora: t.ora, creato_il: t.creato_il, metodo: scelta.metodo || "contanti",
+        cliente_id: cliente.id, ingresso_id: idIngresso, abbonamento_id: null, annullato: false,
+      }), id);
+    }
+    await A.crea("ingressi", ingresso, idIngresso);
+    if (abbonamento && abbonamento.tipo === "carnet")
+      await A.aggiorna("abbonamenti", abbonamento.id, { ingressi_usati: (abbonamento.ingressi_usati || 0) + 1 });
+
+    const totale = movimenti.reduce((s, [, m]) => s + m.importo_cent, 0);
+    let testo = `Ingresso registrato: ${nomeCliente(cliente)}, ${ingresso.nome.toLowerCase()}.`;
+    if (abbonamento && abbonamento.tipo === "carnet") {
+      const restano = R.rimasti(abbonamento) - 1;
+      testo = `Ingresso registrato: ${nomeCliente(cliente)}. Sul carnet ${restano === 1 ? "resta 1 ingresso" : `restano ${restano} ingressi`}.`;
+    }
+    if (totale > 0) testo += ` Incassati ${R.euro(totale)} (${R.METODI[scelta.metodo || "contanti"]}).`;
+    return testo;
+  }
+
+  /* ------------------------------------------------- vendita abbonamento */
+  async function vendiAbbonamento(S, cliente, scelta) {
+    const v = voce(S, scelta.listino_id);
+    if (!v) throw { messaggio: "Scegli cosa vendere." };
+    const t = adesso();
+    const idAbb = A.nuovoId("abbonamenti");
+    const idMov = scelta.prezzo_cent > 0 ? A.nuovoId("movimenti") : null;
+    const fine = v.giorni ? R.aggiungiGiorni(scelta.data_inizio, v.giorni - 1) : null;
+    if (idMov) {
+      await A.crea("movimenti", {
+        data: t.data, ora: t.ora, creato_il: t.creato_il, verso: "entrata", categoria: "abbonamento",
+        descrizione: v.nome, importo_cent: scelta.prezzo_cent, metodo: scelta.metodo,
+        cliente_id: cliente.id, abbonamento_id: idAbb, ingresso_id: null, annullato: false,
+      }, idMov);
+    }
+    await A.crea("abbonamenti", {
+      cliente_id: cliente.id, listino_id: v.id, nome: v.nome, tipo: v.tipo,
+      data_inizio: scelta.data_inizio, data_fine: fine,
+      ingressi_totali: v.tipo === "carnet" ? v.ingressi : null, ingressi_usati: 0,
+      prezzo_cent: scelta.prezzo_cent, metodo: scelta.metodo, movimento_id: idMov,
+      creato_il: t.creato_il, annullato: false,
+    }, idAbb);
+    return `${v.nome} attivato per ${nomeCliente(cliente)}` + (fine ? `, valido fino al ${R.dataIt(fine)}.` : ".")
+      + (idMov ? ` Incassati ${R.euro(scelta.prezzo_cent)} (${R.METODI[scelta.metodo]}).` : "");
+  }
+
+  /* -------------------------------------------------------------- cassa */
+  async function venditaBanco(S, righe, metodo) {
+    const scelte = righe.filter((r) => r.quantita > 0).map((r) => ({ v: voce(S, r.id), q: r.quantita })).filter((r) => r.v);
+    if (!scelte.length) throw { messaggio: "Indica quanti pezzi vendi." };
+    const totale = scelte.reduce((s, r) => s + r.v.prezzo_cent * r.q, 0);
+    const t = adesso();
+    await A.crea("movimenti", {
+      data: t.data, ora: t.ora, creato_il: t.creato_il, verso: "entrata", categoria: "prodotto",
+      descrizione: scelte.map((r) => (r.q > 1 ? `${r.q} × ${r.v.nome}` : r.v.nome)).join(", "),
+      importo_cent: totale, metodo, cliente_id: null, abbonamento_id: null, ingresso_id: null, annullato: false,
+    });
+    return `Vendita registrata: ${R.euro(totale)} (${R.METODI[metodo]}).`;
+  }
+
+  async function movimentoManuale(dati) {
+    const t = adesso();
+    await A.crea("movimenti", Object.assign({
+      data: t.data, ora: t.ora, creato_il: t.creato_il,
+      cliente_id: null, abbonamento_id: null, ingresso_id: null, annullato: false,
+    }, dati));
+    return (dati.verso === "entrata" ? "Entrata" : "Uscita") + ` di ${R.euro(dati.importo_cent)} registrata.`;
+  }
+
+  async function chiudiCassa(S, contati, versato, note) {
+    const { saldo } = R.saldoContanti(S.movimenti, S.chiusure);
+    const t = adesso();
+    await A.crea("chiusure", {
+      data: t.data, ora: t.ora, creato_il: t.creato_il,
+      contanti_attesi_cent: saldo, contanti_contati_cent: contati, differenza_cent: contati - saldo,
+      versato_cent: versato, fondo_cent: contati - versato, note: note || null,
+    });
+    const diff = contati - saldo;
+    return "Cassa chiusa. " + (diff === 0 ? "I contanti tornano esattamente."
+      : diff > 0 ? `In cassa ci sono ${R.euro(diff)} in più del previsto.`
+      : `In cassa mancano ${R.euro(-diff)} rispetto al previsto.`)
+      + ` Restano ${R.euro(contati - versato)} di fondo cassa.`;
+  }
+
+  /* ---------------------------------------------------------- annullare */
+  // Un errore si annulla, non si cancella: la riga resta nello storico, barrata.
+  async function annulla(S, tipo, id) {
+    const segno = { annullato: true, annullato_il: R.adessoISO() };
+    if (tipo === "ingressi") {
+      const ing = S.ingressi.find((x) => x.id === id);
+      if (!ing || ing.annullato) return "Questo ingresso è già annullato.";
+      await A.aggiorna("ingressi", id, segno);
+      const abb = ing.modo === "carnet" && S.abbonamenti.find((a) => a.id === ing.abbonamento_id);
+      if (abb) await A.aggiorna("abbonamenti", abb.id, { ingressi_usati: Math.max(0, (abb.ingressi_usati || 0) - 1) });
+      for (const m of S.movimenti.filter((m) => m.ingresso_id === id && !m.annullato)) await A.aggiorna("movimenti", m.id, segno);
+      return "Ingresso annullato" + (abb ? ": l'ingresso è tornato sul carnet." : ".");
+    }
+    if (tipo === "abbonamenti") {
+      const abb = S.abbonamenti.find((x) => x.id === id);
+      if (!abb || abb.annullato) return "Questo abbonamento è già annullato.";
+      await A.aggiorna("abbonamenti", id, segno);
+      for (const m of S.movimenti.filter((m) => m.abbonamento_id === id && !m.annullato)) await A.aggiorna("movimenti", m.id, segno);
+      return `${abb.nome} annullato. Se avevi incassato, il pagamento è stato tolto dalla cassa.`;
+    }
+    const m = S.movimenti.find((x) => x.id === id);
+    if (!m || m.annullato) return "Questo movimento è già annullato.";
+    if (m.abbonamento_id) return annulla(S, "abbonamenti", m.abbonamento_id);
+    if (m.ingresso_id && m.categoria === "ingresso") return annulla(S, "ingressi", m.ingresso_id);
+    await A.aggiorna("movimenti", id, segno);
+    return "Movimento annullato.";
+  }
+
+  /* ------------------------------------------------------------ listino */
+  const LISTINO_ESEMPIO = [
+    ["l-es-singolo", { nome: "Ingresso singolo", tipo: "singolo", prezzo_cent: 1200, ordine: 1 }],
+    ["l-es-ridotto", { nome: "Ingresso ridotto under 14", tipo: "singolo", prezzo_cent: 900, ordine: 2 }],
+    ["l-es-prova", { nome: "Ingresso di prova con istruttore", tipo: "prova", prezzo_cent: 1000, ordine: 3 }],
+    ["l-es-carnet", { nome: "Carnet 10 ingressi", tipo: "carnet", prezzo_cent: 10000, ingressi: 10, giorni: 365, ordine: 4 }],
+    ["l-es-mensile", { nome: "Mensile", tipo: "periodo", prezzo_cent: 5500, giorni: 30, ordine: 5 }],
+    ["l-es-trimestrale", { nome: "Trimestrale", tipo: "periodo", prezzo_cent: 15000, giorni: 90, ordine: 6 }],
+    ["l-es-annuale", { nome: "Annuale", tipo: "periodo", prezzo_cent: 45000, giorni: 365, ordine: 7 }],
+    ["l-es-scarpette", { nome: "Noleggio scarpette", tipo: "prodotto", prezzo_cent: 400, ordine: 8 }],
+    ["l-es-imbrago", { nome: "Noleggio imbrago", tipo: "prodotto", prezzo_cent: 300, ordine: 9 }],
+    ["l-es-magnesite", { nome: "Magnesite 200 g", tipo: "prodotto", prezzo_cent: 600, ordine: 10 }],
+  ];
+
+  async function caricaListinoEsempio() {
+    await A.creaMolti(LISTINO_ESEMPIO.map(([id, v]) =>
+      ["listino", Object.assign({ ingressi: null, giorni: null, attivo: true, esempio: true }, v), id]));
+    return "Listino di esempio caricato. I prezzi sono inventati: toccali per mettere i tuoi.";
+  }
+
+  async function salvaVoce(id, dati) {
+    if (id) await A.aggiorna("listino", id, dati);
+    else await A.crea("listino", Object.assign({ attivo: true }, dati));
+    return id ? "Voce del listino aggiornata." : `${dati.nome} aggiunto al listino.`;
+  }
+
+  /* ------------------------------------------------------ dati di esempio */
+  // Un mese di attività inventata, per vedere dashboard, cassa e storico pieni.
+  // Tutto ciò che crea è segnato come esempio e si toglie con un tocco.
+  const NOMI_ESEMPIO = [
+    ["Giulia", "Bianchi"], ["Marco", "Rossi"], ["Sara", "Conti"], ["Luca", "Ferrari"], ["Elena", "Gallo"],
+    ["Davide", "Marini"], ["Chiara", "Fontana"], ["Matteo", "Greco"], ["Francesca", "Barbieri"], ["Andrea", "Lombardi"],
+    ["Alessia", "Moretti"], ["Simone", "Costa"], ["Martina", "Rizzi"], ["Federico", "Caruso"], ["Irene", "Ferri"],
+  ];
+
+  async function eliminaDatiEsempio(S) {
+    const archiviati = await A.clientiArchiviati();
+    const elenco = [];
+    S.clienti.concat(archiviati).filter((x) => x.esempio).forEach((x) => elenco.push(["clienti", x.id]));
+    ["abbonamenti", "ingressi", "movimenti", "chiusure"].forEach((coll) =>
+      S[coll].filter((x) => x.esempio).forEach((x) => elenco.push([coll, x.id])));
+    await A.eliminaMolti(elenco);
+    return elenco.length;
+  }
+
+  async function caricaDatiEsempio(S) {
+    await eliminaDatiEsempio(S);                       // si riparte puliti
+    if (!S.listino.length) await caricaListinoEsempio();
+    const listino = S.listino.length ? S.listino : LISTINO_ESEMPIO.map(([id, v]) => Object.assign({ id }, v));
+    const diTipo = (tipo) => listino.find((v) => v.tipo === tipo && v.attivo !== false);
+    const singolo = diTipo("singolo"), prova = diTipo("prova"), carnetV = diTipo("carnet");
+    const periodo = listino.filter((v) => v.tipo === "periodo" && v.attivo !== false).sort((a, b) => a.giorni - b.giorni)[0];
+    const scarpette = diTipo("prodotto");
+
+    let seme = 20261120;                              // numeri casuali ripetibili (mulberry32)
+    const caso = () => {
+      seme = (seme + 0x6D2B79F5) | 0;
+      let x = Math.imul(seme ^ (seme >>> 15), 1 | seme);
+      x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+      return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+    };
+    const intero = (a, b) => a + Math.floor(caso() * (b - a + 1));
+    const due = (n) => String(n).padStart(2, "0");
+    const t = R.dataTra;
+    const docs = [];
+    const id = (coll) => A.nuovoId(coll);
+
+    // clienti
+    const clienti = NOMI_ESEMPIO.map(([nome, cognome], i) => {
+      const c = {
+        id: "c-esempio-" + due(i + 1), nome, cognome, attivo: true, esempio: true,
+        data_nascita: i === 2 ? "2011-05-20" : `${1975 + intero(0, 30)}-${due(intero(1, 12))}-${due(intero(1, 28))}`,
+        email: i % 3 === 2 ? null : `${nome}.${cognome}@example.com`.toLowerCase(),
+        telefono: `3${intero(20, 49)} ${intero(1000000, 9999999)}`,
+        codice_fiscale: null, indirizzo: null, contatto_emergenza: null, note: null,
+        numero_tessera: "A" + String(i + 1).padStart(3, "0"),
+        scadenza_tessera: t(intero(60, 330)), scadenza_certificato: t(intero(40, 360)),
+        liberatoria_il: t(-intero(31, 300)), privacy_il: t(-intero(31, 300)),
+        autonomo: i % 4 !== 3, creato_il: t(-intero(35, 300)) + " 18:00:00",
+      };
+      if (i === 1) c.scadenza_certificato = t(-5);                     // certificato scaduto
+      if (i === 2) { c.liberatoria_il = null; c.contatto_emergenza = "Paolo Conti (papà) 320 1112224"; c.note = "Viene con il papà il sabato mattina."; }
+      if (i === 3) c.scadenza_certificato = t(12);                     // in scadenza
+      if (i >= 12) c.creato_il = t(-intero(1, 15)) + " 18:30:00";      // nuovi di questo mese
+      docs.push(["clienti", Object.assign({}, c), c.id]);
+      return c;
+    });
+
+    // abbonamenti e carnet
+    const abbonamenti = [];
+    const vendi = (cliente, v, giorno, ora) => {
+      if (!v) return;
+      const a = { id: id("abbonamenti"), cliente_id: cliente.id, listino_id: v.id, nome: v.nome, tipo: v.tipo,
+                  data_inizio: t(giorno), data_fine: v.giorni ? R.aggiungiGiorni(t(giorno), v.giorni - 1) : null,
+                  ingressi_totali: v.tipo === "carnet" ? v.ingressi : null, ingressi_usati: 0,
+                  prezzo_cent: v.prezzo_cent, metodo: giorno % 2 ? "carta" : "contanti",
+                  creato_il: `${t(giorno)} ${ora}:00`, annullato: false, esempio: true };
+      a.movimento_id = id("movimenti");
+      abbonamenti.push(a);
+      docs.push(["movimenti", { data: t(giorno), ora, creato_il: a.creato_il, verso: "entrata", categoria: "abbonamento",
+        descrizione: v.nome, importo_cent: v.prezzo_cent, metodo: a.metodo, cliente_id: cliente.id,
+        abbonamento_id: a.id, ingresso_id: null, annullato: false, esempio: true }, a.movimento_id]);
+    };
+    [0, 4, 5, 6, 7].forEach((i, k) => vendi(clienti[i], periodo, -[27, 20, 14, 9, 3][k], "17:40"));   // mensili (uno scade a breve)
+    [1, 8, 9, 10].forEach((i, k) => vendi(clienti[i], carnetV, -[28, 22, 12, 6][k], "18:10"));         // carnet
+
+    // ingressi giorno per giorno, con incassi, noleggi e chiusure di cassa
+    const ingressi = [];
+    const movimenti = [];
+    let contanti = 0;
+    const oraOra = new Date().getHours();
+    movimenti.push({ data: t(-30), ora: "09:00", creato_il: `${t(-30)} 09:00:00`, verso: "entrata", categoria: "fondo",
+      descrizione: "Fondo cassa iniziale", importo_cent: 10000, metodo: "contanti" });
+    contanti += 10000;
+    for (let g = -29; g <= 0; g++) {
+      const giorno = t(g);
+      const festivo = [0, 6].indexOf(R.aData(giorno).getDay()) >= 0;
+      let quanti = festivo ? intero(9, 15) : intero(5, 11);
+      if (g === 0) quanti = oraOra >= 18 ? intero(4, 6) : oraOra >= 12 ? intero(1, 3) : 0;
+      const presenti = {};
+      for (let n = 0; n < quanti; n++) {
+        let ora = festivo ? intero(10, 19) : intero(17, 22);
+        if (g === 0) ora = Math.min(ora, Math.max(9, oraOra - 1));
+        const orario = `${due(ora)}:${due(intero(0, 59))}`;
+        let c = clienti[intero(0, clienti.length - 1)];
+        if (presenti[c.id]) continue;
+        presenti[c.id] = true;
+        const ing = { id: id("ingressi"), cliente_id: c.id, data: giorno, ora: orario, creato_il: `${giorno} ${orario}:00`,
+                      modo: "omaggio", nome: "Ingresso omaggio", abbonamento_id: null, listino_id: null, prezzo_cent: 0,
+                      movimento_id: null, fuori_regola: false, annullato: false, esempio: true };
+        const coperto = abbonamenti.filter((a) => a.cliente_id === c.id && a.creato_il <= ing.creato_il
+          && R.statoAbbonamento(a, giorno) === "attivo");
+        const abb = coperto.find((a) => a.tipo === "periodo") || coperto.find((a) => a.tipo === "carnet");
+        const metodo = caso() < 0.6 ? "contanti" : "carta";
+        if (abb) {
+          Object.assign(ing, { modo: abb.tipo, nome: abb.nome, abbonamento_id: abb.id });
+          if (abb.tipo === "carnet") abb.ingressi_usati++;
+        } else {
+          const v = (c.id === "c-esempio-14" || c.id === "c-esempio-15") && !c.provato ? prova : singolo;
+          if (v === prova) c.provato = true;
+          if (v) {
+            ing.movimento_id = id("movimenti");
+            Object.assign(ing, { modo: v.tipo, nome: v.nome, listino_id: v.id, prezzo_cent: v.prezzo_cent });
+            movimenti.push({ id: ing.movimento_id, data: giorno, ora: orario, creato_il: ing.creato_il, verso: "entrata",
+              categoria: "ingresso", descrizione: v.nome, importo_cent: v.prezzo_cent, metodo, cliente_id: c.id, ingresso_id: ing.id });
+            if (metodo === "contanti") contanti += v.prezzo_cent;
+          }
+        }
+        if (scarpette && caso() < 0.18) {
+          movimenti.push({ data: giorno, ora: orario, creato_il: ing.creato_il, verso: "entrata", categoria: "prodotto",
+            descrizione: scarpette.nome, importo_cent: scarpette.prezzo_cent, metodo, cliente_id: c.id, ingresso_id: ing.id });
+          if (metodo === "contanti") contanti += scarpette.prezzo_cent;
+        }
+        ingressi.push(ing);
+      }
+      // gli abbonamenti venduti oggi in contanti entrano in cassa
+      abbonamenti.filter((a) => a.data_inizio === giorno && a.metodo === "contanti").forEach((a) => { contanti += a.prezzo_cent; });
+      if (g === -16) {
+        movimenti.push({ data: giorno, ora: "19:15", creato_il: `${giorno} 19:15:00`, verso: "uscita", categoria: "spesa",
+          descrizione: "Spazzole per le prese", importo_cent: 2400, metodo: "contanti" });
+        contanti -= 2400;
+      }
+      if (g < 0) {                                     // chiusura serale: si lasciano 100 € di fondo
+        const versato = Math.max(0, contanti - 10000);
+        docs.push(["chiusure", { data: giorno, ora: "22:45", creato_il: `${giorno} 22:45:00`, contanti_attesi_cent: contanti,
+          contanti_contati_cent: contanti, differenza_cent: 0, versato_cent: versato, fondo_cent: contanti - versato,
+          note: null, esempio: true }]);
+        contanti -= versato;
+      }
+    }
+    ingressi.forEach((x) => docs.push(["ingressi", x, x.id]));
+    abbonamenti.forEach((x) => docs.push(["abbonamenti", x, x.id]));
+    movimenti.forEach((m) => docs.push(["movimenti", Object.assign({ cliente_id: null, abbonamento_id: null, ingresso_id: null,
+      annullato: false, esempio: true }, m), m.id]));
+    docs.forEach((d) => { if (d[1].id) delete d[1].id; });
+    await A.creaMolti(docs);
+    return `Ho caricato un mese di attività di esempio: ${clienti.length} clienti, ${ingressi.length} ingressi, `
+      + `${abbonamenti.length} abbonamenti e carnet. Li togli da Impostazioni quando vuoi.`;
+  }
+
+  /* -------------------------------------------------- copia di sicurezza */
+  function scaricaCopia() {
+    const testo = A.copiaSicurezza.esporta();
+    const blob = new Blob([testo], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `gestionale-palestra-copia-${R.oggiISO()}.json`;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+    return "Copia di sicurezza scaricata. Conservala in un posto sicuro (per esempio iCloud Drive o Google Drive).";
+  }
+
+  function ripristina(file) {
+    return new Promise((ok, ko) => {
+      const lettore = new FileReader();
+      lettore.onload = () => {
+        try { A.copiaSicurezza.importa(lettore.result); ok("Dati ripristinati dalla copia di sicurezza."); }
+        catch (e) { ko({ messaggio: e.message || "Il file non si può leggere." }); }
+      };
+      lettore.onerror = () => ko({ messaggio: "Il file non si può leggere." });
+      lettore.readAsText(file);
+    });
+  }
+
+  return { registraIngresso, vendiAbbonamento, venditaBanco, movimentoManuale, chiudiCassa, annulla,
+           caricaListinoEsempio, salvaVoce, caricaDatiEsempio, eliminaDatiEsempio, scaricaCopia, ripristina };
+})();
+
+</script>
+  <script>
+/* =====================================================================
+   VISTE: l'HTML delle schermate della reception (Oggi, Clienti, scheda).
+   Cassa, Dashboard, Listino e Impostazioni sono in viste-gestione.js.
    Ogni funzione restituisce il codice HTML di una pagina o di un pezzo.
    I dati inseriti dalle persone passano sempre da html`...`, che li
    "disinnesca" (un nome come <script> resta solo testo).
@@ -786,14 +1509,30 @@ const Viste = (() => {
     : v === null || v === undefined || v === false ? "" : esc(v);
   const html = (parti, ...valori) =>
     new Sicuro(parti.reduce((out, p, i) => out + pezzo(valori[i - 1]) + p));
+  const crudo = (t) => new Sicuro(t);             // solo per attributi scritti da noi
 
   const R = Regole;
   const plurale = (n, uno, tanti) => `${n} ${n === 1 ? uno : tanti}`;
+  const maiuscola = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 
   /* ---------------------------------------------- pezzi riutilizzati */
-  function riga(c, imp) {
-    const col = R.colore(c, imp);
-    const av = R.avvisi(c, imp);
+  // Copertura di ogni cliente (abbonamento o carnet attivo), calcolata una volta per schermata
+  function coperture(S) {
+    const perCliente = {};
+    S.abbonamenti.forEach((a) => { (perCliente[a.cliente_id] = perCliente[a.cliente_id] || []).push(a); });
+    const mappa = {};
+    Object.keys(perCliente).forEach((id) => { mappa[id] = R.copertura(perCliente[id]); });
+    return mappa;
+  }
+  function breveCopertura(a) {
+    if (!a) return "";
+    if (a.tipo === "carnet") return `${a.nome}: ${plurale(R.rimasti(a), "ingresso", "ingressi")}`;
+    return a.data_fine ? `${a.nome} fino al ${R.dataIt(a.data_fine)}` : a.nome;
+  }
+
+  function riga(c, S, cop) {
+    const col = R.colore(c, S.imp);
+    const av = R.avvisi(c, S.imp);
     const stato = col === "grigio" ? "Archiviato"
       : av.length ? av[0].testo + (av.length > 1 ? ` e altri ${av.length - 1}` : "")
       : "Documenti in regola";
@@ -802,23 +1541,27 @@ const Viste = (() => {
         <span class="nastro nastro-${col}" aria-hidden="true"></span>
         <span class="riga-nome">${c.cognome} ${c.nome}${c.esempio ? html` <span class="etichetta">esempio</span>` : ""}</span>
         <span class="riga-dati">
+          ${cop ? html`<span class="riga-abbonamento">${breveCopertura(cop)}</span>` : ""}
           ${c.numero_tessera ? html`<span>Tessera ${c.numero_tessera}</span>` : ""}
-          ${c.telefono ? html`<span>${c.telefono}</span>` : ""}
+          ${!cop && c.telefono ? html`<span>${c.telefono}</span>` : ""}
         </span>
         <span class="riga-stato stato-${col}">${stato}</span>
       </a>`;
   }
 
-  const elenco = (clienti, imp) =>
-    html`<div class="elenco-clienti">${clienti.map((c) => riga(c, imp))}</div>`;
+  function elenco(clienti, S) {
+    const cop = coperture(S);
+    return html`<div class="elenco-clienti">${clienti.map((c) => riga(c, S, cop[c.id]))}</div>`;
+  }
 
   function campo(nome, etichetta, dati, errori, { tipo = "text", aiuto = "", extra = "" } = {}) {
     const err = errori[nome];
+    const valore = dati[nome] === null || dati[nome] === undefined ? "" : dati[nome];
     return html`
       <div class="campo${err ? " campo-errore" : ""}">
         <label for="${nome}">${etichetta}</label>
-        <input id="${nome}" name="${nome}" type="${tipo}" value="${dati[nome] || ""}"
-               ${new Sicuro(extra)} ${err ? new Sicuro(`aria-invalid="true" aria-describedby="${nome}-errore"`) : ""}>
+        <input id="${nome}" name="${nome}" type="${tipo}" value="${valore}"
+               ${crudo(extra)} ${err ? crudo(`aria-invalid="true" aria-describedby="${nome}-errore"`) : ""}>
         ${err ? html`<p class="errore-campo" id="${nome}-errore">${err}</p>`
               : aiuto ? html`<p class="aiuto">${aiuto}</p>` : ""}
       </div>`;
@@ -836,6 +1579,25 @@ const Viste = (() => {
         ${err ? html`<p class="errore-campo" id="${nome}-errore">${err}</p>` : ""}
       </div>`;
   }
+
+  // Pulsanti a pillola per scegliere come paga il cliente
+  const sceltaMetodo = (scelto) => html`
+    <fieldset class="scelta">
+      <legend>Pagamento</legend>
+      <div class="pillole">
+        ${["contanti", "carta", "bonifico"].map((m) => html`
+          <label class="pillola"><input type="radio" name="metodo" value="${m}" ${m === (scelto || "contanti") ? crudo("checked") : ""}><span>${maiuscola(m)}</span></label>`)}
+      </div>
+    </fieldset>`;
+
+  // "Annulla" con conferma nella pagina (niente finestre a comparsa)
+  const annullaConConferma = (tipo, id, cosa) => html`
+    <button type="button" class="pulsante-testo" data-mostra="conf-${id}">Annulla</button>
+    <span class="conferma-riga" id="conf-${id}" hidden>
+      Annullare ${cosa}?
+      <button type="button" class="pulsante pulsante-piccolo pulsante-pericolo" data-azione="annulla" data-tipo="${tipo}" data-id="${id}">Sì, annulla</button>
+      <button type="button" class="pulsante pulsante-piccolo pulsante-secondario" data-nascondi="conf-${id}">No</button>
+    </span>`;
 
   const messaggio = (m) => m
     ? html`<p class="avviso-flash avviso-${m.tipo}" role="status">${m.testo}</p>` : "";
@@ -875,8 +1637,29 @@ const Viste = (() => {
   function riepilogo(S) {
     if (!S.caricati) return "";
     const meseISO = R.oggiISO().slice(0, 7);
-    const nuovi = S.clienti.filter((c) => (c.creato_il || "").startsWith(meseISO)).length;
+    const nuovi = S.clienti.filter((c) => (c.creato_il || "").indexOf(meseISO) === 0).length;
     return `${plurale(S.clienti.length, "cliente attivo", "clienti attivi")}, ${plurale(nuovi, "nuovo", "nuovi")} questo mese.`;
+  }
+
+  function entratiOggi(S) {
+    const oggiISO = R.oggiISO();
+    const lista = S.ingressi.filter((i) => i.data === oggiISO && !i.annullato)
+      .sort((a, b) => ((a.creato_il || a.ora) < (b.creato_il || b.ora) ? 1 : -1));
+    const nomi = {};
+    S.clienti.forEach((c) => { nomi[c.id] = c; });
+    if (!lista.length) return html`<h2>Entrati oggi</h2><p class="vuoto vuoto-piccolo">Nessun ingresso ancora oggi.</p>`;
+    return html`
+      <h2>Entrati oggi <span class="conteggio">${lista.length}</span></h2>
+      <ol class="elenco-ingressi">
+        ${lista.map((i) => {
+          const c = nomi[i.cliente_id];
+          return html`<li>
+            <span class="ingresso-ora">${i.ora}</span>
+            ${c ? html`<a href="#cliente-${c.id}">${c.cognome} ${c.nome}</a>` : html`<span>Cliente archiviato</span>`}
+            <span class="ingresso-come">${i.prezzo_cent ? `${i.nome}, ${R.euro(i.prezzo_cent)}` : i.nome}</span>
+          </li>`;
+        })}
+      </ol>`;
   }
 
   function zonaOggi(S) {
@@ -884,29 +1667,32 @@ const Viste = (() => {
     if (S.ricerca.trim()) {
       const trovati = S.clienti.filter((c) => R.corrisponde(c, S.ricerca));
       return trovati.length
-        ? html`<h2>Risultati <span class="conteggio">${trovati.length}</span></h2>${elenco(trovati.slice(0, 50), S.imp)}`
+        ? html`<h2>Risultati <span class="conteggio">${trovati.length}</span></h2>${elenco(trovati.slice(0, 50), S)}`
         : html`<div class="vuoto"><p>Nessun cliente attivo trovato per “${S.ricerca}”.</p>
                <p class="aiuto">Prova con il solo cognome, oppure cerca tra gli archiviati.</p>
                <a class="pulsante" href="#clienti-archiviati">Cerca tra gli archiviati</a></div>`;
     }
+    if (!S.clienti.length) return html`
+      <div class="vuoto"><p>Non ci sono ancora clienti.</p>
+        <div class="azioni-modulo azioni-centro">
+          ${S.puoScrivere ? html`<a class="pulsante pulsante-primario" href="#nuovo-cliente">Aggiungi il primo cliente</a>` : ""}
+          ${S.modalita === "locale" ? html`<button type="button" class="pulsante" data-azione="carica-esempi">Carica dati di esempio</button>` : ""}
+        </div></div>`;
     const daSistemare = S.clienti
       .map((c) => ({ c, col: R.colore(c, S.imp) }))
       .filter((r) => r.col === "rosso" || r.col === "giallo")
       .sort((a, b) => (a.col === "rosso" ? 0 : 1) - (b.col === "rosso" ? 0 : 1))
       .map((r) => r.c);
-    if (!S.clienti.length) return html`
-      <div class="vuoto"><p>Non ci sono ancora clienti.</p>
-        <div class="azioni-modulo azioni-centro">
-          ${S.puoScrivere ? html`<a class="pulsante pulsante-primario" href="#nuovo-cliente">Aggiungi il primo cliente</a>` : ""}
-          ${S.modalita === "locale" ? html`<button type="button" class="pulsante" data-azione="carica-esempi">Carica 5 clienti di esempio</button>` : ""}
-        </div></div>`;
-    if (!daSistemare.length) return html`
-      <h2>Da sistemare</h2><p class="vuoto">Tutti i clienti attivi hanno i documenti in regola.</p>`;
     return html`
-      <h2>Da sistemare <span class="conteggio">${daSistemare.length}</span></h2>
-      <p class="aiuto">Documenti mancanti, scaduti o in scadenza nei prossimi ${S.imp.giorni_preavviso} giorni.
-         Chiedili al cliente quando passa in reception.</p>
-      ${elenco(daSistemare, S.imp)}`;
+      <section class="sezione">${entratiOggi(S)}</section>
+      <section class="sezione">
+        ${daSistemare.length ? html`
+          <h2>Da sistemare <span class="conteggio">${daSistemare.length}</span></h2>
+          <p class="aiuto">Documenti mancanti, scaduti o in scadenza nei prossimi ${S.imp.giorni_preavviso} giorni.
+             Chiedili al cliente quando passa in reception.</p>
+          ${elenco(daSistemare, S)}`
+        : html`<h2>Da sistemare</h2><p class="vuoto vuoto-piccolo">Tutti i clienti attivi hanno i documenti in regola.</p>`}
+      </section>`;
   }
 
   /* -------------------------------------------------------- Clienti */
@@ -923,7 +1709,7 @@ const Viste = (() => {
              placeholder="Nome, cognome, telefono, email, tessera o codice fiscale">
     </div>
     <nav class="filtri" aria-label="Filtra i clienti">
-      ${FILTRI.map(([h, t]) => html`<a href="#${h}" ${h === filtro ? new Sicuro('aria-current="true"') : ""}>${t}</a>`)}
+      ${FILTRI.map(([h, t]) => html`<a href="#${h}" ${h === filtro ? crudo('aria-current="true"') : ""}>${t}</a>`)}
     </nav>
     <div id="zona-elenco">${zonaElenco(S, filtro)}</div>`;
 
@@ -935,12 +1721,12 @@ const Viste = (() => {
     } else {
       if (!S.caricati) return caricamento(S.lento ? "Il database non risponde ancora. Controlla la connessione." : "Carico i clienti…");
       lista = S.clienti;
-      if (filtro === "clienti-avvisi") lista = lista.filter((c) => ["rosso", "giallo"].includes(R.colore(c, S.imp)));
+      if (filtro === "clienti-avvisi") lista = lista.filter((c) => ["rosso", "giallo"].indexOf(R.colore(c, S.imp)) >= 0);
     }
     const trovati = lista.filter((c) => R.corrisponde(c, S.ricerca));
     if (trovati.length) return html`
       <p class="aiuto">${plurale(trovati.length, "cliente", "clienti")}${S.ricerca.trim() ? ` per “${S.ricerca.trim()}”` : ""}</p>
-      ${elenco(trovati, S.imp)}`;
+      ${elenco(trovati, S)}`;
     if (S.ricerca.trim()) return html`
       <div class="vuoto"><p>Nessun cliente trovato per “${S.ricerca.trim()}”.</p>
         <p class="aiuto">Prova con il solo cognome, oppure aggiungilo come nuovo cliente.</p>
@@ -987,6 +1773,8 @@ const Viste = (() => {
           ? html`<button type="button" class="pulsante pulsante-primario" data-azione="liberatoria" data-id="${c.id}">Liberatoria firmata oggi</button>` : ""}
       </section>
 
+      ${c.attivo ? boxAbbonamento(S, c, av) : ""}
+
       <div class="griglia-dati">
         <section class="sezione">
           <h2>Contatti</h2>
@@ -1012,10 +1800,7 @@ const Viste = (() => {
 
       ${c.note ? html`<section class="sezione"><h2>Note</h2><p class="note">${c.note}</p></section>` : ""}
 
-      <section class="sezione in-arrivo">
-        <h2>Abbonamenti e ingressi</h2>
-        <p>Qui compariranno l'abbonamento in corso, gli ingressi registrati e i pagamenti (Passo 2).</p>
-      </section>
+      ${storico(S, c)}
 
       ${scrive ? html`
         <div class="zona-archivio">
@@ -1024,7 +1809,7 @@ const Viste = (() => {
                    <p class="aiuto">Il cliente sparisce dagli elenchi ma i suoi dati restano. Puoi riattivarlo quando vuoi.</p>`
             : html`<div class="azioni-modulo">
                      <button type="button" class="pulsante pulsante-primario" data-azione="riattiva" data-id="${c.id}">Riattiva cliente</button>
-                     ${S.amministratore ? html`<button type="button" class="pulsante pulsante-pericolo" data-azione="chiedi-elimina">Elimina definitivamente</button>` : ""}
+                     ${S.amministratore ? html`<button type="button" class="pulsante pulsante-pericolo" data-mostra="conferma-elimina">Elimina definitivamente</button>` : ""}
                    </div>
                    <div class="conferma" id="conferma-elimina" hidden>
                      <p><strong>Eliminare per sempre ${c.nome} ${c.cognome}?</strong>
@@ -1032,10 +1817,203 @@ const Viste = (() => {
                         Usalo quando il cliente chiede la cancellazione dei suoi dati.</p>
                      <div class="azioni-modulo">
                        <button type="button" class="pulsante pulsante-pericolo" data-azione="elimina" data-id="${c.id}">Sì, elimina</button>
-                       <button type="button" class="pulsante pulsante-secondario" data-azione="annulla-elimina">Annulla</button>
+                       <button type="button" class="pulsante pulsante-secondario" data-nascondi="conferma-elimina">Annulla</button>
                      </div>
                    </div>`}
         </div>` : ""}`;
+  }
+
+  /* ----------------------------------- abbonamento, ingresso, vendita */
+  function boxAbbonamento(S, c, avvisi) {
+    const suoi = S.abbonamenti.filter((a) => a.cliente_id === c.id);
+    const attivi = suoi.filter((a) => R.statoAbbonamento(a) === "attivo").sort((x, y) => (x.data_fine || "9") < (y.data_fine || "9") ? -1 : 1);
+    const futuri = suoi.filter((a) => R.statoAbbonamento(a) === "futuro");
+    const ingressi = S.ingressi.filter((i) => i.cliente_id === c.id && !i.annullato)
+      .sort((a, b) => (a.data + a.ora < b.data + b.ora ? 1 : -1));
+    const ultimo = ingressi[0];
+    const descrivi = (a) => {
+      if (a.tipo === "carnet") {
+        return html`<strong>${a.nome}</strong>: ${plurale(R.rimasti(a), "ingresso rimasto", "ingressi rimasti")} su ${a.ingressi_totali}${a.data_fine ? `, valido fino al ${R.dataIt(a.data_fine)}` : ""}`;
+      }
+      const giorni = R.giorniDaOggi(a.data_fine);
+      return html`<strong>${a.nome}</strong>, valido fino al ${R.dataIt(a.data_fine)} (${giorni === 0 ? "scade oggi" : plurale(giorni, "giorno", "giorni")})`;
+    };
+    return html`
+      <section class="sezione box-abbonamento">
+        <h2>Abbonamento</h2>
+        ${attivi.length ? html`<ul class="coperture">${attivi.map((a) => html`<li>${descrivi(a)}</li>`)}</ul>`
+          : html`<p>Nessun abbonamento attivo: l'ingresso si paga.</p>`}
+        ${futuri.map((a) => html`<p class="aiuto">${a.nome} già pagato: inizia il ${R.dataIt(a.data_inizio)}.</p>`)}
+        <p class="aiuto">${ultimo ? `Ultimo ingresso: ${ultimo.data === R.oggiISO() ? "oggi" : "il " + R.dataIt(ultimo.data)} alle ${ultimo.ora}.` : "Non è mai entrato."}</p>
+        ${S.puoScrivere ? html`
+          <div class="azioni-modulo">
+            <button type="button" class="pulsante pulsante-primario pulsante-grande" data-azione="apri-pannello" data-pannello="ingresso">Registra ingresso</button>
+            <button type="button" class="pulsante" data-azione="apri-pannello" data-pannello="vendita">Vendi abbonamento o carnet</button>
+          </div>
+          ${S.pannello === "ingresso" ? pannelloIngresso(S, c, attivi, avvisi, ultimo) : ""}
+          ${S.pannello === "vendita" ? pannelloVendita(S, c, suoi) : ""}` : ""}
+      </section>`;
+  }
+
+  function pannelloIngresso(S, c, attivi, avvisi, ultimo) {
+    const cop = R.copertura(attivi);
+    const rossi = avvisi.filter((a) => a.livello === "rosso");
+    const paganti = S.listino.filter((v) => v.attivo && (v.tipo === "singolo" || v.tipo === "prova")).sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
+    const noleggi = S.listino.filter((v) => v.attivo && v.tipo === "prodotto").sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
+    const giaOggi = ultimo && ultimo.data === R.oggiISO();
+    return html`
+      <form class="pannello" data-modulo="ingresso" data-id="${c.id}" novalidate>
+        <h3>Registra ingresso</h3>
+        ${giaOggi ? html`<p class="avviso-flash avviso-info">È già entrato oggi alle ${ultimo.ora}.</p>` : ""}
+        ${rossi.length ? html`
+          <div class="avviso-flash avviso-errore">
+            <p><strong>Documenti da sistemare:</strong> ${rossi.map((a) => a.testo).join("; ")}.</p>
+            <label class="spunta"><input type="checkbox" name="conferma_documenti"><span>Ho controllato: registra comunque l'ingresso</span></label>
+          </div>` : ""}
+        ${cop ? html`
+          <input type="hidden" name="modo" value="copertura"><input type="hidden" name="abbonamento_id" value="${cop.id}">
+          <p class="copertura-scelta">${cop.tipo === "carnet"
+            ? html`Usa 1 ingresso del <strong>${cop.nome}</strong>: ne ${R.rimasti(cop) - 1 === 1 ? "resterà 1" : `resteranno ${R.rimasti(cop) - 1}`}.`
+            : html`Ingresso compreso nel <strong>${cop.nome}</strong>, valido fino al ${R.dataIt(cop.data_fine)}.`}</p>`
+        : html`
+          <fieldset class="scelta">
+            <legend>Cosa paga</legend>
+            ${!paganti.length ? html`<p class="aiuto">Nel listino non ci sono ingressi. <a href="#listino">Aggiungili al listino</a>.</p>` : ""}
+            <div class="opzioni">
+              ${paganti.map((v, i) => html`
+                <label class="opzione"><input type="radio" name="scelta" value="${v.id}" data-prezzo="${v.prezzo_cent}" ${i === 0 ? crudo("checked") : ""}>
+                  <span class="opzione-nome">${v.nome}</span><span class="opzione-prezzo">${R.euro(v.prezzo_cent)}</span></label>`)}
+              <label class="opzione"><input type="radio" name="scelta" value="omaggio" data-prezzo="0" ${!paganti.length ? crudo("checked") : ""}>
+                <span class="opzione-nome">Omaggio, senza pagare</span><span class="opzione-prezzo">0,00 €</span></label>
+            </div>
+          </fieldset>`}
+        ${noleggi.length ? html`
+          <fieldset class="scelta">
+            <legend>Noleggi e prodotti</legend>
+            <div class="opzioni">
+              ${noleggi.map((v) => html`
+                <label class="opzione"><input type="checkbox" name="noleggi" value="${v.id}" data-prezzo="${v.prezzo_cent}">
+                  <span class="opzione-nome">${v.nome}</span><span class="opzione-prezzo">${R.euro(v.prezzo_cent)}</span></label>`)}
+            </div>
+          </fieldset>` : ""}
+        <div class="da-pagare" data-zona-pagamento>
+          ${sceltaMetodo()}
+          <p class="totale">Da incassare: <strong data-totale>0,00 €</strong></p>
+        </div>
+        <p class="errore-campo" data-errore hidden></p>
+        <div class="azioni-modulo">
+          <button type="submit" class="pulsante pulsante-primario">Registra ingresso</button>
+          <button type="button" class="pulsante pulsante-secondario" data-azione="chiudi-pannello">Annulla</button>
+        </div>
+      </form>`;
+  }
+
+  function pannelloVendita(S, c, suoi) {
+    const voci = S.listino.filter((v) => v.attivo && (v.tipo === "periodo" || v.tipo === "carnet")).sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
+    // se ha già un abbonamento a tempo, il rinnovo parte dal giorno dopo la scadenza
+    const fine = suoi.filter((a) => a.tipo === "periodo" && ["attivo", "futuro"].indexOf(R.statoAbbonamento(a)) >= 0)
+      .map((a) => a.data_fine).sort().pop();
+    const rinnovo = fine ? R.aggiungiGiorni(fine, 1) : null;
+    const dettaglio = (v) => v.tipo === "carnet"
+      ? `${v.ingressi} ingressi${v.giorni ? `, validi ${v.giorni} giorni` : ""}` : `${v.giorni} giorni`;
+    return html`
+      <form class="pannello" data-modulo="vendita" data-id="${c.id}" novalidate>
+        <h3>Vendi abbonamento o carnet</h3>
+        ${!voci.length ? html`<p>Nel listino non ci sono abbonamenti né carnet. <a href="#listino">Aggiungili al listino</a>.</p>` : html`
+          <fieldset class="scelta">
+            <legend>Cosa compra</legend>
+            <div class="opzioni">
+              ${voci.map((v, i) => html`
+                <label class="opzione"><input type="radio" name="voce" value="${v.id}" data-prezzo="${v.prezzo_cent}" ${i === 0 ? crudo("checked") : ""}>
+                  <span class="opzione-nome">${v.nome} <span class="aiuto">${dettaglio(v)}</span></span><span class="opzione-prezzo">${R.euro(v.prezzo_cent)}</span></label>`)}
+            </div>
+          </fieldset>
+          <div class="campi-due">
+            <div class="campo">
+              <label for="data_inizio">Valido dal</label>
+              <input id="data_inizio" name="data_inizio" type="date" value="${R.oggiISO()}">
+              ${rinnovo ? html`<p class="aiuto">Ha un abbonamento fino al ${R.dataIt(fine)}.
+                <button type="button" class="pulsante-testo" data-imposta="data_inizio" data-valore="${rinnovo}">Fai partire il rinnovo dal ${R.dataIt(rinnovo)}</button></p>` : ""}
+            </div>
+            <div class="campo">
+              <label for="prezzo">Prezzo in euro</label>
+              <input id="prezzo" name="prezzo" type="text" inputmode="decimal" autocomplete="off" placeholder="come da listino">
+              <p class="aiuto">Lascia vuoto per il prezzo di listino. Scrivi un altro importo per uno sconto.</p>
+            </div>
+          </div>
+          ${sceltaMetodo()}
+          <p class="errore-campo" data-errore hidden></p>
+          <div class="azioni-modulo">
+            <button type="submit" class="pulsante pulsante-primario">Incassa e attiva</button>
+            <button type="button" class="pulsante pulsante-secondario" data-azione="chiudi-pannello">Annulla</button>
+          </div>`}
+      </form>`;
+  }
+
+  /* --------------------------------------------------------- Storico */
+  function eventiCliente(S, c) {
+    const ev = [];
+    const metodo = (m) => (m ? `, ${R.METODI[m]}` : "");
+    S.ingressi.filter((i) => i.cliente_id === c.id).forEach((i) => ev.push({
+      tipo: "ingressi", gruppo: "ingressi", id: i.id, quando: `${i.data} ${i.ora}`, preciso: i.creato_il, annullato: i.annullato,
+      testo: i.modo === "periodo" || i.modo === "carnet" ? `Ingresso con ${i.nome}` : i.nome,
+      nota: i.fuori_regola ? "registrato con documenti da sistemare" : "",
+      importo: i.prezzo_cent || 0, cosa: "questo ingresso",
+    }));
+    S.abbonamenti.filter((a) => a.cliente_id === c.id).forEach((a) => ev.push({
+      tipo: "abbonamenti", gruppo: "pagamenti", id: a.id, quando: a.creato_il.slice(0, 16), preciso: a.creato_il, annullato: a.annullato,
+      testo: `Acquistato ${a.nome}`,
+      nota: (a.tipo === "carnet" ? `${a.ingressi_totali} ingressi` : `dal ${R.dataIt(a.data_inizio)}`)
+        + (a.data_fine ? ` fino al ${R.dataIt(a.data_fine)}` : "") + metodo(a.prezzo_cent ? a.metodo : null),
+      importo: a.prezzo_cent, cosa: "questo acquisto",
+    }));
+    S.movimenti.filter((m) => m.cliente_id === c.id && m.categoria !== "ingresso" && m.categoria !== "abbonamento").forEach((m) => ev.push({
+      tipo: "movimenti", gruppo: "pagamenti", id: m.id, quando: `${m.data} ${m.ora}`, preciso: m.creato_il, annullato: m.annullato,
+      testo: m.descrizione, nota: R.METODI[m.metodo], importo: m.importo_cent, cosa: "questo pagamento",
+    }));
+    ev.push({ gruppo: "altro", quando: (c.creato_il || "").slice(0, 16), preciso: c.creato_il, testo: "Registrato come cliente" });
+    if (c.liberatoria_il) ev.push({ gruppo: "altro", quando: c.liberatoria_il, testo: "Liberatoria firmata" });
+    // dal più recente; a parità di minuto decide il secondo esatto in cui è stato registrato
+    const chiave = (e) => e.preciso || e.quando;
+    return ev.sort((a, b) => (chiave(a) < chiave(b) ? 1 : chiave(a) > chiave(b) ? -1 : 0));
+  }
+
+  function storico(S, c) {
+    const tutti = eventiCliente(S, c);
+    const filtro = S.filtroStorico || "tutto";
+    const visibili = tutti.filter((e) => filtro === "tutto" || e.gruppo === filtro);
+    const mostrati = S.storicoCompleto ? visibili : visibili.slice(0, 40);
+    const ingressi = tutti.filter((e) => e.tipo === "ingressi" && !e.annullato).length;
+    const speso = tutti.filter((e) => e.importo && !e.annullato).reduce((s, e) => s + e.importo, 0);
+    // raggruppati per mese, dal più recente
+    const mesi = [];
+    mostrati.forEach((e) => {
+      const m = R.meseAnno(e.quando);
+      if (!mesi.length || mesi[mesi.length - 1].nome !== m) mesi.push({ nome: m, eventi: [] });
+      mesi[mesi.length - 1].eventi.push(e);
+    });
+    const SCELTE = [["tutto", "Tutto"], ["ingressi", "Ingressi"], ["pagamenti", "Acquisti e pagamenti"]];
+    return html`
+      <section class="sezione storico" id="storico">
+        <h2>Storico</h2>
+        <p class="aiuto">${plurale(ingressi, "ingresso", "ingressi")} in totale. Speso in palestra: ${R.euro(speso)}.</p>
+        <div class="filtri" role="group" aria-label="Cosa mostrare nello storico">
+          ${SCELTE.map(([k, t]) => html`<button type="button" class="filtro" data-azione="filtro-storico" data-valore="${k}" ${k === filtro ? crudo('aria-pressed="true"') : crudo('aria-pressed="false"')}>${t}</button>`)}
+        </div>
+        ${!visibili.length ? html`<p class="vuoto vuoto-piccolo">Ancora niente da mostrare.</p>` : ""}
+        ${mesi.map((m) => html`
+          <h3 class="mese">${maiuscola(m.nome)}</h3>
+          <ol class="eventi">
+            ${m.eventi.map((e) => html`
+              <li class="evento${e.annullato ? " evento-annullato" : ""}">
+                <span class="evento-quando">${R.giornoBreve(e.quando)}${e.quando.length > 10 ? ` ${e.quando.slice(11, 16)}` : ""}</span>
+                <span class="evento-testo">${e.testo}${e.nota ? html` <span class="aiuto">${e.nota}</span>` : ""}${e.annullato ? html` <span class="etichetta">annullato</span>` : ""}</span>
+                <span class="evento-importo">${e.importo ? R.euro(e.importo) : ""}</span>
+                <span class="evento-azioni">${e.tipo && !e.annullato && S.puoScrivere ? annullaConConferma(e.tipo, e.id, e.cosa) : ""}</span>
+              </li>`)}
+          </ol>`)}
+        ${visibili.length > mostrati.length ? html`<button type="button" class="pulsante" data-azione="storico-completo">Mostra tutto lo storico (${visibili.length})</button>` : ""}
+      </section>`;
   }
 
   /* --------------------------------------------------------- Modulo */
@@ -1049,7 +2027,7 @@ const Viste = (() => {
       ${Object.keys(errori).length
         ? html`<p class="avviso-flash avviso-errore" role="alert">${errori._ || "Controlla i campi segnati in rosso."}</p>` : ""}
 
-      <form class="modulo" data-modulo="cliente" ${cliente ? new Sicuro(`data-id="${esc(cliente.id)}"`) : ""} novalidate>
+      <form class="modulo" data-modulo="cliente" ${cliente ? crudo(`data-id="${esc(cliente.id)}"`) : ""} novalidate>
         <fieldset>
           <legend>Dati personali</legend>
           <div class="campi-due">
@@ -1081,7 +2059,7 @@ const Viste = (() => {
         <fieldset>
           <legend>Arrampicata</legend>
           <label class="spunta">
-            <input type="checkbox" name="autonomo" ${dati.autonomo ? new Sicuro("checked") : ""}>
+            <input type="checkbox" name="autonomo" ${dati.autonomo ? crudo("checked") : ""}>
             <span>Ha superato la verifica di sicura e può arrampicare in autonomia</span>
           </label>
           <div class="campo">
@@ -1097,19 +2075,421 @@ const Viste = (() => {
       </form>`;
   }
 
-  /* --------------------------------------------------- Impostazioni */
-  function impostazioni(S, esempi) {
+  return { html, crudo, esc, plurale, maiuscola, campo, sceltaMetodo, annullaConConferma,
+           messaggio, caricamento, nonDisponibile, nonTrovato, oggi, zonaOggi, riepilogo,
+           clienti, zonaElenco, scheda, modulo };
+})();
+
+</script>
+  <script>
+/* =====================================================================
+   VISTE DI GESTIONE: Cassa, Dashboard, Listino, Impostazioni.
+   Usa gli strumenti HTML di viste.js.
+   ===================================================================== */
+const VisteGestione = (() => {
+  const { html, crudo, plurale, maiuscola, campo, sceltaMetodo, annullaConConferma, caricamento } = Viste;
+  const R = Regole;
+  const somma = (lista, f) => lista.reduce((s, x) => s + f(x), 0);
+  const nomeDi = (S) => { const m = {}; S.clienti.forEach((c) => { m[c.id] = c; }); return m; };
+
+  /* ================================================================ CASSA */
+  function cassa(S) {
+    const giorno = S.giornoCassa || R.oggiISO();
+    const { saldo, ultima } = R.saldoContanti(S.movimenti, S.chiusure);
+    const delGiorno = S.movimenti.filter((m) => m.data === giorno).sort((a, b) => (a.creato_il < b.creato_il ? 1 : -1));
+    const validi = delGiorno.filter((m) => !m.annullato);
+    const perMetodo = (verso, metodo) => somma(validi.filter((m) => m.verso === verso && m.metodo === metodo && (verso === "uscita" || m.categoria !== "fondo")), (m) => m.importo_cent);
+    const incassiTot = somma(validi.filter(R.eIncasso), (m) => m.importo_cent);
+    const usciteTot = somma(validi.filter((m) => m.verso === "uscita"), (m) => m.importo_cent);
+    const prodotti = S.listino.filter((v) => v.attivo && v.tipo === "prodotto").sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
+    const clienti = nomeDi(S);
+    const scrive = S.puoScrivere;
+    const ultimeChiusure = S.chiusure.slice().sort((a, b) => (a.creato_il < b.creato_il ? 1 : -1)).slice(0, 7);
+
+    return html`
+      <h1>Cassa</h1>
+      <section class="saldo-cassa">
+        <p class="saldo-etichetta">Contanti in cassa adesso</p>
+        <p class="saldo-valore">${R.euro(saldo)}</p>
+        <p class="aiuto">${ultima
+          ? `Fondo di ${R.euro(ultima.fondo_cent)} lasciato alla chiusura del ${R.dataIt(ultima.data)} alle ${ultima.ora}, più le entrate e meno le uscite in contanti da allora.`
+          : "Nessuna chiusura registrata: è la somma di tutte le entrate meno le uscite in contanti."}</p>
+        ${scrive ? html`<button type="button" class="pulsante" data-mostra="pannello-chiusura">Chiudi la cassa</button>
+          <form class="pannello" id="pannello-chiusura" data-modulo="chiusura" hidden novalidate>
+            <h3>Chiusura di cassa</h3>
+            <p>Conta i contanti nel cassetto e scrivi quanto trovi. Il gestionale si aspetta <strong>${R.euro(saldo)}</strong>.</p>
+            <div class="campi-due">
+              ${campo("contati", "Contanti contati, in euro", {}, {}, { extra: 'inputmode="decimal" autocomplete="off" required' })}
+              ${campo("versato", "Di questi, quanti ne porti via (banca o cassaforte)", {}, {}, { extra: 'inputmode="decimal" autocomplete="off" placeholder="0"', aiuto: "Il resto rimane in cassa come fondo per domani." })}
+            </div>
+            <p class="totale" data-differenza data-attesi="${saldo}"></p>
+            ${campo("note", "Note", {}, {}, { aiuto: "Per esempio il motivo di una differenza." })}
+            <p class="errore-campo" data-errore hidden></p>
+            <div class="azioni-modulo">
+              <button type="submit" class="pulsante pulsante-primario">Registra la chiusura</button>
+              <button type="button" class="pulsante pulsante-secondario" data-nascondi="pannello-chiusura">Annulla</button>
+            </div>
+          </form>` : ""}
+      </section>
+
+      ${scrive ? html`
+      <div class="griglia-dati">
+        <form class="sezione modulo-compatto" data-modulo="banco" novalidate>
+          <h2>Vendita al banco</h2>
+          ${prodotti.length ? html`
+            <div class="opzioni">
+              ${prodotti.map((v) => html`
+                <div class="opzione opzione-quantita">
+                  <span class="opzione-nome">${v.nome}</span><span class="opzione-prezzo">${R.euro(v.prezzo_cent)}</span>
+                  <span class="contatore">
+                    <button type="button" class="pulsante pulsante-piccolo" data-passo="-1" data-per="q-${v.id}" aria-label="Uno in meno: ${v.nome}">−</button>
+                    <input id="q-${v.id}" name="q-${v.id}" type="number" min="0" max="99" value="0" inputmode="numeric" data-prezzo="${v.prezzo_cent}" aria-label="Quantità ${v.nome}">
+                    <button type="button" class="pulsante pulsante-piccolo" data-passo="1" data-per="q-${v.id}" aria-label="Uno in più: ${v.nome}">+</button>
+                  </span>
+                </div>`)}
+            </div>
+            ${sceltaMetodo()}
+            <p class="totale">Totale: <strong data-totale>0,00 €</strong></p>
+            <p class="errore-campo" data-errore hidden></p>
+            <button type="submit" class="pulsante pulsante-primario">Registra vendita</button>`
+          : html`<p class="aiuto">Nel listino non ci sono noleggi o prodotti. <a href="#listino">Aggiungili</a>.</p>`}
+        </form>
+
+        <form class="sezione modulo-compatto" data-modulo="movimento" novalidate>
+          <h2>Altra entrata o uscita</h2>
+          <div class="pillole" role="group" aria-label="Tipo di movimento">
+            <label class="pillola"><input type="radio" name="verso" value="uscita" checked><span>Uscita</span></label>
+            <label class="pillola"><input type="radio" name="verso" value="entrata"><span>Entrata</span></label>
+          </div>
+          <div class="campo">
+            <label for="categoria">Che cos'è</label>
+            <select id="categoria" name="categoria">
+              <option value="spesa" data-verso="uscita">Spesa (materiale, pulizie…)</option>
+              <option value="versamento" data-verso="uscita">Versamento in banca</option>
+              <option value="uscita" data-verso="uscita">Altra uscita</option>
+              <option value="altro" data-verso="entrata" hidden>Altro incasso</option>
+              <option value="fondo" data-verso="entrata" hidden>Aggiunta al fondo cassa</option>
+            </select>
+          </div>
+          ${campo("descrizione", "Descrizione", {}, {}, { extra: 'autocomplete="off" placeholder="Per esempio: spazzole per le prese"' })}
+          ${campo("importo", "Importo in euro", {}, {}, { extra: 'inputmode="decimal" autocomplete="off"' })}
+          ${sceltaMetodo()}
+          <p class="errore-campo" data-errore hidden></p>
+          <button type="submit" class="pulsante pulsante-primario">Registra</button>
+        </form>
+      </div>` : ""}
+
+      <section class="sezione">
+        <div class="intestazione">
+          <h2>Movimenti del giorno</h2>
+          <label class="campo-inline">Giorno <input type="date" id="giorno-cassa" value="${giorno}"></label>
+        </div>
+        <div class="tabella-scorre">
+          <table class="tabella">
+            <thead><tr><th>Incassi</th><th class="num">Contanti</th><th class="num">Carta</th><th class="num">Bonifico</th><th class="num">Totale</th></tr></thead>
+            <tbody>
+              <tr><td>Entrate</td>${["contanti", "carta", "bonifico"].map((m) => html`<td class="num">${R.euro(perMetodo("entrata", m))}</td>`)}<td class="num"><strong>${R.euro(incassiTot)}</strong></td></tr>
+              <tr><td>Uscite</td>${["contanti", "carta", "bonifico"].map((m) => html`<td class="num">${R.euro(perMetodo("uscita", m))}</td>`)}<td class="num">${R.euro(usciteTot)}</td></tr>
+            </tbody>
+          </table>
+        </div>
+        ${!delGiorno.length ? html`<p class="vuoto vuoto-piccolo">Nessun movimento il ${R.dataIt(giorno)}.</p>` : html`
+          <ol class="eventi">
+            ${delGiorno.map((m) => {
+              const c = m.cliente_id && clienti[m.cliente_id];
+              return html`
+                <li class="evento${m.annullato ? " evento-annullato" : ""}">
+                  <span class="evento-quando">${m.ora}</span>
+                  <span class="evento-testo">${m.descrizione}
+                    ${c ? html` <a href="#cliente-${c.id}">${c.cognome} ${c.nome}</a>` : ""}
+                    <span class="aiuto">${m.categoria === "fondo" ? "fondo cassa, " : ""}${R.METODI[m.metodo]}</span>
+                    ${m.annullato ? html` <span class="etichetta">annullato</span>` : ""}</span>
+                  <span class="evento-importo">${m.verso === "uscita" ? "−" : ""}${R.euro(m.importo_cent)}</span>
+                  <span class="evento-azioni">${!m.annullato && scrive ? annullaConConferma("movimenti", m.id, "questo movimento") : ""}</span>
+                </li>`;
+            })}
+          </ol>`}
+      </section>
+
+      ${ultimeChiusure.length ? html`
+        <section class="sezione">
+          <h2>Ultime chiusure</h2>
+          <div class="tabella-scorre">
+            <table class="tabella">
+              <thead><tr><th>Quando</th><th class="num">Attesi</th><th class="num">Contati</th><th class="num">Differenza</th><th class="num">Portati via</th><th class="num">Fondo</th></tr></thead>
+              <tbody>${ultimeChiusure.map((k) => html`
+                <tr><td>${R.giornoBreve(k.data)} ${k.ora}</td><td class="num">${R.euro(k.contanti_attesi_cent)}</td><td class="num">${R.euro(k.contanti_contati_cent)}</td>
+                  <td class="num">${k.differenza_cent === 0 ? "nessuna" : (k.differenza_cent > 0 ? "+" : "−") + R.euro(Math.abs(k.differenza_cent))}</td>
+                  <td class="num">${R.euro(k.versato_cent)}</td><td class="num">${R.euro(k.fondo_cent)}</td></tr>`)}
+              </tbody>
+            </table>
+          </div>
+        </section>` : ""}`;
+  }
+
+  /* ============================================================ DASHBOARD */
+  const PERIODI = [["oggi", "Oggi"], ["7", "Ultimi 7 giorni"], ["30", "Ultimi 30 giorni"], ["mese", "Questo mese"]];
+
+  function intervallo(chiave) {
+    const oggi = R.oggiISO();
+    const t = R.dataTra;
+    if (chiave === "oggi") return { dal: oggi, al: oggi, prima: [t(-1), t(-1)], confronto: "ieri", rispetto: "a ieri" };
+    if (chiave === "7") return { dal: t(-6), al: oggi, prima: [t(-13), t(-7)], confronto: "i 7 giorni prima", rispetto: "ai 7 giorni prima" };
+    if (chiave === "30") return { dal: t(-29), al: oggi, prima: [t(-59), t(-30)], confronto: "i 30 giorni prima", rispetto: "ai 30 giorni prima" };
+    const d = new Date();
+    const giorno = d.getDate();
+    const inizioPrima = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+    const finePrimaMese = new Date(d.getFullYear(), d.getMonth(), 0).getDate();
+    const iso = (x) => `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
+    const finePrima = new Date(inizioPrima.getFullYear(), inizioPrima.getMonth(), Math.min(giorno, finePrimaMese));
+    return { dal: oggi.slice(0, 8) + "01", al: oggi, prima: [iso(inizioPrima), iso(finePrima)], confronto: "lo stesso periodo del mese scorso", rispetto: "allo stesso periodo del mese scorso" };
+  }
+
+  const dentro = (data, dal, al) => data >= dal && data <= al;
+
+  function variazione(ora, prima, p, zero) {
+    if (!prima && !ora) return `come ${p.confronto}`;
+    if (!prima) return `${p.confronto}: ${zero}`;
+    const perc = Math.round(((ora - prima) / prima) * 100);
+    return perc === 0 ? `uguale rispetto ${p.rispetto}` : `${perc > 0 ? "+" : "−"}${Math.abs(perc)}% rispetto ${p.rispetto}`;
+  }
+
+  // Massimo "tondo" per l'asse: 1, 2, 2,5, 5 × 10^n
+  function scalaTonda(max) {
+    if (max <= 0) return 1;
+    const pot = Math.pow(10, Math.floor(Math.log(max) / Math.LN10));
+    const passi = [1, 2, 2.5, 5, 10];
+    for (let i = 0; i < passi.length; i++) if (passi[i] * pot >= max) return passi[i] * pot;
+    return 10 * pot;
+  }
+
+  // Grafico a colonne in HTML: una serie, valore al tocco/passaggio, tabella sotto
+  function colonne(punti, { titolo, unita, ogni }) {
+    const max = scalaTonda(Math.max.apply(null, punti.map((p) => p.valore).concat([1])));
+    const fmt = (v) => (unita === "€" ? R.euro(v) : plurale(v, unita[0], unita[1]));
+    const tick = (v) => (unita === "€" ? Math.round(v / 100) + " €" : String(Math.round(v * 10) / 10).replace(".", ","));
+    const n = punti.length;
+    return html`
+      <figure class="grafico">
+        <figcaption>${titolo}</figcaption>
+        <div class="grafico-corpo">
+          <div class="griglia" aria-hidden="true">
+            ${[1, 0.5, 0].map((f) => html`<span class="linea-griglia" style="bottom:${f * 100}%"><span>${tick(max * f)}</span></span>`)}
+          </div>
+          <div class="colonne" role="list" aria-label="${titolo}">
+            ${punti.map((p, i) => html`
+              <div class="colonna${i < n * 0.15 ? " tip-sx" : i > n * 0.85 ? " tip-dx" : ""}" role="listitem" tabindex="0"
+                   style="--h:${(p.valore / max) * 100}%" data-valore="${fmt(p.valore)}" data-etichetta="${p.lungo}"
+                   aria-label="${p.lungo}: ${fmt(p.valore)}"><span class="colonna-barra"></span></div>`)}
+          </div>
+        </div>
+        <div class="asse-x" aria-hidden="true">
+          ${punti.map((p, i) => html`<span>${i % ogni === 0 || i === n - 1 && n % ogni > ogni / 2 ? p.breve : ""}</span>`)}
+        </div>
+        <details class="dati-grafico">
+          <summary>Vedi i numeri</summary>
+          <table class="tabella"><tbody>${punti.map((p) => html`<tr><td>${p.lungo}</td><td class="num">${fmt(p.valore)}</td></tr>`)}</tbody></table>
+        </details>
+      </figure>`;
+  }
+
+  // Barre orizzontali con il valore scritto in punta
+  function barre(righe, titolo) {
+    const max = Math.max.apply(null, righe.map((r) => r.valore).concat([1]));
+    return html`
+      <figure class="grafico">
+        <figcaption>${titolo}</figcaption>
+        <div class="barre-orizzontali">
+          ${righe.map((r) => html`
+            <div class="riga-barra">
+              <span class="riga-barra-nome">${r.nome}</span>
+              <span class="riga-barra-pista"><span class="barra-o" style="width:${Math.max(1, (r.valore / max) * 100)}%"></span></span>
+              <span class="riga-barra-valore">${R.euro(r.valore)}</span>
+            </div>`)}
+        </div>
+      </figure>`;
+  }
+
+  function dashboard(S) {
+    if (!S.caricati) return caricamento("Carico i dati…");
+    const chiave = S.periodo || "7";
+    const p = intervallo(chiave);
+    const incassiDi = (dal, al) => S.movimenti.filter((m) => R.eIncasso(m) && dentro(m.data, dal, al));
+    const ingressiDi = (dal, al) => S.ingressi.filter((i) => !i.annullato && dentro(i.data, dal, al));
+    const inc = incassiDi(p.dal, p.al);
+    const incTot = somma(inc, (m) => m.importo_cent);
+    const incPrima = somma(incassiDi(p.prima[0], p.prima[1]), (m) => m.importo_cent);
+    const ing = ingressiDi(p.dal, p.al);
+    const ingPrima = ingressiDi(p.prima[0], p.prima[1]).length;
+    const nuovi = S.clienti.filter((c) => dentro((c.creato_il || "").slice(0, 10), p.dal, p.al)).length;
+    const attivi = S.abbonamenti.filter((a) => R.statoAbbonamento(a) === "attivo");
+    const { saldo } = R.saldoContanti(S.movimenti, S.chiusure);
+    const clienti = nomeDi(S);
+
+    // ingressi al giorno
+    const giorni = [];
+    for (let d = p.dal; d <= p.al; d = R.aggiungiGiorni(d, 1)) giorni.push(d);
+    const perGiorno = giorni.map((d) => ({ breve: `${R.aData(d).getDate()}/${R.aData(d).getMonth() + 1}`,
+      lungo: R.giornoBreve(d), valore: ing.filter((i) => i.data === d).length }));
+    // ingressi per ora
+    const ore = [];
+    for (let h = 9; h <= 23; h++) ore.push(h);
+    const perOra = ore.map((h) => ({ breve: String(h), lungo: `dalle ${h} alle ${h + 1}`,
+      valore: ing.filter((i) => parseInt(i.ora, 10) === h).length }));
+    // incassi per tipo
+    const perTipo = ["abbonamento", "ingresso", "prodotto", "altro"].map((k) => ({
+      nome: R.CATEGORIE[k], valore: somma(inc.filter((m) => m.categoria === k), (m) => m.importo_cent) }))
+      .filter((r) => r.valore > 0);
+
+    const inScadenza = attivi.filter((a) => a.tipo === "periodo" && a.data_fine && R.giorniDaOggi(a.data_fine) <= 7)
+      .sort((a, b) => (a.data_fine < b.data_fine ? -1 : 1));
+    const carnetFiniti = attivi.filter((a) => a.tipo === "carnet" && R.rimasti(a) <= 2);
+    const daSistemare = S.clienti.filter((c) => R.colore(c, S.imp) === "rosso").length;
+    const persona = (id) => { const c = clienti[id]; return c ? html`<a href="#cliente-${c.id}">${c.cognome} ${c.nome}</a>` : "Cliente archiviato"; };
+
+    return html`
+      <h1>Dashboard</h1>
+      <div class="filtri" role="group" aria-label="Periodo">
+        ${PERIODI.map(([k, t]) => html`<button type="button" class="filtro" data-azione="periodo" data-valore="${k}" aria-pressed="${k === chiave ? "true" : "false"}">${t}</button>`)}
+      </div>
+
+      <section class="numeri">
+        <div class="numero numero-principale">
+          <p class="numero-etichetta">Incassi</p>
+          <p class="numero-valore">${R.euro(incTot)}</p>
+          <p class="numero-confronto">${variazione(incTot, incPrima, p, "nessun incasso")}</p>
+        </div>
+        <div class="numero">
+          <p class="numero-etichetta">Ingressi</p>
+          <p class="numero-valore">${ing.length}</p>
+          <p class="numero-confronto">${variazione(ing.length, ingPrima, p, "nessun ingresso")}</p>
+        </div>
+        <div class="numero">
+          <p class="numero-etichetta">Abbonamenti e carnet attivi</p>
+          <p class="numero-valore">${attivi.length}</p>
+          <p class="numero-confronto">adesso</p>
+        </div>
+        <div class="numero">
+          <p class="numero-etichetta">Contanti in cassa</p>
+          <p class="numero-valore">${R.euro(saldo)}</p>
+          <p class="numero-confronto"><a href="#cassa">apri la cassa</a></p>
+        </div>
+        <div class="numero">
+          <p class="numero-etichetta">Nuovi clienti</p>
+          <p class="numero-valore">${nuovi}</p>
+          <p class="numero-confronto">nel periodo</p>
+        </div>
+      </section>
+
+      <section class="grafici">
+        ${chiave !== "oggi" ? colonne(perGiorno, { titolo: "Ingressi al giorno", unita: ["ingresso", "ingressi"], ogni: giorni.length > 10 ? 5 : 1 }) : ""}
+        ${colonne(perOra, { titolo: "A che ora entrano", unita: ["ingresso", "ingressi"], ogni: 2 })}
+        ${perTipo.length ? barre(perTipo, "Incassi per tipo") : html`<figure class="grafico"><figcaption>Incassi per tipo</figcaption><p class="vuoto vuoto-piccolo">Nessun incasso nel periodo.</p></figure>`}
+      </section>
+
+      <div class="griglia-dati">
+        <section class="sezione">
+          <h2>Da rinnovare entro 7 giorni</h2>
+          ${inScadenza.length || carnetFiniti.length ? html`<ul class="lista-semplice">
+            ${inScadenza.map((a) => html`<li>${persona(a.cliente_id)} <span class="aiuto">${a.nome}, scade il ${R.dataIt(a.data_fine)}</span></li>`)}
+            ${carnetFiniti.map((a) => html`<li>${persona(a.cliente_id)} <span class="aiuto">${a.nome}, ${R.rimasti(a) === 1 ? "resta 1 ingresso" : `restano ${R.rimasti(a)} ingressi`}</span></li>`)}
+          </ul>` : html`<p class="vuoto vuoto-piccolo">Nessun abbonamento o carnet in scadenza.</p>`}
+        </section>
+        <section class="sezione">
+          <h2>Documenti</h2>
+          <p>${daSistemare ? html`${plurale(daSistemare, "cliente ha", "clienti hanno")} documenti da sistemare prima di arrampicare. <a href="#clienti-avvisi">Vedi chi sono</a>.`
+            : "Tutti i clienti attivi hanno certificato e liberatoria in regola."}</p>
+        </section>
+      </div>`;
+  }
+
+  /* ============================================================== LISTINO */
+  const GRUPPI = [["Ingressi", ["singolo", "prova"]], ["Abbonamenti e carnet", ["periodo", "carnet"]], ["Noleggi e prodotti", ["prodotto"]]];
+  const dettaglioVoce = (v) => v.tipo === "carnet" ? `${v.ingressi} ingressi${v.giorni ? `, validi ${v.giorni} giorni` : ", senza scadenza"}`
+    : v.tipo === "periodo" ? `${v.giorni} giorni` : R.TIPI_LISTINO[v.tipo].nome;
+
+  function listino(S) {
+    const ordinate = S.listino.slice().sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
+    return html`
+      <a class="indietro" href="#impostazioni">Torna alle impostazioni</a>
+      <div class="intestazione">
+        <h1>Listino prezzi</h1>
+        ${S.puoScrivere ? html`<a class="pulsante pulsante-primario" href="#voce-nuova">Nuova voce</a>` : ""}
+      </div>
+      <p class="aiuto">Quello che la reception può vendere. Una voce tolta dalla vendita resta nello storico di chi l'ha comprata.</p>
+      ${!ordinate.length ? html`
+        <div class="vuoto"><p>Il listino è vuoto.</p>
+          ${S.puoScrivere ? html`<div class="azioni-modulo azioni-centro">
+            <a class="pulsante pulsante-primario" href="#voce-nuova">Aggiungi la prima voce</a>
+            <button type="button" class="pulsante" data-azione="carica-listino">Carica un listino di esempio</button></div>` : ""}</div>`
+      : GRUPPI.map(([titolo, tipi]) => {
+          const voci = ordinate.filter((v) => tipi.indexOf(v.tipo) >= 0);
+          return voci.length ? html`
+            <section class="sezione">
+              <h2>${titolo}</h2>
+              <div class="elenco-clienti">
+                ${voci.map((v) => html`
+                  <a class="riga-listino${v.attivo ? "" : " riga-spenta"}" href="#voce-${v.id}">
+                    <span class="riga-nome">${v.nome}${v.esempio ? html` <span class="etichetta">esempio</span>` : ""}${!v.attivo ? html` <span class="etichetta">non in vendita</span>` : ""}</span>
+                    <span class="riga-dati">${dettaglioVoce(v)}</span>
+                    <span class="riga-prezzo">${R.euro(v.prezzo_cent)}</span>
+                  </a>`)}
+              </div>
+            </section>` : "";
+        })}`;
+  }
+
+  function voce(S, v, dati, errori) {
+    const tipo = dati.tipo || "singolo";
+    const per = (tipi) => crudo(`data-per="${tipi}" ${tipi.split(" ").indexOf(tipo) >= 0 ? "" : "hidden"}`);
+    return html`
+      <a class="indietro" href="#listino">Torna al listino</a>
+      <h1>${v ? `Modifica ${v.nome}` : "Nuova voce del listino"}</h1>
+      ${Object.keys(errori).length ? html`<p class="avviso-flash avviso-errore" role="alert">${errori._ || "Controlla i campi segnati in rosso."}</p>` : ""}
+      <form class="modulo" data-modulo="voce" ${v ? crudo(`data-id="${Viste.esc(v.id)}"`) : ""} novalidate>
+        <fieldset class="scelta">
+          <legend>Che cosa vendi</legend>
+          <div class="opzioni">
+            ${Object.keys(R.TIPI_LISTINO).map((k) => html`
+              <label class="opzione"><input type="radio" name="tipo" value="${k}" ${k === tipo ? crudo("checked") : ""}>
+                <span class="opzione-nome">${R.TIPI_LISTINO[k].nome} <span class="aiuto">${R.TIPI_LISTINO[k].aiuto}</span></span></label>`)}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Dettagli</legend>
+          <div class="campi-due">
+            ${campo("nome", "Nome", dati, errori, { extra: 'autocomplete="off" placeholder="Per esempio: Mensile studenti"' })}
+            ${campo("prezzo", "Prezzo in euro", dati, errori, { extra: 'inputmode="decimal" autocomplete="off"' })}
+            <div ${per("carnet")}>${campo("ingressi", "Numero di ingressi", dati, errori, { tipo: "number", extra: 'min="1" max="200" inputmode="numeric"' })}</div>
+            <div ${per("carnet periodo")}>${campo("giorni", "Durata in giorni", dati, errori, { tipo: "number", extra: 'min="1" max="1000" inputmode="numeric"', aiuto: "Mensile 30, trimestrale 90, annuale 365. Per un carnet senza scadenza lascia vuoto." })}</div>
+          </div>
+          <label class="spunta">
+            <input type="checkbox" name="attivo" ${dati.attivo !== false ? crudo("checked") : ""}>
+            <span>In vendita: compare in reception e in cassa</span>
+          </label>
+        </fieldset>
+        <div class="azioni-modulo">
+          <button type="submit" class="pulsante pulsante-primario">${v ? "Salva modifiche" : "Aggiungi al listino"}</button>
+          <a class="pulsante pulsante-secondario" href="#listino">Annulla</a>
+        </div>
+      </form>`;
+  }
+
+  /* ========================================================= IMPOSTAZIONI */
+  function impostazioni(S) {
     const imp = S.imp;
     const modifica = S.amministratore;
+    const locale = S.modalita === "locale";
+    const esempi = S.clienti.filter((c) => c.esempio).length + S.ingressi.filter((i) => i.esempio).length;
     return html`
       <h1>Impostazioni</h1>
       <form class="modulo" data-modulo="impostazioni" novalidate>
-        <fieldset ${modifica ? "" : new Sicuro("disabled")}>
+        <fieldset ${modifica ? "" : crudo("disabled")}>
           <legend>La palestra</legend>
           ${campo("nome_palestra", "Nome della palestra", imp, {}, { extra: "required" })}
           ${campo("giorni_preavviso", "Avvisa delle scadenze con quanti giorni di anticipo", imp, {}, { tipo: "number", extra: 'min="1" max="120" inputmode="numeric"' })}
           <label class="spunta">
-            <input type="checkbox" name="usa_tesseramento" ${imp.usa_tesseramento ? new Sicuro("checked") : ""}>
+            <input type="checkbox" name="usa_tesseramento" ${imp.usa_tesseramento ? crudo("checked") : ""}>
             <span>La palestra rilascia una tessera associativa con scadenza (es. ASD)</span>
           </label>
           ${modifica ? html`<button type="submit" class="pulsante pulsante-primario">Salva impostazioni</button>`
@@ -1117,76 +2497,113 @@ const Viste = (() => {
         </fieldset>
       </form>
 
-      ${S.modalita === "locale" ? html`
+      <section class="sezione">
+        <h2>Listino prezzi</h2>
+        <p>${S.listino.length ? `${plurale(S.listino.filter((v) => v.attivo).length, "voce in vendita", "voci in vendita")}: ingressi, abbonamenti, carnet e noleggi.` : "Il listino è vuoto: aggiungi ingressi, abbonamenti e noleggi prima di vendere."}</p>
+        <a class="pulsante" href="#listino">Apri il listino</a>
+      </section>
+
+      ${locale ? html`
         <section class="sezione">
           <h2>Versione di prova</h2>
           <p>I dati sono salvati solo nel browser di questo dispositivo: un altro computer o un altro
-             browser vede un gestionale vuoto. Usala per provare, con clienti di esempio o inventati.</p>
-          <p>Quando il gestionale andrà online (Passo 6), i dati staranno in un database su internet
-             e tutti i computer della palestra vedranno gli stessi clienti.</p>
+             browser vede un gestionale vuoto. Quando il gestionale andrà online (Passo 6), i dati staranno
+             in un database su internet e tutti i computer della palestra vedranno gli stessi clienti.</p>
           ${!S.memoriaOk ? html`<p class="avviso-flash avviso-errore">Questo browser non lascia salvare i dati
              (succede in navigazione privata): chiudendo la pagina si perdono.</p>` : ""}
+          <p class="aiuto">Spazio usato: ${Archivio.copiaSicurezza.dimensioneKB()} KB su circa 5000 KB disponibili.</p>
+        </section>
+
+        <section class="sezione">
+          <h2>Copia di sicurezza</h2>
+          <p>Scarica tutti i dati in un file. Ti serve per non perderli e per spostarli su un altro dispositivo.</p>
+          <div class="azioni-modulo">
+            <button type="button" class="pulsante pulsante-primario" data-azione="scarica-copia">Scarica la copia</button>
+            <label class="pulsante" for="file-ripristino">Ripristina da una copia</label>
+            <input type="file" id="file-ripristino" accept=".json,application/json" class="nascosto">
+          </div>
+          <div class="conferma" id="conferma-ripristino" hidden>
+            <p><strong>Sostituire tutti i dati con quelli della copia?</strong> I dati che ci sono adesso
+               su questo dispositivo vengono cancellati.</p>
+            <div class="azioni-modulo">
+              <button type="button" class="pulsante pulsante-pericolo" data-azione="ripristina">Sì, ripristina</button>
+              <button type="button" class="pulsante pulsante-secondario" data-nascondi="conferma-ripristino">Annulla</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="sezione">
+          <h2>Dati di esempio</h2>
+          <p>Un mese di attività inventata (clienti, ingressi, abbonamenti, incassi), per provare la dashboard e la cassa.
+             Tutto è segnato come esempio e si toglie con un tocco. Il listino non viene toccato.</p>
+          <div class="azioni-modulo">
+            <button type="button" class="pulsante" data-azione="carica-esempi">${esempi ? "Ricarica i dati di esempio" : "Carica dati di esempio"}</button>
+            ${esempi ? html`<button type="button" class="pulsante pulsante-pericolo" data-azione="elimina-esempi">Elimina i dati di esempio</button>` : ""}
+          </div>
         </section>` : html`
         <section class="sezione">
           <h2>Chi può usare il gestionale</h2>
           <p>Il gestionale vede solo chi ha accesso a questa pagina su claude.ai.
              Per aggiungere chi lavora in reception, condividi la pagina da claude.ai
-             e dagli il permesso di modifica: potrà cercare, aggiungere e modificare i clienti.</p>
+             e dagli il permesso di modifica.</p>
           <p class="aiuto">Hai fatto l'accesso come ${S.nomeUtente || "utente di claude.ai"}.</p>
-        </section>`}
-
-      ${modifica && esempi.length ? html`
-        <section class="sezione">
-          <h2>Clienti di esempio</h2>
-          <p>Ci sono ${plurale(esempi.length, "cliente di esempio", "clienti di esempio")}, inseriti per provare il gestionale.
-             Quando inizi a usarlo davvero, eliminali.</p>
-          <button type="button" class="pulsante pulsante-pericolo" data-azione="elimina-esempi">Elimina i clienti di esempio</button>
-        </section>` : ""}`;
+          ${modifica && esempi ? html`<button type="button" class="pulsante pulsante-pericolo" data-azione="elimina-esempi">Elimina i dati di esempio</button>` : ""}
+        </section>`}`;
   }
 
-  return { html, messaggio, caricamento, nonDisponibile, nonTrovato, oggi, zonaOggi, riepilogo,
-           clienti, zonaElenco, scheda, modulo, impostazioni };
+  return { cassa, dashboard, listino, voce, impostazioni };
 })();
 
 </script>
   <script>
 /* =====================================================================
    APP: collega tutto.
-   - legge l'indirizzo (#oggi, #clienti, #cliente-…) e mostra la vista
-   - tiene i clienti aggiornati in tempo reale
+   - legge l'indirizzo (#oggi, #clienti, #cliente-…, #cassa…) e mostra la vista
+   - tiene i dati aggiornati in tempo reale
    - gestisce pulsanti e moduli
    ===================================================================== */
 {
   const S = {
     clienti: [],           // clienti attivi, in ordine di cognome
+    listino: [], abbonamenti: [], ingressi: [], movimenti: [], chiusure: [],
     caricati: false,
     lento: false,          // il database non ha ancora risposto dopo 10 secondi
-    imp: { ...Archivio.IMPOSTAZIONI_PREDEFINITE },
+    imp: Object.assign({}, Archivio.IMPOSTAZIONI_PREDEFINITE),
     archiviati: null,      // caricati solo quando servono
     ricerca: "",
-    messaggio: null,       // { tipo: "ok" | "errore", testo } mostrato una volta
+    messaggio: null,       // { tipo: "ok" | "errore", testo } da mostrare in cima alla prossima schermata
+    flash: null,           // il messaggio in cima mostrato adesso
     puoScrivere: false,
     amministratore: false,
     nomeUtente: "",
-    rotta: null,
     modalita: "claude",
     memoriaOk: true,
+    rotta: null,
     leggiDiNuovo: null,    // id di un cliente appena modificato: rileggilo dal database
+    pannello: null,        // "ingresso" | "vendita" aperto nella scheda
+    filtroStorico: "tutto",
+    storicoCompleto: false,
+    giornoCassa: null,
+    periodo: "7",
+    fileRipristino: null,
   };
 
   const contenuto = document.getElementById("contenuto");
   const banner = document.getElementById("banner");
+  const toast = document.getElementById("toast");
   let numeroVista = 0;
 
   /* ------------------------------------------------------- indirizzi */
   function leggiRotta() {
     const h = decodeURIComponent(location.hash.slice(1));
     let m;
-    if (["clienti", "clienti-avvisi", "clienti-archiviati"].includes(h)) return { vista: "clienti", filtro: h };
+    if (["clienti", "clienti-avvisi", "clienti-archiviati"].indexOf(h) >= 0) return { vista: "clienti", filtro: h };
     if (h === "nuovo-cliente") return { vista: "modulo" };
     if ((m = h.match(/^cliente-(.+)$/))) return { vista: "scheda", id: m[1] };
     if ((m = h.match(/^modifica-(.+)$/))) return { vista: "modulo", id: m[1] };
-    if (h === "impostazioni") return { vista: "impostazioni" };
+    if (h === "voce-nuova") return { vista: "voce" };
+    if ((m = h.match(/^voce-(.+)$/))) return { vista: "voce", id: m[1] };
+    if (["impostazioni", "cassa", "dashboard", "listino"].indexOf(h) >= 0) return { vista: h };
     return { vista: "oggi" };
   }
 
@@ -1207,23 +2624,33 @@ const Viste = (() => {
   }
 
   /* ------------------------------------------------- mostra la vista */
-  async function mostra() {
+  // scorri = false: si resta dove si è (aprire un pannello, cambiare filtro…)
+  async function mostra(scorri) {
+    const prima = S.rotta;
     const r = (S.rotta = leggiRotta());
+    const cambiata = !prima || prima.vista !== r.vista || prima.id !== r.id || prima.filtro !== r.filtro;
+    if (cambiata) { S.pannello = null; }
+    if (cambiata && r.vista === "scheda" && (!prima || prima.id !== r.id)) { S.filtroStorico = "tutto"; S.storicoCompleto = false; }
+    if (scorri === undefined) scorri = cambiata;
     const mia = ++numeroVista;
-    const msg = Viste.messaggio(S.messaggio);
+    // il messaggio in cima resta finché non si cambia pagina, anche se i dati si aggiornano
+    if (cambiata || S.messaggio) S.flash = S.messaggio;
     S.messaggio = null;
+    const msg = Viste.messaggio(S.flash);
+    const y = window.scrollY;
     const metti = (html) => {
       if (mia !== numeroVista) return;          // nel frattempo si è cambiata pagina
       contenuto.innerHTML = String(msg) + String(html);
-      window.scrollTo(0, 0);
+      if (scorri) window.scrollTo(0, 0); else window.scrollTo(0, y);
       const cerca = document.getElementById("cerca");
-      if (cerca && matchMedia("(pointer: fine)").matches) cerca.focus();   // sul tablet niente tastiera a sorpresa
+      if (cerca && cambiata && matchMedia("(pointer: fine)").matches) cerca.focus();   // sul tablet niente tastiera a sorpresa
+      aggiornaTotali();
     };
 
+    const sezione = { scheda: "clienti", modulo: "clienti", listino: "impostazioni", voce: "impostazioni" }[r.vista] || r.vista;
     document.querySelectorAll(".menu a").forEach((a) => {
-      const attiva = a.dataset.vista === r.vista || (a.dataset.vista === "clienti" && ["scheda", "modulo"].includes(r.vista));
-      a.toggleAttribute("aria-current", attiva);
-      if (attiva) a.setAttribute("aria-current", "page");
+      if (a.dataset.vista === sezione) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
     });
 
     try {
@@ -1231,7 +2658,7 @@ const Viste = (() => {
         case "oggi":
           return metti(Viste.oggi(S));
         case "clienti":
-          if (r.filtro === "clienti-archiviati") {
+          if (r.filtro === "clienti-archiviati" && cambiata) {
             S.archiviati = null;          // ogni volta si rileggono: sono pochi e cambiano di rado
             caricaArchiviati();
           }
@@ -1239,43 +2666,63 @@ const Viste = (() => {
         case "scheda": {
           if (!S.clienti.some((c) => c.id === r.id)) contenuto.innerHTML = String(Viste.caricamento("Apro la scheda…"));
           const c = await trovaCliente(r.id);
-          return metti(c ? Viste.scheda(S, c) : Viste.nonTrovato());
+          metti(c ? Viste.scheda(S, c) : Viste.nonTrovato());
+          const pannello = contenuto.querySelector(".pannello");
+          if (pannello && !scorri && pannello.scrollIntoView) pannello.scrollIntoView({ block: "nearest" });
+          return;
         }
         case "modulo": {
           if (!S.puoScrivere) return metti(Viste.html`<p class="vuoto">Per aggiungere o modificare clienti serve il permesso di modifica.</p>`);
           if (!r.id) return metti(Viste.modulo(S, null, {}, {}));
           const c = await trovaCliente(r.id);
-          return metti(c ? Viste.modulo(S, c, { ...c }, {}) : Viste.nonTrovato());
+          return metti(c ? Viste.modulo(S, c, Object.assign({}, c), {}) : Viste.nonTrovato());
         }
-        case "impostazioni":
-          return metti(Viste.impostazioni(S, S.clienti.filter((c) => c.esempio)));
+        case "voce": {
+          const v = r.id ? S.listino.find((x) => x.id === r.id) : null;
+          if (r.id && !v) return metti(S.caricati ? Viste.html`<p class="vuoto">Questa voce del listino non esiste. <a href="#listino">Torna al listino</a>.</p>` : Viste.caricamento("Carico il listino…"));
+          const dati = v ? Object.assign({}, v, { prezzo: (v.prezzo_cent / 100).toFixed(2).replace(".", ",") }) : { tipo: "singolo", attivo: true };
+          return metti(VisteGestione.voce(S, v, dati, {}));
+        }
+        case "cassa": return metti(VisteGestione.cassa(S));
+        case "dashboard": return metti(VisteGestione.dashboard(S));
+        case "listino": return metti(VisteGestione.listino(S));
+        case "impostazioni": return metti(VisteGestione.impostazioni(S));
       }
     } catch (e) {
+      console.warn(e);
       metti(Viste.html`<p class="avviso-flash avviso-errore" role="alert">${Archivio.messaggioErrore(e)}</p>`);
     }
   }
 
-  // Arrivano dati nuovi (anche da un altro computer): aggiorno solo ciò che serve,
-  // senza toccare moduli che qualcuno sta compilando.
+  // Qualcuno sta scrivendo in un modulo o ha aperto una conferma: non ridisegnare sotto le dita
+  function staModificando() {
+    const attivo = document.activeElement;
+    if (attivo && contenuto.contains(attivo) && /INPUT|SELECT|TEXTAREA/.test(attivo.tagName) && attivo.id !== "cerca") return true;
+    return !!contenuto.querySelector(".conferma:not([hidden]), .conferma-riga:not([hidden]), .pannello:not([hidden])");
+  }
+
+  // Arrivano dati nuovi (anche da un altro computer): aggiorno solo ciò che serve
+  let inAttesa = false;
   function aggiornaDati() {
-    const r = S.rotta;
-    if (!r) return;
-    const metti = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = String(html); };
-    if (r.vista === "oggi") {
-      metti("zona-oggi", Viste.zonaOggi(S));
-      metti("riepilogo", Viste.riepilogo(S));
-    } else if (r.vista === "clienti") {
-      metti("zona-elenco", Viste.zonaElenco(S, r.filtro));
-    } else if (r.vista === "scheda") {
-      const c = S.clienti.find((x) => x.id === r.id);
-      const conferma = document.getElementById("conferma-elimina");
-      const confermaAperta = !!conferma && conferma.hidden === false;
-      if (c && !confermaAperta) contenuto.innerHTML = String(Viste.scheda(S, c));
-    }
+    if (inAttesa) return;
+    inAttesa = true;
+    setTimeout(() => {
+      inAttesa = false;
+      const r = S.rotta;
+      if (!r) return;
+      const metti = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = String(html); };
+      if (r.vista === "oggi") {
+        metti("zona-oggi", Viste.zonaOggi(S));
+        metti("riepilogo", Viste.riepilogo(S));
+      } else if (r.vista === "clienti") {
+        metti("zona-elenco", Viste.zonaElenco(S, r.filtro));
+      } else if (["scheda", "cassa", "dashboard", "listino"].indexOf(r.vista) >= 0 && !staModificando()) {
+        mostra(false);
+      }
+    }, 0);
   }
 
   async function caricaArchiviati() {
-    if (S.archiviati !== null) return;
     try {
       const lista = await Archivio.clientiArchiviati();
       S.archiviati = lista.sort(Regole.perCognome);
@@ -1292,25 +2739,87 @@ const Viste = (() => {
     banner.hidden = !testo;
   }
 
+  // Messaggio breve in basso, per le azioni che non cambiano pagina
+  let timerToast = null;
+  function avvisa(testo, tipo) {
+    S.flash = null;
+    toast.textContent = testo;
+    toast.className = "toast" + (tipo === "errore" ? " toast-errore" : "");
+    toast.hidden = false;
+    clearTimeout(timerToast);
+    timerToast = setTimeout(() => { toast.hidden = true; }, tipo === "errore" ? 9000 : 6000);
+  }
+
   function aggiornaNomePalestra() {
     document.querySelector(".marchio").textContent = S.imp.nome_palestra;
     document.title = S.imp.nome_palestra + " – Gestionale";
   }
 
-  /* --------------------------------------------- salvataggi e azioni */
-  function occupato(pulsante, testo) {
+  /* -------------------------------------------- piccoli aiuti ai moduli */
+  const valoreRadio = (form, nome) => { const el = form.querySelector(`input[name="${nome}"]:checked`); return el ? el.value : null; };
+  const testo = (form, nome) => (form.elements[nome] ? form.elements[nome].value.trim() : "");
+
+  function erroreModulo(form, t) {
+    const p = form.querySelector("[data-errore]");
+    if (p) { p.textContent = t; p.hidden = false; p.scrollIntoView && p.scrollIntoView({ block: "nearest" }); }
+    else avvisa(t, "errore");
+  }
+
+  function occupato(pulsante, scritta) {
+    if (!pulsante) return () => {};
     const prima = pulsante.textContent;
     pulsante.disabled = true;
-    pulsante.textContent = testo;
+    pulsante.textContent = scritta;
     return () => { pulsante.disabled = false; pulsante.textContent = prima; };
   }
 
+  // Totali che si aggiornano mentre si sceglie (ingresso, vendita al banco, chiusura)
+  function aggiornaTotali() {
+    contenuto.querySelectorAll("form[data-modulo=ingresso], form[data-modulo=banco]").forEach((form) => {
+      let totale = 0;
+      form.querySelectorAll("input[data-prezzo]").forEach((el) => {
+        if (el.type === "number") totale += (parseInt(el.value, 10) || 0) * Number(el.dataset.prezzo);
+        else if (el.checked) totale += Number(el.dataset.prezzo);
+      });
+      const out = form.querySelector("[data-totale]");
+      if (out) out.textContent = Regole.euro(totale);
+      const zona = form.querySelector("[data-zona-pagamento]");
+      if (zona) zona.hidden = totale === 0;
+    });
+    const chiusura = contenuto.querySelector("form[data-modulo=chiusura]");
+    if (chiusura) {
+      const out = chiusura.querySelector("[data-differenza]");
+      const attesi = Number(out.dataset.attesi);
+      const contati = Regole.leggiEuro(chiusura.elements.contati.value);
+      const versato = Regole.leggiEuro(chiusura.elements.versato.value) || 0;
+      if (contati === null) { out.textContent = ""; return; }
+      const diff = contati - attesi;
+      out.textContent = (diff === 0 ? "I contanti tornano esattamente." : diff > 0 ? `Ci sono ${Regole.euro(diff)} in più.` : `Mancano ${Regole.euro(-diff)}.`)
+        + ` Resteranno in cassa ${Regole.euro(Math.max(0, contati - versato))}.`;
+    }
+  }
+
+  async function esegui(pulsante, operazione, dopo) {
+    const libera = occupato(pulsante, "Un momento…");
+    try {
+      const testoEsito = await operazione();
+      if (dopo) dopo();
+      if (testoEsito) avvisa(testoEsito);
+    } catch (e) {
+      console.warn(e);
+      avvisa(e && e.messaggio ? e.messaggio : Archivio.messaggioErrore(e), "errore");
+    } finally {
+      libera();
+    }
+  }
+
+  /* ------------------------------------------------------- clienti */
   async function controllaUnici(dati, idEscluso) {
     const errori = {};
-    for (const [campo, testo] of Object.entries(Regole.CAMPI_UNICI)) {
+    for (const [campo, t] of Object.entries(Regole.CAMPI_UNICI)) {
       if (!dati[campo]) continue;
       const ids = await Archivio.clientiCon(campo, dati[campo]);
-      if (ids.some((id) => id !== idEscluso)) errori[campo] = testo;
+      if (ids.some((id) => id !== idEscluso)) errori[campo] = t;
     }
     return errori;
   }
@@ -1348,17 +2857,15 @@ const Viste = (() => {
 
   async function salvaImpostazioni(form) {
     const pulsante = form.querySelector("button[type=submit]");
-    const nome = form.elements.nome_palestra.value.trim() || Archivio.IMPOSTAZIONI_PREDEFINITE.nome_palestra;
-    const giorni = Math.min(120, Math.max(1, parseInt(form.elements.giorni_preavviso.value, 10) || 30));
     const nuove = {
-      nome_palestra: nome,
-      giorni_preavviso: giorni,
+      nome_palestra: form.elements.nome_palestra.value.trim() || Archivio.IMPOSTAZIONI_PREDEFINITE.nome_palestra,
+      giorni_preavviso: Math.min(120, Math.max(1, parseInt(form.elements.giorni_preavviso.value, 10) || 30)),
       usa_tesseramento: form.elements.usa_tesseramento.checked,
     };
     const libera = occupato(pulsante, "Salvataggio…");
     try {
       await Archivio.salvaImpostazioni(nuove);
-      S.imp = { ...S.imp, ...nuove };
+      S.imp = Object.assign({}, S.imp, nuove);
       aggiornaNomePalestra();
       vai("impostazioni", { tipo: "ok", testo: "Impostazioni salvate." });
     } catch (e) {
@@ -1368,30 +2875,110 @@ const Viste = (() => {
     }
   }
 
-  // Clienti inventati, con scadenze calcolate da oggi: così i colori hanno sempre senso
-  function clientiDiEsempio() {
-    const t = Regole.dataTra;
-    const base = { codice_fiscale: null, indirizzo: null, contatto_emergenza: null, note: null, esempio: true };
-    return [
-      { ...base, nome: "Giulia", cognome: "Bianchi", data_nascita: "1994-03-12", email: "giulia.bianchi@example.com", telefono: "333 1234567",
-        numero_tessera: "A001", scadenza_tessera: t(300), scadenza_certificato: t(200), liberatoria_il: t(-40), privacy_il: t(-40), autonomo: true },
-      { ...base, nome: "Marco", cognome: "Rossi", data_nascita: "1988-07-02", email: "marco.rossi@example.com", telefono: "347 7654321",
-        numero_tessera: "A002", scadenza_tessera: t(300), scadenza_certificato: t(-5), liberatoria_il: t(-100), privacy_il: t(-100), autonomo: true },
-      { ...base, nome: "Sara", cognome: "Conti", data_nascita: "2011-05-20", email: null, telefono: "320 1112223",
-        contatto_emergenza: "Paolo Conti (papà) 320 1112224", note: "Viene con il papà il sabato mattina.",
-        numero_tessera: "A003", scadenza_tessera: t(150), scadenza_certificato: t(150), liberatoria_il: null, privacy_il: null, autonomo: false },
-      { ...base, nome: "Luca", cognome: "Ferrari", data_nascita: "1999-11-30", email: "luca.ferrari@example.com", telefono: null,
-        numero_tessera: "A004", scadenza_tessera: t(300), scadenza_certificato: t(12), liberatoria_il: t(-10), privacy_il: t(-10), autonomo: false },
-      { ...base, nome: "Elena", cognome: "Gallo", data_nascita: "1979-01-15", email: null, telefono: "349 5556667",
-        numero_tessera: "A005", scadenza_tessera: t(250), scadenza_certificato: t(365), liberatoria_il: t(-300), privacy_il: t(-300), autonomo: true },
-    ];
+  /* ------------------------------------------- reception: ingresso e vendita */
+  async function inviaIngresso(form) {
+    const c = await trovaCliente(form.dataset.id);
+    const conferma = form.elements.conferma_documenti;
+    if (conferma && !conferma.checked) return erroreModulo(form, "Spunta la conferma sui documenti per registrare comunque l'ingresso.");
+    const scelta = {
+      metodo: valoreRadio(form, "metodo") || "contanti",
+      noleggi: Array.prototype.map.call(form.querySelectorAll("input[name=noleggi]:checked"), (el) => el.value),
+      fuori_regola: !!conferma,
+    };
+    if (form.elements.modo && form.elements.modo.value === "copertura") {
+      scelta.modo = "copertura";
+      scelta.abbonamento_id = form.elements.abbonamento_id.value;
+    } else {
+      const v = valoreRadio(form, "scelta");
+      if (!v) return erroreModulo(form, "Scegli cosa paga il cliente.");
+      scelta.modo = v === "omaggio" ? "omaggio" : "pagato";
+      scelta.listino_id = v;
+    }
+    await esegui(form.querySelector("button[type=submit]"), () => Azioni.registraIngresso(S, c, scelta),
+      () => { S.pannello = null; mostra(false); });
   }
 
+  async function inviaVendita(form) {
+    const c = await trovaCliente(form.dataset.id);
+    const voceId = valoreRadio(form, "voce");
+    const v = S.listino.find((x) => x.id === voceId);
+    if (!v) return erroreModulo(form, "Scegli cosa compra il cliente.");
+    const inizio = form.elements.data_inizio.value;
+    if (!Regole.aData(inizio)) return erroreModulo(form, "Scegli da che giorno vale.");
+    let prezzo = v.prezzo_cent;
+    if (testo(form, "prezzo")) {
+      prezzo = Regole.leggiEuro(testo(form, "prezzo"));
+      if (prezzo === null) return erroreModulo(form, "Scrivi il prezzo in euro, per esempio 45 oppure 45,50.");
+    }
+    await esegui(form.querySelector("button[type=submit]"),
+      () => Azioni.vendiAbbonamento(S, c, { listino_id: v.id, data_inizio: inizio, prezzo_cent: prezzo, metodo: valoreRadio(form, "metodo") || "contanti" }),
+      () => { S.pannello = null; mostra(false); });
+  }
+
+  /* --------------------------------------------------------------- cassa */
+  async function inviaBanco(form) {
+    const righe = Array.prototype.map.call(form.querySelectorAll("input[type=number][data-prezzo]"),
+      (el) => ({ id: el.id.slice(2), quantita: Math.max(0, parseInt(el.value, 10) || 0) }));
+    await esegui(form.querySelector("button[type=submit]"),
+      () => Azioni.venditaBanco(S, righe, valoreRadio(form, "metodo") || "contanti"), () => mostra(false));
+  }
+
+  async function inviaMovimento(form) {
+    const importo = Regole.leggiEuro(testo(form, "importo"));
+    if (!importo) return erroreModulo(form, "Scrivi l'importo in euro, per esempio 24 oppure 24,50.");
+    const sel = form.elements.categoria;
+    const descrizione = testo(form, "descrizione") || sel.options[sel.selectedIndex].text;
+    await esegui(form.querySelector("button[type=submit]"), () => Azioni.movimentoManuale({
+      verso: valoreRadio(form, "verso"), categoria: sel.value, descrizione,
+      importo_cent: importo, metodo: valoreRadio(form, "metodo") || "contanti",
+    }), () => mostra(false));
+  }
+
+  async function inviaChiusura(form) {
+    const contati = Regole.leggiEuro(testo(form, "contati"));
+    const versato = testo(form, "versato") ? Regole.leggiEuro(testo(form, "versato")) : 0;
+    if (contati === null) return erroreModulo(form, "Scrivi quanti contanti hai contato, per esempio 245,50.");
+    if (versato === null || versato > contati) return erroreModulo(form, "L'importo portato via non può superare i contanti contati.");
+    await esegui(form.querySelector("button[type=submit]"),
+      () => Azioni.chiudiCassa(S, contati, versato, testo(form, "note")), () => mostra(false));
+  }
+
+  /* ------------------------------------------------------------ listino */
+  async function inviaVoce(form) {
+    const id = form.dataset.id || null;
+    const tipo = valoreRadio(form, "tipo");
+    const grezzi = { tipo, nome: testo(form, "nome"), prezzo: testo(form, "prezzo"), ingressi: testo(form, "ingressi"),
+                     giorni: testo(form, "giorni"), attivo: form.elements.attivo.checked };
+    const errori = {};
+    const prezzo = Regole.leggiEuro(grezzi.prezzo);
+    const ingressi = parseInt(grezzi.ingressi, 10);
+    const giorni = parseInt(grezzi.giorni, 10);
+    if (!grezzi.nome) errori.nome = "Scrivi il nome, come lo vedrà la reception.";
+    if (prezzo === null) errori.prezzo = "Scrivi il prezzo in euro, per esempio 12 oppure 12,50.";
+    if (tipo === "carnet" && !(ingressi >= 1)) errori.ingressi = "Quanti ingressi comprende il carnet?";
+    if (tipo === "periodo" && !(giorni >= 1)) errori.giorni = "Quanti giorni dura l'abbonamento?";
+    if (tipo === "carnet" && grezzi.giorni && !(giorni >= 1)) errori.giorni = "Scrivi un numero di giorni, oppure lascia vuoto.";
+    if (Object.keys(errori).length) {
+      contenuto.innerHTML = String(VisteGestione.voce(S, id ? S.listino.find((x) => x.id === id) : null, grezzi, errori));
+      return window.scrollTo(0, 0);
+    }
+    const dati = { nome: grezzi.nome, tipo, prezzo_cent: prezzo, attivo: grezzi.attivo,
+                   ingressi: tipo === "carnet" ? ingressi : null,
+                   giorni: tipo === "periodo" || (tipo === "carnet" && giorni >= 1) ? giorni : null };
+    if (!id) dati.ordine = S.listino.reduce((m, v) => Math.max(m, v.ordine || 0), 0) + 1;
+    const libera = occupato(form.querySelector("button[type=submit]"), "Salvataggio…");
+    try {
+      const esito = await Azioni.salvaVoce(id, dati);
+      vai("listino", { tipo: "ok", testo: esito });
+    } catch (e) {
+      avvisa(Archivio.messaggioErrore(e), "errore");
+    } finally {
+      libera();
+    }
+  }
+
+  /* ------------------------------------------------- azioni dei pulsanti */
   const AZIONI = {
-    async "carica-esempi"() {
-      for (const c of clientiDiEsempio()) await Archivio.creaCliente(c);
-      return { tipo: "ok", testo: "Ho aggiunto 5 clienti di esempio. Li elimini quando vuoi da Impostazioni." };
-    },
     async liberatoria(id) {
       await Archivio.aggiornaCliente(id, { liberatoria_il: Regole.oggiISO() });
       S.leggiDiNuovo = id;
@@ -1415,52 +3002,36 @@ const Viste = (() => {
       vai("clienti-archiviati", { tipo: "ok", testo: "Cliente eliminato definitivamente." });
       return null;
     },
-    async "elimina-esempi"() {
-      const archiviati = await Archivio.clientiArchiviati();
-      const esempi = [...S.clienti, ...archiviati].filter((c) => c.esempio);
-      for (const c of esempi) await Archivio.eliminaCliente(c.id);   // uno alla volta
-      S.archiviati = null;
-      return { tipo: "ok", testo: "Clienti di esempio eliminati. Il gestionale è pronto per i clienti veri." };
-    },
   };
 
-  /* ------------------------------------------------------------ eventi */
-  window.addEventListener("hashchange", mostra);
-
-  document.addEventListener("input", (e) => {
-    if (e.target.id !== "cerca") return;
-    S.ricerca = e.target.value;
-    aggiornaDati();
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.target.id !== "cerca" || e.key !== "Enter") return;
-    e.preventDefault();
-    const testo = S.ricerca.trim().toLowerCase();
-    const lista = S.rotta.filtro === "clienti-archiviati" ? (S.archiviati || []) : S.clienti;
-    const perTessera = lista.find((c) => (c.numero_tessera || "").toLowerCase() === testo);
-    const trovati = lista.filter((c) => Regole.corrisponde(c, S.ricerca));
-    const scelto = perTessera || (trovati.length === 1 ? trovati[0] : null);
-    if (scelto) { S.ricerca = ""; vai("cliente-" + scelto.id); }
-  });
-
-  document.addEventListener("click", async (e) => {
-    const oggi = e.target.closest("[data-oggi]");
-    if (oggi) {
-      const campo = document.getElementById(oggi.dataset.oggi);
-      campo.value = Regole.oggiISO();
-      return;
+  async function azione(pulsante) {
+    const nome = pulsante.dataset.azione;
+    const valore = pulsante.dataset.valore;
+    switch (nome) {
+      case "apri-pannello": S.pannello = pulsante.dataset.pannello; return mostra(false);
+      case "chiudi-pannello": S.pannello = null; return mostra(false);
+      case "filtro-storico": S.filtroStorico = valore; S.storicoCompleto = false; return mostra(false);
+      case "storico-completo": S.storicoCompleto = true; return mostra(false);
+      case "periodo": S.periodo = valore; return mostra(false);
+      case "annulla":
+        return esegui(pulsante, () => Azioni.annulla(S, pulsante.dataset.tipo, pulsante.dataset.id), () => setTimeout(() => mostra(false), 50));
+      case "carica-esempi":
+        return esegui(pulsante, () => Azioni.caricaDatiEsempio(S), () => setTimeout(() => mostra(false), 50));
+      case "elimina-esempi":
+        return esegui(pulsante, async () => { const n = await Azioni.eliminaDatiEsempio(S); S.archiviati = null; return n ? "Dati di esempio eliminati. Il listino è rimasto: aggiorna i prezzi con i tuoi." : "Non c'erano dati di esempio."; },
+          () => setTimeout(() => mostra(false), 50));
+      case "carica-listino":
+        return esegui(pulsante, () => Azioni.caricaListinoEsempio(), () => setTimeout(() => mostra(false), 50));
+      case "scarica-copia":
+        return esegui(pulsante, async () => Azioni.scaricaCopia());
+      case "ripristina":
+        if (!S.fileRipristino) return avvisa("Scegli prima il file della copia.", "errore");
+        return esegui(pulsante, () => Azioni.ripristina(S.fileRipristino), () => { S.fileRipristino = null; S.archiviati = null; setTimeout(() => mostra(false), 50); });
     }
-    const pulsante = e.target.closest("[data-azione]");
-    if (!pulsante) return;
-    const azione = pulsante.dataset.azione;
-    const conferma = document.getElementById("conferma-elimina");
-    if (azione === "chiedi-elimina") { conferma.hidden = false; conferma.querySelector("button").focus(); return; }
-    if (azione === "annulla-elimina") { conferma.hidden = true; return; }
-
+    if (!AZIONI[nome]) return;
     const libera = occupato(pulsante, "Un momento…");
     try {
-      const esito = await AZIONI[azione](pulsante.dataset.id);
+      const esito = await AZIONI[nome](pulsante.dataset.id);
       if (esito) { S.messaggio = esito; mostra(); }
     } catch (err) {
       S.messaggio = { tipo: "errore", testo: Archivio.messaggioErrore(err) };
@@ -1468,13 +3039,90 @@ const Viste = (() => {
     } finally {
       libera();
     }
+  }
+
+  /* ------------------------------------------------------------ eventi */
+  window.addEventListener("hashchange", () => mostra());
+
+  document.addEventListener("input", (e) => {
+    if (e.target.id === "cerca") {
+      S.ricerca = e.target.value;
+      return aggiornaDati();
+    }
+    if (e.target.closest("form")) aggiornaTotali();
+  });
+
+  document.addEventListener("change", (e) => {
+    const el = e.target;
+    const form = el.closest("form");
+    if (el.id === "giorno-cassa") { S.giornoCassa = el.value || null; return mostra(false); }
+    if (el.id === "file-ripristino") {
+      S.fileRipristino = el.files && el.files[0];
+      if (S.fileRipristino) document.getElementById("conferma-ripristino").hidden = false;
+      return;
+    }
+    // listino: mostra solo i campi che servono per quel tipo
+    if (form && form.dataset.modulo === "voce" && el.name === "tipo") {
+      form.querySelectorAll("[data-per]").forEach((d) => { d.hidden = d.dataset.per.split(" ").indexOf(el.value) < 0; });
+    }
+    // cassa: le voci di "Che cos'è" cambiano tra entrata e uscita
+    if (form && form.dataset.modulo === "movimento" && el.name === "verso") {
+      const sel = form.elements.categoria;
+      let primo = null;
+      Array.prototype.forEach.call(sel.options, (o) => {
+        o.hidden = o.dataset.verso !== el.value;
+        if (!o.hidden && !primo) primo = o;
+      });
+      sel.value = primo.value;
+    }
+    if (form) aggiornaTotali();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.target.id !== "cerca" || e.key !== "Enter") return;
+    e.preventDefault();
+    const scritto = S.ricerca.trim().toLowerCase();
+    const lista = S.rotta.filtro === "clienti-archiviati" ? (S.archiviati || []) : S.clienti;
+    const perTessera = lista.find((c) => (c.numero_tessera || "").toLowerCase() === scritto);
+    const trovati = lista.filter((c) => Regole.corrisponde(c, S.ricerca));
+    const scelto = perTessera || (trovati.length === 1 ? trovati[0] : null);
+    if (scelto) { S.ricerca = ""; vai("cliente-" + scelto.id); }
+  });
+
+  document.addEventListener("click", (e) => {
+    const t = e.target;
+    const oggi = t.closest("[data-oggi]");
+    if (oggi) { document.getElementById(oggi.dataset.oggi).value = Regole.oggiISO(); return; }
+    const imposta = t.closest("[data-imposta]");
+    if (imposta) { document.getElementById(imposta.dataset.imposta).value = imposta.dataset.valore; return; }
+    const mostraEl = t.closest("[data-mostra]");
+    if (mostraEl) {
+      const bersaglio = document.getElementById(mostraEl.dataset.mostra);
+      bersaglio.hidden = false;
+      const primo = bersaglio.querySelector("input, button");
+      if (primo) primo.focus();
+      return;
+    }
+    const nascondi = t.closest("[data-nascondi]");
+    if (nascondi) { document.getElementById(nascondi.dataset.nascondi).hidden = true; return; }
+    const passo = t.closest("[data-passo]");
+    if (passo) {
+      const campo = document.getElementById(passo.dataset.per);
+      campo.value = Math.max(0, Math.min(99, (parseInt(campo.value, 10) || 0) + Number(passo.dataset.passo)));
+      return aggiornaTotali();
+    }
+    const pulsante = t.closest("[data-azione]");
+    if (pulsante) azione(pulsante);
   });
 
   document.addEventListener("submit", (e) => {
     const form = e.target;
     e.preventDefault();
-    if (form.dataset.modulo === "cliente") salvaCliente(form);
-    if (form.dataset.modulo === "impostazioni") salvaImpostazioni(form);
+    const gestori = { cliente: salvaCliente, impostazioni: salvaImpostazioni, ingresso: inviaIngresso, vendita: inviaVendita,
+                      banco: inviaBanco, movimento: inviaMovimento, chiusura: inviaChiusura, voce: inviaVoce };
+    const errore = form.querySelector("[data-errore]");
+    if (errore) errore.hidden = true;
+    if (gestori[form.dataset.modulo]) gestori[form.dataset.modulo](form);
   });
 
   /* ------------------------------------------------------------ avvio */
@@ -1499,17 +3147,16 @@ const Viste = (() => {
     }
     if (!S.puoScrivere) mostraBanner("Puoi solo consultare: per aggiungere o modificare clienti serve il permesso di modifica.");
 
+    const erroreDati = (errore) => { mostraBanner(Archivio.messaggioErrore(errore)); aggiornaDati(); };
     const attesa = setTimeout(() => { S.lento = true; aggiornaDati(); }, 10000);
     Archivio.ascoltaClientiAttivi((lista, info) => {
       S.clienti = lista.sort(Regole.perCognome);
       S.caricati = true;
       if (!info.fromCache) { clearTimeout(attesa); S.lento = false; }
       aggiornaDati();
-    }, (errore) => {
-      clearTimeout(attesa);
-      S.caricati = true;
-      mostraBanner(Archivio.messaggioErrore(errore));
-      aggiornaDati();
+    }, (errore) => { clearTimeout(attesa); S.caricati = true; erroreDati(errore); });
+    ["listino", "abbonamenti", "ingressi", "movimenti", "chiusure"].forEach((coll) => {
+      Archivio.ascolta(coll, (lista) => { S[coll] = lista; aggiornaDati(); }, erroreDati);
     });
     Archivio.ascoltaImpostazioni((imp) => {
       S.imp = imp;
