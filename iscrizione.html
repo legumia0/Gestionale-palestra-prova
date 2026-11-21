@@ -574,6 +574,24 @@ body.pagina-pubblica { display: block; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
+/* ------------------------------------------- scheda: certificato medico */
+.box-certificato { background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); padding: 1.25rem 1.5rem; }
+.box-certificato > p:first-of-type .aiuto { margin-left: 0.25rem; }
+.modulo-certificato { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 0 1rem; align-items: start;
+  margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--linea); }
+.modulo-certificato .campo { margin-bottom: 0.75rem; }
+.modulo-certificato .errore-campo, .modulo-certificato button[type=submit] { grid-column: 1 / -1; justify-self: start; }
+.modulo-certificato input[type=file] { width: 100%; min-height: 44px; padding: 0.45rem 0; font: inherit; }
+.anteprima-certificato { margin: 0.5rem 0 0; }
+.anteprima-certificato img { display: block; max-width: 100%; max-height: 70vh; width: auto; height: auto;
+  border: 1px solid var(--linea); border-radius: var(--raggio); background: #fff; }
+.anteprima-certificato .azioni-modulo { margin-top: 0.75rem; align-items: center; }
+.zona-elimina-certificato { margin-top: 1rem; }
+.aiuto-sotto { display: block; margin-top: 0.15rem; }
+@media (max-width: 600px) {
+  .modulo-certificato { grid-template-columns: minmax(0, 1fr); }
+}
+
 </style>
 </head>
 <body class="pagina-pubblica">
@@ -700,14 +718,15 @@ const Regole = (() => {
   const CAMPI_DATA = ["data_nascita", "scadenza_tessera", "scadenza_certificato", "liberatoria_il", "privacy_il"];
 
   // Legge i campi del modulo e li controlla. Restituisce { dati, errori }.
+  // Prende solo i campi presenti nel modulo: quelli che non ci sono (per esempio la
+  // scadenza del certificato, che si gestisce nella scheda) restano come sono nel database.
   function leggiModuloCliente(form) {
     const valore = (nome) => {
-      const el = form.elements[nome];
-      const v = ((el && el.value) || "").trim();
+      const v = (form.elements[nome].value || "").trim();
       return v === "" ? null : v;
     };
     const dati = {};
-    [...CAMPI_TESTO, ...CAMPI_DATA].forEach((campo) => { dati[campo] = valore(campo); });
+    [...CAMPI_TESTO, ...CAMPI_DATA].forEach((campo) => { if (form.elements[campo]) dati[campo] = valore(campo); });
     dati.autonomo = !!(form.elements.autonomo && form.elements.autonomo.checked);
 
     const errori = {};
@@ -832,16 +851,18 @@ const Regole = (() => {
 
   /* ---------------------------------------------- ruoli e permessi */
   const RUOLI = {
-    manager: { nome: "Manager", aiuto: "Può fare tutto, compreso creare e gestire gli account dello staff." },
-    normale: { nome: "Normale", aiuto: "Reception, cassa, dashboard, listino e impostazioni: tutto tranne gli account." },
-    fasi:    { nome: "Compilatore FASI", aiuto: "Vede i clienti e gestisce solo il tesseramento FASI." },
+    manager: { nome: "Manager", aiuto: "Può fare tutto, compresi gli account dello staff e i certificati medici." },
+    normale: { nome: "Normale", aiuto: "Reception, cassa, dashboard, listino e impostazioni. Del certificato medico vede solo la scadenza." },
+    fasi:    { nome: "Compilatore FASI", aiuto: "Vede i clienti, gestisce il tesseramento FASI e i certificati medici." },
   };
   const TUTTO = ["oggi", "clienti", "modifica_clienti", "reception", "cassa", "dashboard", "listino",
-                 "impostazioni", "tesseramento", "richieste", "elimina", "dati", "utenti"];
+                 "impostazioni", "tesseramento", "richieste", "elimina", "dati", "utenti", "certificati"];
+  // "certificati" = vedere, caricare e cambiare il file del certificato medico e la sua scadenza.
+  // La scadenza la vedono tutti.
   const PERMESSI = {
     manager: TUTTO,
-    normale: TUTTO.filter((p) => p !== "utenti"),
-    fasi: ["clienti", "tesseramento"],
+    normale: TUTTO.filter((p) => p !== "utenti" && p !== "certificati"),
+    fasi: ["clienti", "tesseramento", "certificati"],
     lettura: ["oggi", "clienti"],          // su claude.ai senza permesso di modifica
   };
   // "manager", "normale", "compilatore FASI": il nome del ruolo dentro una frase
@@ -1141,7 +1162,8 @@ const ArchivioFirebase = (() => {
 
    Struttura dei dati (una "collezione" per tipo, un documento per riga):
      clienti/<id>        anagrafica e documenti
-     richieste/<id>      iscrizioni arrivate dal modulo online
+     certificati/<id>    file del certificato medico (stesso id del cliente)
+     richieste/<id>     iscrizioni arrivate dal modulo online
      listino/<id>        cosa si vende: ingressi, carnet, abbonamenti, noleggi
      abbonamenti/<id>    carnet e abbonamenti venduti a un cliente
      ingressi/<id>       ogni passaggio in reception
@@ -1339,7 +1361,36 @@ const Archivio = (() => {
 
   const creaCliente = (dati) => crea("clienti", Object.assign({}, dati, { attivo: true }));
   const aggiornaCliente = (id, modifiche) => aggiorna("clienti", id, modifiche);
-  const eliminaCliente = (id) => elimina("clienti", id);
+  // Eliminando un cliente si elimina anche il file del suo certificato medico (prima il file:
+  // se qualcosa va storto il cliente resta e si può riprovare, senza file dimenticati)
+  async function eliminaCliente(id) {
+    await elimina("certificati", id);
+    await elimina("clienti", id);
+  }
+
+  /* ------------------------------------------------ certificati medici */
+  // Il file sta in certificati/<id del cliente>, separato dalla scheda: le regole del
+  // database lo fanno leggere solo a manager e compilatore FASI. Nella scheda del cliente
+  // restano la scadenza (la vedono tutti) e se il file c'è.
+  async function leggiCertificato(idCliente) {
+    const doc = await db.doc("certificati/" + idCliente).get();
+    return doc.exists ? conId(doc) : null;
+  }
+  // file = { dati, tipo, nome_file, dimensione } oppure null per cambiare solo la scadenza
+  async function salvaCertificato(idCliente, file, scadenza) {
+    const modifiche = { scadenza_certificato: scadenza };
+    if (file) {
+      await scrivi(() => db.doc("certificati/" + idCliente).set(Object.assign({}, file, {
+        caricato_il: Regole.adessoISO(), caricato_da: stato.idUtente,
+      })));
+      Object.assign(modifiche, { certificato_caricato: true, certificato_il: Regole.oggiISO() });
+    }
+    await aggiorna("clienti", idCliente, modifiche);
+  }
+  async function eliminaCertificato(idCliente) {
+    await elimina("certificati", idCliente);
+    await aggiorna("clienti", idCliente, { certificato_caricato: false, certificato_il: null });
+  }
 
   // Tutti gli ingressi e i pagamenti di un cliente, anche quelli vecchi
   async function storicoCliente(id) {
@@ -1563,7 +1614,7 @@ const Archivio = (() => {
   return { stato, IMPOSTAZIONI_PREDEFINITE, avvia, messaggioErrore, nuovoId,
            ascolta, ascoltaDal, leggiDove, crea, aggiorna, elimina, creaMolti, eliminaMolti,
            ascoltaClientiAttivi, clientiArchiviati, leggiCliente, clientiCon, storicoCliente,
-           creaCliente, aggiornaCliente, eliminaCliente,
+           creaCliente, aggiornaCliente, eliminaCliente, leggiCertificato, salvaCertificato, eliminaCertificato,
            ascoltaImpostazioni, leggiImpostazioni, salvaImpostazioni,
            ascoltaRichiesteNuove, leggiRichiesta, inviaRichiesta,
            accesso, utenti, copiaSicurezza };
@@ -1798,7 +1849,7 @@ const Viste = (() => {
           ${lista.map((r) => html`
             <a class="riga-listino" href="#richiesta-${r.id}">
               <span class="riga-nome">${r.cognome} ${r.nome}</span>
-              <span class="riga-dati">${r.data_prova ? `Vuole provare il ${R.dataIt(r.data_prova)}` : "Nessuna data indicata"}</span>
+              <span class="riga-dati">${r.telefono || r.email || ""}</span>
               <span class="riga-prezzo">${R.giornoBreve(r.creato_il)}</span>
             </a>`)}
         </div>
@@ -1921,6 +1972,7 @@ const Viste = (() => {
 
       ${c.attivo && puo(S, "reception") ? boxAbbonamento(S, c, av) : ""}
       ${puo(S, "tesseramento") && !puo(S, "reception") ? boxTessera(S, c) : ""}
+      ${puo(S, "certificati") ? boxCertificato(S, c) : ""}
 
       <div class="griglia-dati">
         <section class="sezione">
@@ -1935,7 +1987,9 @@ const Viste = (() => {
         <section class="sezione">
           <h2>Documenti</h2>
           <dl class="dati">
-            ${voce("Certificato medico", c.scadenza_certificato && `scade il ${R.dataIt(c.scadenza_certificato)}`, "non consegnato")}
+            <dt>Certificato medico</dt>
+            <dd>${c.scadenza_certificato ? `scade il ${R.dataIt(c.scadenza_certificato)}` : html`<span class="manca">non consegnato</span>`}
+              ${!puo(S, "certificati") && notaCertificato(c) ? html`<span class="aiuto aiuto-sotto">${notaCertificato(c)}</span>` : ""}</dd>
             ${voce("Liberatoria", c.liberatoria_il && `firmata il ${R.dataIt(c.liberatoria_il)}`, "da firmare")}
             ${S.imp.usa_tesseramento ? voce("Tesseramento", c.scadenza_tessera && `valido fino al ${R.dataIt(c.scadenza_tessera)}`, "non tesserato") : ""}
             ${voce("Consenso privacy", c.privacy_il && `dato il ${R.dataIt(c.privacy_il)}`, "non registrato")}
@@ -1969,6 +2023,75 @@ const Viste = (() => {
                      </div>
                    </div>`}
         </div>` : ""}`;
+  }
+
+  /* ------------------------------------------------- certificato medico */
+  // Per chi vede solo la scadenza: a chi rivolgersi
+  function notaCertificato(c) {
+    const g = R.giorniDaOggi(c.scadenza_certificato);
+    if (g === null) return "Lo carica il manager o il compilatore FASI.";
+    if (g < 0) return "Quello nuovo lo carica il manager o il compilatore FASI.";
+    return c.certificato_caricato ? "Il documento lo vedono solo il manager e il compilatore FASI." : "";
+  }
+
+  // Solo manager e compilatore FASI: vedere il file, caricarne uno nuovo, cambiare la scadenza
+  function boxCertificato(S, c) {
+    const g = R.giorniDaOggi(c.scadenza_certificato);
+    const stato = g === null ? "Non ancora consegnato"
+      : g < 0 ? `Scaduto il ${R.dataIt(c.scadenza_certificato)}`
+      : `Valido fino al ${R.dataIt(c.scadenza_certificato)}`;
+    const aperto = S.certificato && S.certificato.id === c.id ? S.certificato : null;
+    const nuovo = !c.certificato_caricato;
+    return html`
+      <section class="sezione box-certificato" id="certificato">
+        <h2>Certificato medico</h2>
+        <p><strong>${stato}</strong>${c.certificato_caricato
+          ? html` <span class="aiuto">File caricato il ${R.dataIt(c.certificato_il)}.</span>`
+          : html` <span class="aiuto">Nessun file caricato.</span>`}</p>
+        ${c.certificato_caricato ? html`
+          ${aperto && aperto.errore ? html`<p class="avviso-flash avviso-errore">${aperto.errore}</p>` : ""}
+          ${aperto && aperto.dati ? anteprimaCertificato(aperto) : html`
+            <button type="button" class="pulsante" data-azione="vedi-certificato" data-id="${c.id}">${aperto && aperto.carica ? "Apro il certificato…" : "Vedi il certificato"}</button>`}` : ""}
+        <form class="modulo-certificato" data-modulo="certificato" data-id="${c.id}" novalidate>
+          <div class="campo">
+            <label for="file-certificato">${nuovo ? "Foto o PDF del certificato" : "Sostituisci con un nuovo file"}</label>
+            <input id="file-certificato" name="file" type="file" accept="image/*,application/pdf">
+            <p class="aiuto">${nuovo ? "Dall'iPad puoi fare direttamente la foto." : "Facoltativo: lascialo vuoto per cambiare solo la data."} La foto viene rimpicciolita da sola; un PDF può pesare al massimo 650 KB.</p>
+          </div>
+          <div class="campo">
+            <label for="scadenza-certificato">Valido fino al</label>
+            <input id="scadenza-certificato" name="scadenza" type="date" value="${c.scadenza_certificato || ""}">
+            <p class="aiuto">Di solito un anno dalla data scritta sul certificato.</p>
+          </div>
+          <p class="errore-campo" data-errore hidden></p>
+          <button type="submit" class="pulsante pulsante-primario">Salva certificato</button>
+        </form>
+        ${c.certificato_caricato ? html`
+          <div class="zona-elimina-certificato">
+            <button type="button" class="pulsante-testo" data-mostra="conferma-elimina-certificato">Elimina il file del certificato</button>
+            <div class="conferma" id="conferma-elimina-certificato" hidden>
+              <p><strong>Eliminare il file del certificato?</strong> La data di scadenza resta: cambiala se non è più giusta.</p>
+              <div class="azioni-modulo">
+                <button type="button" class="pulsante pulsante-pericolo" data-azione="elimina-certificato" data-id="${c.id}">Sì, elimina il file</button>
+                <button type="button" class="pulsante pulsante-secondario" data-nascondi="conferma-elimina-certificato">Annulla</button>
+              </div>
+            </div>
+          </div>` : ""}
+      </section>`;
+  }
+
+  function anteprimaCertificato(cert) {
+    const pdf = cert.tipo === "application/pdf";
+    return html`
+      <div class="anteprima-certificato">
+        ${pdf ? html`<p>Certificato in PDF: ${cert.nome_file || "certificato.pdf"}.</p>`
+              : html`<img src="${cert.dati}" alt="Foto del certificato medico">`}
+        <div class="azioni-modulo">
+          ${pdf && cert.indirizzo ? html`<a class="pulsante" href="${cert.indirizzo}" target="_blank" rel="noopener">Apri il PDF</a>` : ""}
+          <button type="button" class="pulsante pulsante-secondario" data-azione="scarica-certificato" data-id="${cert.id}">Scarica il file</button>
+          <button type="button" class="pulsante-testo" data-azione="chiudi-certificato">Nascondi</button>
+        </div>
+      </div>`;
   }
 
   /* ----------------------------------- abbonamento, ingresso, vendita */
@@ -2232,12 +2355,12 @@ const Viste = (() => {
         <fieldset>
           <legend>Documenti</legend>
           <div class="campi-due">
-            ${campo("scadenza_certificato", "Scadenza certificato medico", dati, errori, { tipo: "date" })}
             ${campoDataConOggi("liberatoria_il", "Liberatoria firmata il", dati, errori)}
             ${campo("numero_tessera", tess ? "Numero tessera" : "Numero tessera o badge", dati, errori, { extra: 'autocapitalize="characters" autocomplete="off"' })}
             ${tess ? campo("scadenza_tessera", "Tessera valida fino al", dati, errori, { tipo: "date" }) : ""}
             ${campoDataConOggi("privacy_il", "Consenso privacy dato il", dati, errori)}
           </div>
+          <p class="aiuto">Il certificato medico e la sua scadenza si inseriscono nella scheda del cliente${puo(S, "certificati") ? "" : ", dal manager o dal compilatore FASI"}.</p>
         </fieldset>
         <fieldset>
           <legend>Arrampicata</legend>
@@ -2281,7 +2404,6 @@ const Viste = (() => {
   function modulo(dati, errori) {
     const anni = R.eta(dati.data_nascita);
     const minore = anni !== null && anni < 18;
-    const esperienze = Object.keys(R.ESPERIENZE);
     return html`
       <h1>Vieni a provare l'arrampicata</h1>
       <p>Compila i tuoi dati da qui: quando arrivi in palestra ti basterà dire il tuo nome e pagare l'ingresso di prova.</p>
@@ -2305,22 +2427,6 @@ const Viste = (() => {
             ${campo("telefono", "Telefono", dati, errori, { tipo: "tel", extra: 'autocomplete="tel" required' })}
             ${campo("contatto_emergenza", "Chi chiamare in caso di emergenza", dati, errori, { extra: 'required', aiuto: "Nome e telefono di un familiare o amico." })}
             ${minore ? campo("genitore", "Genitore o tutore che accetta per te", dati, errori, { extra: 'required', aiuto: "Nome, cognome e telefono. Sei minorenne: liberatoria e privacy le accetta il genitore." }) : ""}
-          </div>
-        </fieldset>
-        <fieldset class="scelta${errori.esperienza ? " campo-errore" : ""}">
-          <legend>Hai già arrampicato?</legend>
-          <div class="opzioni">
-            ${esperienze.map((k) => html`
-              <label class="opzione"><input type="radio" name="esperienza" value="${k}" ${dati.esperienza === k ? crudo("checked") : ""}>
-                <span class="opzione-nome">${{ prima_volta: "No, è la prima volta", con_istruttore: "Sì, con un istruttore", autonomo: "Sì, so fare sicura da solo" }[k]}</span></label>`)}
-          </div>
-          ${errori.esperienza ? html`<p class="errore-campo">${errori.esperienza}</p>` : ""}
-        </fieldset>
-        <fieldset>
-          <legend>Quando vuoi venire</legend>
-          <div class="campi-due">
-            ${campo("data_prova", "Giorno in cui pensi di venire", dati, errori, { tipo: "date", extra: `min="${R.oggiISO()}"`, aiuto: "Facoltativo." })}
-            ${campo("note", "Vuoi dirci qualcosa?", dati, errori, { extra: 'maxlength="500"', aiuto: "Facoltativo." })}
           </div>
         </fieldset>
         <fieldset>
@@ -2350,8 +2456,7 @@ const Viste = (() => {
       nome: v("nome"), cognome: v("cognome"), data_nascita: v("data_nascita"), luogo_nascita: v("luogo_nascita"),
       codice_fiscale: v("codice_fiscale").toUpperCase().replace(/\s/g, ""), indirizzo: v("indirizzo"),
       email: v("email").toLowerCase(), telefono: v("telefono"), contatto_emergenza: v("contatto_emergenza"),
-      genitore: v("genitore"), data_prova: v("data_prova"), note: v("note"),
-      esperienza: (form.querySelector("input[name=esperienza]:checked") || {}).value || "",
+      genitore: v("genitore"),
       liberatoria: form.elements.liberatoria.checked, privacy: form.elements.privacy.checked, trappola: v("sito"),
     };
     const errori = {};
@@ -2363,11 +2468,9 @@ const Viste = (() => {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dati.email)) errori.email = "Scrivi un'email valida.";
     if (dati.codice_fiscale && !/^[A-Z0-9]{16}$/.test(dati.codice_fiscale)) errori.codice_fiscale = "Il codice fiscale ha 16 caratteri, solo lettere e numeri.";
     if (anni !== null && anni < 18 && !dati.genitore) errori.genitore = "Indica il genitore o tutore che accetta per te.";
-    if (dati.data_prova && dati.data_prova < R.oggiISO()) errori.data_prova = "Scegli un giorno da oggi in poi.";
-    if (!dati.esperienza) errori.esperienza = "Scegli una risposta.";
     if (!dati.liberatoria) errori.liberatoria = "Per iscriverti devi accettare la liberatoria.";
     if (!dati.privacy) errori.privacy = "Per iscriverti devi accettare l'informativa sulla privacy.";
-    const lunghezze = { nome: 60, cognome: 60, luogo_nascita: 80, indirizzo: 160, email: 120, telefono: 30, contatto_emergenza: 120, genitore: 120, note: 500 };
+    const lunghezze = { nome: 60, cognome: 60, luogo_nascita: 80, indirizzo: 160, email: 120, telefono: 30, contatto_emergenza: 120, genitore: 120 };
     Object.keys(lunghezze).forEach((k) => { if (dati[k].length > lunghezze[k]) errori[k] = "Testo troppo lungo."; });
     return { dati, errori };
   }
@@ -2387,15 +2490,14 @@ const Viste = (() => {
           nome: dati.nome, cognome: dati.cognome, data_nascita: dati.data_nascita, luogo_nascita: dati.luogo_nascita,
           codice_fiscale: facoltativo(dati.codice_fiscale), email: dati.email, telefono: dati.telefono,
           indirizzo: facoltativo(dati.indirizzo), contatto_emergenza: dati.contatto_emergenza,
-          genitore: anni < 18 ? dati.genitore : null, esperienza: dati.esperienza,
-          data_prova: facoltativo(dati.data_prova), note: facoltativo(dati.note),
+          genitore: anni < 18 ? dati.genitore : null,
           liberatoria_accettata: true, privacy_accettata: true, accettato_il: adesso, creato_il: adesso, stato: "nuova",
         });
       }
       mostra(html`
         <section class="pannello-centrale">
           <h1>Grazie, ${dati.nome}!</h1>
-          <p>La tua iscrizione è arrivata. ${dati.data_prova ? `Ti aspettiamo il ${R.dataIt(dati.data_prova)}.` : "Ti aspettiamo in palestra."}</p>
+          <p>La tua iscrizione è arrivata. Ti aspettiamo in palestra.</p>
           <p>In reception ti basterà dire il tuo nome e pagare l'ingresso di prova. Porta scarpe comode e abbigliamento sportivo.</p>
         </section>`);
     } catch (e) {
