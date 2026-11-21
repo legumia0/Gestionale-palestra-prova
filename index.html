@@ -488,6 +488,72 @@ button.filtro[aria-pressed="true"] { color: var(--pannello); background: var(--i
   .riga-barra-nome { grid-column: 1 / -1; }
 }
 
+
+/* ================================================================ PASSO 3 */
+/* prima dell'accesso si vede solo il riquadro di accesso */
+body.senza-accesso { display: block; }
+.senza-accesso .barra { display: none; }
+.senza-accesso .contenuto { margin: 0 auto; }
+.marchio-grande { font-weight: 800; font-size: 1.125rem; margin-bottom: 1.25rem; }
+.pannello-centrale .pulsante-largo { width: 100%; margin-top: 0.25rem; }
+.pannello-centrale .pulsante-testo { margin-top: 0.5rem; }
+.pulsante-largo { width: 100%; }
+
+.operatore { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.25rem 0.75rem; }
+.pulsante-esci { color: #DCE3E7; padding: 0.3rem 0; min-height: 36px; }
+.pulsante-esci:hover { color: #fff; }
+
+.blocco { display: block; }
+.piccolo { font-size: var(--piccolo); margin: 0.15rem 0 0; }
+.link-da-copiare { overflow-wrap: anywhere; font-weight: 500; }
+
+/* utenti */
+.legenda-ruoli { margin-bottom: 1.5rem; }
+.elenco-utenti { margin-bottom: 2rem; }
+.riga-utente {
+  display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(9rem, 0.8fr) auto; gap: 0.5rem 1rem; align-items: center;
+  padding: 0.85rem 1rem; border-top: 1px solid var(--linea);
+}
+.riga-utente:first-child { border-top: 0; }
+.riga-utente select, .modulo-compatto select {
+  font: inherit; font-size: 16px; padding: 0.5rem 0.6rem; min-height: 44px; width: 100%;
+  border: 1.5px solid var(--ink-soft); border-radius: var(--raggio); background: var(--pannello); color: var(--ink);
+}
+.azioni-utente { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: flex-end; }
+.riga-password { grid-column: 1 / -1; }
+.riga-password input { font: inherit; font-size: 16px; padding: 0.45rem 0.6rem; min-height: 44px; border: 1.5px solid var(--ink-soft); border-radius: var(--raggio); background: var(--pannello); color: var(--ink); }
+
+/* tesseramento FASI */
+.schede-fasi { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: 1rem; }
+.scheda-fasi { background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); padding: 1rem 1.1rem; }
+.scheda-fasi header { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 0.75rem; align-items: start; margin-bottom: 0.75rem; }
+.scheda-fasi h2 { font-size: 1.0625rem; margin: 0; }
+.scheda-fasi h2 a { color: var(--ink); text-decoration: none; }
+.scheda-fasi .dati { margin-bottom: 0.5rem; }
+.modulo-tessera { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 0 0.75rem; align-items: end; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--linea); }
+.modulo-tessera .campo { margin-bottom: 0.6rem; }
+.modulo-tessera .errore-campo, .modulo-tessera button[type=submit] { grid-column: 1 / -1; }
+
+/* iscrizioni online in reception */
+.richieste .elenco-clienti { border-left: 4px solid var(--blu); }
+
+@media (max-width: 600px) {
+  .riga-utente { grid-template-columns: minmax(0, 1fr); }
+  .azioni-utente { justify-content: flex-start; }
+  .modulo-tessera { grid-template-columns: minmax(0, 1fr); }
+}
+
+
+/* pagina pubblica di iscrizione */
+body.pagina-pubblica { display: block; }
+.testata-pubblica { background: var(--barra); color: #fff; padding: 1rem max(5vw, 16px); }
+.marchio-pubblico { margin: 0; font-weight: 800; font-size: 1.25rem; }
+.contenuto-pubblico { max-width: 760px; margin: 0 auto; }
+.testo-legale { margin: 0.5rem 0; background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); }
+.testo-legale summary { cursor: pointer; padding: 0.75rem 1rem; font-weight: 500; color: var(--link); min-height: 44px; }
+.testo-legale-corpo { padding: 0 1rem 1rem; white-space: pre-line; max-height: 22rem; overflow-y: auto; font-size: 0.9375rem; }
+.spunta.campo-errore span { color: var(--rosso); }
+
 /* ---------------------------------------------- tablet stretto e telefono */
 @media (max-width: 860px) {
   body { display: block; }
@@ -510,16 +576,18 @@ button.filtro[aria-pressed="true"] { color: var(--pannello); background: var(--i
 
 </style>
 </head>
-<body>
+<body class="senza-accesso">
   <!-- Menu: a sinistra sul computer, in alto su tablet stretto e telefono -->
   <header class="barra">
     <a class="marchio" href="#oggi">Palestra di arrampicata</a>
     <nav class="menu" aria-label="Menu principale">
-      <a href="#oggi" data-vista="oggi">Oggi</a>
-      <a href="#clienti" data-vista="clienti">Clienti</a>
-      <a href="#cassa" data-vista="cassa">Cassa</a>
-      <a href="#dashboard" data-vista="dashboard">Dashboard</a>
-      <a href="#impostazioni" data-vista="impostazioni">Impostazioni</a>
+      <!-- data-permesso: la voce compare solo ai ruoli che possono usarla -->
+      <a href="#oggi" data-vista="oggi" data-permesso="oggi">Oggi</a>
+      <a href="#clienti" data-vista="clienti" data-permesso="clienti">Clienti</a>
+      <a href="#cassa" data-vista="cassa" data-permesso="cassa">Cassa</a>
+      <a href="#dashboard" data-vista="dashboard" data-permesso="dashboard">Dashboard</a>
+      <a href="#tesseramento" data-vista="tesseramento" data-permesso="tesseramento">Tesseramento</a>
+      <a href="#impostazioni" data-vista="impostazioni" data-permesso="impostazioni">Impostazioni</a>
     </nav>
     <p class="operatore"></p>
   </header>
@@ -533,6 +601,8 @@ button.filtro[aria-pressed="true"] { color: var(--pannello); background: var(--i
   <!-- Messaggi brevi dopo un'azione (ingresso registrato, vendita…) -->
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
+  <!-- config.js contiene i dati del progetto Firebase. Se manca, parte la versione di prova. -->
+  <script src="config.js"></script>
   <!-- L'ordine conta: regole, database, operazioni, schermate, infine l'app -->
   <script>
 /* =====================================================================
@@ -595,7 +665,7 @@ const Regole = (() => {
   /* ---------------------------------------------- stato del cliente */
   function scadenza(etichetta, valore, preavviso) {
     const giorni = giorniDaOggi(valore);
-    if (giorni === null) return { livello: "rosso", testo: `${etichetta}: manca` };
+    if (giorni === null) return { livello: "rosso", testo: `${etichetta}: manca`, manca: true };
     if (giorni < 0) return { livello: "rosso", testo: `${etichetta} scaduto il ${dataIt(valore)}` };
     if (giorni <= preavviso) return { livello: "giallo", testo: `${etichetta} scade il ${dataIt(valore)}` };
     return null;
@@ -606,12 +676,12 @@ const Regole = (() => {
     const lista = [];
     const preavviso = imp.giorni_preavviso;
     const cert = scadenza("Certificato medico", c.scadenza_certificato, preavviso);
-    if (cert) lista.push(cert);
+    if (cert) lista.push(Object.assign(cert, { campo: "certificato" }));
     if (imp.usa_tesseramento) {
       const tess = scadenza("Tesseramento", c.scadenza_tessera, preavviso);
-      if (tess) lista.push(tess);
+      if (tess) lista.push(Object.assign(tess, { campo: "tessera" }));
     }
-    if (!c.liberatoria_il) lista.push({ livello: "rosso", testo: "Liberatoria da firmare" });
+    if (!c.liberatoria_il) lista.push({ livello: "rosso", testo: "Liberatoria da firmare", campo: "liberatoria" });
     return lista.sort((a, b) => (a.livello === "rosso" ? 0 : 1) - (b.livello === "rosso" ? 0 : 1));
   }
 
@@ -642,7 +712,7 @@ const Regole = (() => {
     `${a.cognome} ${a.nome}`.localeCompare(`${b.cognome} ${b.nome}`, "it", { sensitivity: "base" });
 
   /* ------------------------------------------------- modulo cliente */
-  const CAMPI_TESTO = ["nome", "cognome", "codice_fiscale", "email", "telefono", "indirizzo",
+  const CAMPI_TESTO = ["nome", "cognome", "luogo_nascita", "codice_fiscale", "email", "telefono", "indirizzo",
                        "contatto_emergenza", "numero_tessera", "note"];
   const CAMPI_DATA = ["data_nascita", "scadenza_tessera", "scadenza_certificato", "liberatoria_il", "privacy_il"];
 
@@ -775,7 +845,65 @@ const Regole = (() => {
     return { saldo, ultima };
   }
 
-  return { oggiISO, dataTra, adessoISO, aggiungiGiorni, oraAdesso, meseAnno, giornoBreve,
+  /* ====================================================== PASSO 3 */
+
+  /* ---------------------------------------------- ruoli e permessi */
+  const RUOLI = {
+    manager: { nome: "Manager", aiuto: "Può fare tutto, compreso creare e gestire gli account dello staff." },
+    normale: { nome: "Normale", aiuto: "Reception, cassa, dashboard, listino e impostazioni: tutto tranne gli account." },
+    fasi:    { nome: "Compilatore FASI", aiuto: "Vede i clienti e gestisce solo il tesseramento FASI." },
+  };
+  const TUTTO = ["oggi", "clienti", "modifica_clienti", "reception", "cassa", "dashboard", "listino",
+                 "impostazioni", "tesseramento", "richieste", "elimina", "dati", "utenti"];
+  const PERMESSI = {
+    manager: TUTTO,
+    normale: TUTTO.filter((p) => p !== "utenti"),
+    fasi: ["clienti", "tesseramento"],
+    lettura: ["oggi", "clienti"],          // su claude.ai senza permesso di modifica
+  };
+  // "manager", "normale", "compilatore FASI": il nome del ruolo dentro una frase
+  const ruoloInFrase = (r) => (RUOLI[r] ? RUOLI[r].nome.charAt(0).toLowerCase() + RUOLI[r].nome.slice(1) : r);
+  const puo = (ruolo, cosa) => !!ruolo && (PERMESSI[ruolo] || []).indexOf(cosa) >= 0;
+
+  /* ------------------------------------------------- tesseramento FASI */
+  // Stato della tessera: "manca", "scaduta", "in_scadenza", "ok"
+  function statoTessera(c, preavviso) {
+    if (!c.numero_tessera || !c.scadenza_tessera) return "manca";
+    const g = giorniDaOggi(c.scadenza_tessera);
+    if (g === null) return "manca";
+    if (g < 0) return "scaduta";
+    if (g <= preavviso) return "in_scadenza";
+    return "ok";
+  }
+  // I dati che servono per tesserare una persona
+  const DATI_FASI = [["data_nascita", "data di nascita"], ["luogo_nascita", "luogo di nascita"],
+                     ["codice_fiscale", "codice fiscale"], ["indirizzo", "indirizzo di residenza"], ["email", "email"]];
+  const mancantiFasi = (c) => DATI_FASI.filter(([campo]) => !c[campo]).map(([, nome]) => nome);
+
+  /* --------------------------------------- iscrizione online -> cliente */
+  const ESPERIENZE = {
+    prima_volta: "È la prima volta che arrampica",
+    con_istruttore: "Ha già arrampicato con un istruttore",
+    autonomo: "Dichiara di saper fare sicura in autonomia (da verificare)",
+  };
+  function clienteDaRichiesta(r) {
+    const giorno = (r.accettato_il || r.creato_il || "").slice(0, 10) || oggiISO();
+    const note = [ESPERIENZE[r.esperienza] || "", r.genitore ? `Genitore o tutore: ${r.genitore}` : "", r.note || ""]
+      .filter(Boolean).join(". ");
+    return {
+      nome: r.nome, cognome: r.cognome, data_nascita: r.data_nascita || null, luogo_nascita: r.luogo_nascita || null,
+      codice_fiscale: r.codice_fiscale || null, email: r.email || null, telefono: r.telefono || null,
+      indirizzo: r.indirizzo || null, contatto_emergenza: r.contatto_emergenza || r.genitore || null,
+      numero_tessera: null, scadenza_tessera: null, scadenza_certificato: null,
+      liberatoria_il: r.liberatoria_accettata ? giorno : null, privacy_il: r.privacy_accettata ? giorno : null,
+      autonomo: false, note: note || null, iscritto_online: true, richiesta_id: r.id,
+    };
+  }
+
+  // Avvisi che non fermano un ingresso di prova: certificato o tessera non ancora consegnati
+  const okPerProva = (a) => a.manca && (a.campo === "certificato" || a.campo === "tessera");
+
+  return { oggiISO, dataTra, adessoISO, okPerProva, RUOLI, ruoloInFrase, PERMESSI, puo, statoTessera, mancantiFasi, ESPERIENZE, clienteDaRichiesta, aggiungiGiorni, oraAdesso, meseAnno, giornoBreve,
            euro, leggiEuro, TIPI_LISTINO, METODI, CATEGORIE, eIncasso,
            statoAbbonamento, rimasti, copertura, saldoContanti, aData, dataIt, giorniDaOggi, eta, avvisi, colore,
            corrisponde, perCognome, leggiModuloCliente, CAMPI_UNICI };
@@ -914,47 +1042,157 @@ const ArchivioLocale = (() => {
 </script>
   <script>
 /* =====================================================================
-   ARCHIVIO: l'unico file che parla con il database.
+   ARCHIVIO ONLINE: Firebase di Google (database Firestore + accesso con password)
+   Si attiva quando nel sito c'è il file config.js con i dati del progetto Firebase.
+   Traduce i comandi di Firebase negli stessi comandi usati dal resto del
+   programma (collezioni e documenti), così le schermate non cambiano.
+   ===================================================================== */
+const ArchivioFirebase = (() => {
+  const VERSIONE = "13.1.0";
+  const BASE = "https://www.gstatic.com/firebasejs/" + VERSIONE + "/";
 
-   Aperta su claude.ai, la pagina usa il database di claude.ai: ci entrano
-   solo le persone a cui condividi la pagina (lo staff).
-   Aperta altrove (per esempio su GitHub Pages) usa l'archivio locale di
-   prova (archivio-locale.js): i dati restano nel browser del dispositivo.
-   Quando apriremo l'area clienti a tutti (Passo 6) si cambierà SOLO
-   questo file, per usare un database pubblico come Firestore di Google,
-   che funziona allo stesso modo (collezioni e documenti).
+  // I moduli di Firebase si scaricano da Google solo se servono.
+  // (Nei test si possono fornire già pronti in window.__FIREBASE_MODULI.)
+  async function caricaModuli() {
+    if (window.__FIREBASE_MODULI) return window.__FIREBASE_MODULI;
+    const [app, auth, firestore] = await Promise.all([
+      import(BASE + "firebase-app.js"),
+      import(BASE + "firebase-auth.js"),
+      import(BASE + "firebase-firestore.js"),
+    ]);
+    return { app, auth, firestore };
+  }
+
+  async function crea(config) {
+    const m = await caricaModuli();
+    const fs = m.firestore;
+    const app = m.app.initializeApp(config);
+    const firestore = fs.initializeFirestore(app, { ignoreUndefinedProperties: true });
+    const auth = m.auth.getAuth(app);
+    auth.languageCode = "it";                       // email di recupero password in italiano
+
+    /* --------------------------- database, con gli stessi comandi di sempre */
+    const foto = (s) => ({ id: s.id, exists: s.exists(), data: () => s.data(), metadata: s.metadata });
+    const fotoRicerca = (s) => ({ docs: s.docs.map(foto), size: s.size, empty: s.empty, metadata: s.metadata });
+
+    function documento(percorso) {
+      const ref = fs.doc(firestore, percorso);
+      return {
+        id: ref.id,
+        path: percorso,
+        get: async () => foto(await fs.getDoc(ref)),
+        set: (o) => fs.setDoc(ref, o),
+        update: (o) => fs.updateDoc(ref, o),
+        delete: () => fs.deleteDoc(ref),
+        onSnapshot: (dopo, errore) => fs.onSnapshot(ref, (s) => dopo(foto(s)), errore),
+      };
+    }
+    function ricerca(percorso, vincoli) {
+      const q = () => fs.query.apply(null, [fs.collection(firestore, percorso)].concat(vincoli));
+      return {
+        where: (campo, op, valore) => ricerca(percorso, vincoli.concat([fs.where(campo, op, valore)])),
+        orderBy: (campo, verso) => ricerca(percorso, vincoli.concat([fs.orderBy(campo, verso || "asc")])),
+        limit: (n) => ricerca(percorso, vincoli.concat([fs.limit(n)])),
+        get: async () => fotoRicerca(await fs.getDocs(q())),
+        onSnapshot: (dopo, errore) => fs.onSnapshot(q(), (s) => dopo(fotoRicerca(s)), errore),
+      };
+    }
+    function collezione(percorso) {
+      return Object.assign(ricerca(percorso, []), {
+        path: percorso,
+        doc: (id) => documento(percorso + "/" + id),
+      });
+    }
+    const db = { doc: documento, collection: collezione };
+
+    // Scritture a gruppi: o vanno tutte, o nessuna (massimo 450 per gruppo)
+    async function scriviInsieme(operazioni) {
+      for (let i = 0; i < operazioni.length; i += 450) {
+        const gruppo = fs.writeBatch(firestore);
+        operazioni.slice(i, i + 450).forEach(([tipo, percorso, dati]) => {
+          const ref = fs.doc(firestore, percorso);
+          if (tipo === "elimina") gruppo.delete(ref); else gruppo.set(ref, dati);
+        });
+        await gruppo.commit();
+      }
+    }
+
+    /* ------------------------------------------------- accesso con password */
+    const a = m.auth;
+    const accesso = {
+      suCambio: (funzione) => a.onAuthStateChanged(auth, (u) => funzione(u ? { uid: u.uid, email: u.email } : null)),
+      entra: (email, password) => a.signInWithEmailAndPassword(auth, email, password),
+      esci: () => a.signOut(auth),
+      creaAccount: async (email, password) => (await a.createUserWithEmailAndPassword(auth, email, password)).user.uid,
+      recupera: (email) => a.sendPasswordResetEmail(auth, email),
+      // Per creare l'account di un collega senza uscire dal proprio si usa una seconda
+      // "copia" di Firebase, che poi si chiude.
+      creaAccountCollega: async (email, password) => {
+        const seconda = m.app.initializeApp(config, "nuovo-utente-" + Date.now());
+        try {
+          const auth2 = a.getAuth(seconda);
+          const uid = (await a.createUserWithEmailAndPassword(auth2, email, password)).user.uid;
+          await a.signOut(auth2);
+          return uid;
+        } finally {
+          await m.app.deleteApp(seconda);
+        }
+      },
+    };
+
+    return { db, scriviInsieme, accesso };
+  }
+
+  return { crea, VERSIONE };
+})();
+
+</script>
+  <script>
+/* =====================================================================
+   ARCHIVIO: l'unico file che parla con il database (e con l'accesso).
+
+   Sceglie da solo dove salvare, in quest'ordine:
+   1. su claude.ai           → database della pagina di claude.ai
+   2. con config.js presente → database online Firebase (archivio-firebase.js)
+   3. altrimenti             → versione di prova nel browser (archivio-locale.js)
 
    Struttura dei dati (una "collezione" per tipo, un documento per riga):
      clienti/<id>        anagrafica e documenti
+     richieste/<id>      iscrizioni arrivate dal modulo online
      listino/<id>        cosa si vende: ingressi, carnet, abbonamenti, noleggi
      abbonamenti/<id>    carnet e abbonamenti venduti a un cliente
      ingressi/<id>       ogni passaggio in reception
      movimenti/<id>      ogni euro che entra o esce dalla cassa
-     chiusure/<id>       le chiusure di cassa (contanti contati a fine giornata)
-     impostazioni/palestra
+     chiusure/<id>       le chiusure di cassa
+     staff/<id>          chi lavora in palestra: nome, email, ruolo
+     impostazioni/palestra, sistema/avvio
    ===================================================================== */
 const Archivio = (() => {
   let db = null;
-  let utente = null;
-  let locale = null;
+  let utenteClaude = null;
+  let locale = null;            // motore della versione di prova
+  let online = null;            // motore Firebase
 
   const stato = {
-    modalita: "claude",   // "claude" = database online di claude.ai, "locale" = prova nel browser
+    modalita: "claude",   // "claude" | "online" | "locale"
     memoriaOk: true,      // solo per la prova: il browser lascia salvare i dati?
     disponibile: false,   // il database risponde?
-    puoScrivere: null,    // true / false / null = non si sa ancora
+    puoScrivere: null,    // solo su claude.ai: true / false / null = non si sa
     amministratore: false,
     idUtente: null,
     nomeUtente: "",
+    erroreAvvio: "",
   };
 
   const IMPOSTAZIONI_PREDEFINITE = {
     nome_palestra: "Palestra di arrampicata",
     usa_tesseramento: true,     // false se non rilasciate tessere associative
     giorni_preavviso: 30,       // da quanti giorni prima segnalare una scadenza
+    testo_liberatoria: "",
+    testo_privacy: "",
   };
 
-  const PREFISSI = { clienti: "c", listino: "l", abbonamenti: "a", ingressi: "i", movimenti: "m", chiusure: "k" };
+  const PREFISSI = { clienti: "c", listino: "l", abbonamenti: "a", ingressi: "i", movimenti: "m", chiusure: "k", richieste: "r", staff: "u" };
 
   const pausa = (ms) => new Promise((ok) => setTimeout(ok, ms));
   const conTempoMassimo = (promessa, ms) =>
@@ -968,26 +1206,36 @@ const Archivio = (() => {
 
   async function avvia() {
     const c = window.claude;
-    if (!c || typeof c.use !== "function") {
-      // Pagina aperta fuori da claude.ai: versione di prova con i dati nel browser
-      locale = ArchivioLocale.crea();
-      db = locale.db;
-      stato.modalita = "locale";
-      stato.memoriaOk = locale.memoriaOk();
-      stato.disponibile = true;
-      stato.puoScrivere = true;
-      stato.amministratore = true;
+    if (c && typeof c.use === "function") {
+      db = await conTempoMassimo(c.use("db").catch(() => null), 12000);
+      utenteClaude = await conTempoMassimo(c.use("user").catch(() => null), 12000);
+      stato.disponibile = !!db;
+      if (utenteClaude) {
+        try { stato.amministratore = !!(await utenteClaude.canEdit()); } catch (e) { /* resta false */ }
+        try { stato.puoScrivere = await utenteClaude.can("data.write"); } catch (e) { stato.puoScrivere = null; }
+        try { stato.idUtente = await utenteClaude.id(); } catch (e) { stato.idUtente = null; }
+        try { const io = await utenteClaude.me(); stato.nomeUtente = (io && io.name) || ""; } catch (e) { stato.nomeUtente = ""; }
+      }
       return stato;
     }
-    db = await conTempoMassimo(c.use("db").catch(() => null), 12000);
-    utente = await conTempoMassimo(c.use("user").catch(() => null), 12000);
-    stato.disponibile = !!db;
-    if (utente) {
-      try { stato.amministratore = !!(await utente.canEdit()); } catch (e) { /* resta false */ }
-      try { stato.puoScrivere = await utente.can("data.write"); } catch (e) { stato.puoScrivere = null; }
-      try { stato.idUtente = await utente.id(); } catch (e) { stato.idUtente = null; }
-      try { const io = await utente.me(); stato.nomeUtente = (io && io.name) || ""; } catch (e) { stato.nomeUtente = ""; }
+    if (window.CONFIG_FIREBASE && window.CONFIG_FIREBASE.projectId) {
+      stato.modalita = "online";
+      try {
+        online = await ArchivioFirebase.crea(window.CONFIG_FIREBASE);
+        db = online.db;
+        stato.disponibile = true;
+      } catch (e) {
+        console.warn(e);
+        stato.erroreAvvio = "Non riesco a collegarmi al database online. Controlla la connessione a internet e i dati in config.js.";
+      }
+      return stato;
     }
+    // Pagina aperta fuori da claude.ai e senza config.js: versione di prova nel browser
+    locale = ArchivioLocale.crea();
+    db = locale.db;
+    stato.modalita = "locale";
+    stato.memoriaOk = locale.memoriaOk();
+    stato.disponibile = true;
     return stato;
   }
 
@@ -1005,13 +1253,18 @@ const Archivio = (() => {
   }
 
   function messaggioErrore(e) {
+    if (e && e.messaggio) return e.messaggio;
     switch (e && e.code) {
+      case "permission-denied":
+        return "Il tuo ruolo non permette questa operazione, oppure il tuo account è stato disattivato.";
       case "invalid_argument":
         return "Non è stato possibile salvare: serve il permesso di modifica su questa pagina.";
       case "quota_exceeded":
         return stato.modalita === "locale"
           ? "La memoria del browser è piena. Scarica una copia di sicurezza da Impostazioni e libera spazio."
           : "Il database è pieno. Archivia o elimina i dati che non servono più.";
+      case "resource-exhausted":
+        return "Per oggi è stato raggiunto il limite gratuito di operazioni del database. Domani riparte da solo.";
       case "resource_exhausted":
         return "Troppe operazioni in poco tempo. Aspetta qualche secondo e riprova.";
       case "revoked":
@@ -1022,22 +1275,35 @@ const Archivio = (() => {
   }
 
   const conId = (doc) => Object.assign({ id: doc.id }, doc.data());
-  // Il database di claude.ai consegna al massimo 1000 righe per richiesta; l'archivio locale tutte.
-  const massimo = () => (stato.modalita === "locale" ? 1000000 : 1000);
+  // Il database di claude.ai consegna al massimo 1000 righe per richiesta
+  const limita = (q) => (stato.modalita === "claude" ? q.limit(1000) : q);
 
   /* ------------------------------------------------ operazioni generali */
-  // Ascolta un'intera collezione: la funzione viene richiamata a ogni modifica,
+  // Ascolta una collezione: la funzione viene richiamata a ogni modifica,
   // anche quelle fatte da un altro computer o da un'altra scheda.
   function ascolta(collezione, suDati, suErrore) {
-    return db.collection(collezione).limit(massimo())
+    return limita(db.collection(collezione))
       .onSnapshot((snap) => suDati(snap.docs.map(conId), snap.metadata), suErrore);
   }
 
+  // Solo le righe dal giorno indicato in poi: così si legge poco (il piano gratuito
+  // di Firebase conta le letture). Lo storico completo di un cliente si legge a parte.
+  function ascoltaDal(collezione, campo, dal, suDati, suErrore) {
+    return limita(db.collection(collezione).where(campo, ">=", dal))
+      .onSnapshot((snap) => suDati(snap.docs.map(conId), snap.metadata), suErrore);
+  }
+
+  async function leggiDove(collezione, campo, valore) {
+    const snap = await limita(db.collection(collezione).where(campo, "==", valore)).get();
+    return snap.docs.map(conId);
+  }
+
+  const aggiuntaAutore = () => ({ creato_da: stato.idUtente });
+
   async function crea(collezione, dati, id) {
     id = id || nuovoId(collezione);
-    await scrivi(() => db.doc(collezione + "/" + id).set(Object.assign({}, dati, {
+    await scrivi(() => db.doc(collezione + "/" + id).set(Object.assign(aggiuntaAutore(), dati, {
       creato_il: dati.creato_il || Regole.adessoISO(),
-      creato_da: stato.idUtente,
     })));
     return id;
   }
@@ -1053,34 +1319,30 @@ const Archivio = (() => {
     await scrivi(() => db.doc(collezione + "/" + id).delete());
   }
 
-  // Tanti documenti insieme (dati di esempio, ripristino): veloce nell'archivio locale,
-  // uno alla volta sul database online.
+  // Tanti documenti insieme (dati di esempio, ripristino)
   async function creaMolti(elenco) {
     const pronti = elenco.map(([collezione, dati, id]) => [
       collezione + "/" + (id || nuovoId(collezione)),
-      Object.assign({ creato_da: stato.idUtente }, dati, { creato_il: dati.creato_il || Regole.adessoISO() }),
+      Object.assign(aggiuntaAutore(), dati, { creato_il: dati.creato_il || Regole.adessoISO() }),
     ]);
     if (locale) return locale.scriviMolti(pronti);
+    if (online) return online.scriviInsieme(pronti.map(([p, d]) => ["scrivi", p, d]));
     for (const [percorso, dati] of pronti) await scrivi(() => db.doc(percorso).set(dati));
   }
 
   async function eliminaMolti(elenco) {
     const percorsi = elenco.map(([collezione, id]) => collezione + "/" + id);
     if (locale) return locale.eliminaMolti(percorsi);
+    if (online) return online.scriviInsieme(percorsi.map((p) => ["elimina", p]));
     for (const p of percorsi) await scrivi(() => db.doc(p).delete());
   }
 
   /* ----------------------------------------------------------- clienti */
-  // I clienti archiviati non si caricano sempre: servono di rado.
   function ascoltaClientiAttivi(suDati, suErrore) {
-    return db.collection("clienti").where("attivo", "==", true).limit(massimo())
+    return limita(db.collection("clienti").where("attivo", "==", true))
       .onSnapshot((snap) => suDati(snap.docs.map(conId), snap.metadata), suErrore);
   }
-
-  async function clientiArchiviati() {
-    const snap = await db.collection("clienti").where("attivo", "==", false).limit(massimo()).get();
-    return snap.docs.map(conId);
-  }
+  const clientiArchiviati = () => leggiDove("clienti", "attivo", false);
 
   async function leggiCliente(id) {
     const doc = await db.doc("clienti/" + id).get();
@@ -1089,13 +1351,18 @@ const Archivio = (() => {
 
   // Restituisce gli id dei clienti che hanno già quel valore (es. la stessa email)
   async function clientiCon(campo, valore) {
-    const snap = await db.collection("clienti").where(campo, "==", valore).limit(5).get();
-    return snap.docs.map((d) => d.id);
+    return (await leggiDove("clienti", campo, valore)).map((c) => c.id);
   }
 
   const creaCliente = (dati) => crea("clienti", Object.assign({}, dati, { attivo: true }));
   const aggiornaCliente = (id, modifiche) => aggiorna("clienti", id, modifiche);
   const eliminaCliente = (id) => elimina("clienti", id);
+
+  // Tutti gli ingressi e i pagamenti di un cliente, anche quelli vecchi
+  async function storicoCliente(id) {
+    const [ingressi, movimenti] = await Promise.all([leggiDove("ingressi", "cliente_id", id), leggiDove("movimenti", "cliente_id", id)]);
+    return { ingressi, movimenti };
+  }
 
   /* ------------------------------------------------------ impostazioni */
   function ascoltaImpostazioni(suDati, suErrore) {
@@ -1103,24 +1370,220 @@ const Archivio = (() => {
       (doc) => suDati(Object.assign({}, IMPOSTAZIONI_PREDEFINITE, doc.exists ? doc.data() : {})),
       suErrore);
   }
-
+  async function leggiImpostazioni() {
+    const doc = await db.doc("impostazioni/palestra").get();
+    return Object.assign({}, IMPOSTAZIONI_PREDEFINITE, doc.exists ? doc.data() : {});
+  }
   async function salvaImpostazioni(dati) {
-    await scrivi(() => db.doc("impostazioni/palestra").set(dati));
+    const attuali = await leggiImpostazioni();
+    await scrivi(() => db.doc("impostazioni/palestra").set(Object.assign({}, attuali, dati)));
   }
 
-  /* ------------------------------------- copia di sicurezza (solo prova) */
+  /* ------------------------------------------- iscrizioni online (richieste) */
+  function ascoltaRichiesteNuove(suDati, suErrore) {
+    return limita(db.collection("richieste").where("stato", "==", "nuova"))
+      .onSnapshot((snap) => suDati(snap.docs.map(conId), snap.metadata), suErrore);
+  }
+  async function leggiRichiesta(id) {
+    const doc = await db.doc("richieste/" + id).get();
+    return doc.exists ? conId(doc) : null;
+  }
+  // Dal modulo pubblico: si scrive solo una richiesta nuova, con i campi permessi dalle regole
+  async function inviaRichiesta(dati) {
+    const id = nuovoId("richieste");
+    await scrivi(() => db.doc("richieste/" + id).set(dati));
+    return id;
+  }
+
+  /* --------------------------------------------- accesso e utenti dello staff */
+  const SESSIONE = "gestionale-palestra-sessione";
+  let avvisaCambio = () => {};
+  let profilo = null;
+  let primoAvvioInCorso = false;   // durante la creazione del primo manager si ignora l'avviso "nuovo accesso"
+
+
+  async function impronta(password, sale) {
+    const byte = new TextEncoder().encode(sale + ":" + password);
+    if (window.crypto && crypto.subtle) {
+      const h = await crypto.subtle.digest("SHA-256", byte);
+      return Array.prototype.map.call(new Uint8Array(h), (b) => b.toString(16).padStart(2, "0")).join("");
+    }
+    let h = 2166136261;                       // riserva per browser senza crittografia (solo prova)
+    byte.forEach((b) => { h ^= b; h = Math.imul(h, 16777619); });
+    return (h >>> 0).toString(16);
+  }
+
+  async function leggiStaff(uid) {
+    const doc = await db.doc("staff/" + uid).get();
+    return doc.exists ? conId(doc) : null;
+  }
+
+  async function impostaProfilo(uid, email) {
+    if (!uid) { profilo = null; stato.idUtente = null; return avvisaCambio(null); }
+    let p = null;
+    try { p = await leggiStaff(uid); } catch (e) { p = null; }
+    if (!p || p.attivo === false) { profilo = null; stato.idUtente = null; return avvisaCambio({ nonAbilitato: true, email }); }
+    profilo = { uid, nome: p.nome, email: p.email || email, ruolo: p.ruolo };
+    stato.idUtente = uid;
+    stato.nomeUtente = p.nome;
+    avvisaCambio(profilo);
+  }
+
+  const erroreAccesso = (e) => {
+    const codice = (e && e.code) || "";
+    if (/invalid-credential|wrong-password|user-not-found|invalid-login/.test(codice)) return { messaggio: "Email o password non corrette." };
+    if (/too-many-requests/.test(codice)) return { messaggio: "Troppi tentativi sbagliati. Aspetta qualche minuto e riprova." };
+    if (/email-already-in-use/.test(codice)) return { messaggio: "Esiste già un account con questa email." };
+    if (/weak-password/.test(codice)) return { messaggio: "La password è troppo debole: usa almeno 8 caratteri." };
+    if (/invalid-email/.test(codice)) return { messaggio: "Questo indirizzo email non sembra corretto." };
+    if (/network/.test(codice)) return { messaggio: "Manca la connessione a internet." };
+    if (/operation-not-allowed/.test(codice)) return { messaggio: "Su Firebase l'accesso con email e password non è ancora attivo (Authentication → Metodo di accesso)." };
+    return e && e.messaggio ? e : { messaggio: messaggioErrore(e) };
+  };
+
+  const accesso = {
+    richiesto: () => stato.modalita !== "claude",
+
+    // All'avvio: chi è collegato? La funzione viene richiamata a ogni entrata e uscita.
+    suCambio(funzione) {
+      avvisaCambio = funzione;
+      if (stato.modalita === "claude") {
+        const ruolo = stato.puoScrivere === false ? "lettura" : stato.amministratore ? "manager" : "normale";
+        profilo = { uid: stato.idUtente, nome: stato.nomeUtente, ruolo };
+        return funzione(profilo);
+      }
+      if (online) return online.accesso.suCambio((u) => { if (!primoAvvioInCorso) impostaProfilo(u && u.uid, u && u.email); });
+      let uid = null;
+      try { uid = localStorage.getItem(SESSIONE); } catch (e) { uid = null; }
+      impostaProfilo(uid);
+    },
+
+    async servePrimoAvvio() {
+      return !(await db.doc("sistema/avvio").get()).exists;
+    },
+
+    // Il primo account è sempre il manager. Si può fare una volta sola.
+    async primoAvvio(nome, email, password) {
+      email = email.trim().toLowerCase();
+      try {
+        if (online) {
+          primoAvvioInCorso = true;
+          try {
+            const uid = await online.accesso.creaAccount(email, password);
+            await online.scriviInsieme([
+              ["scrivi", "staff/" + uid, { nome, email, ruolo: "manager", attivo: true, creato_il: Regole.adessoISO() }],
+              ["scrivi", "sistema/avvio", { creato_il: Regole.adessoISO(), da: uid }],
+            ]);
+            return impostaProfilo(uid, email);
+          } finally { primoAvvioInCorso = false; }
+        }
+        const uid = nuovoId("staff");
+        const sale = nuovoId("staff");
+        await db.doc("staff/" + uid).set({ nome, email, ruolo: "manager", attivo: true, sale, impronta: await impronta(password, sale), creato_il: Regole.adessoISO() });
+        await db.doc("sistema/avvio").set({ creato_il: Regole.adessoISO(), da: uid });
+        try { localStorage.setItem(SESSIONE, uid); } catch (e) { /* solo per questa visita */ }
+        return impostaProfilo(uid, email);
+      } catch (e) { throw erroreAccesso(e); }
+    },
+
+    async entra(email, password) {
+      email = email.trim().toLowerCase();
+      try {
+        if (online) { await online.accesso.entra(email, password); return; }   // il resto arriva da suCambio
+        const trovati = await leggiDove("staff", "email", email);
+        const u = trovati[0];
+        if (!u || u.impronta !== await impronta(password, u.sale)) throw { messaggio: "Email o password non corrette." };
+        if (u.attivo === false) throw { messaggio: "Questo account è stato disattivato. Chiedi al manager." };
+        try { localStorage.setItem(SESSIONE, u.id); } catch (e) { /* solo per questa visita */ }
+        await impostaProfilo(u.id, email);
+      } catch (e) { throw erroreAccesso(e); }
+    },
+
+    async esci() {
+      if (online) return online.accesso.esci();
+      try { localStorage.removeItem(SESSIONE); } catch (e) { /* niente */ }
+      impostaProfilo(null);
+    },
+
+    async recupera(email) {
+      if (!online) throw { messaggio: "Nella versione di prova la password la reimposta il manager, da Impostazioni → Utenti." };
+      try { await online.accesso.recupera(email.trim().toLowerCase()); } catch (e) { throw erroreAccesso(e); }
+    },
+
+    profilo: () => profilo,
+  };
+
+  const utenti = {
+    ascolta: (suDati, suErrore) => ascolta("staff", (lista) => suDati(lista.map((u) => {
+      const copia = Object.assign({}, u);
+      delete copia.impronta; delete copia.sale;          // le impronte delle password non servono alle schermate
+      return copia;
+    })), suErrore),
+
+    async crea(dati) {
+      const email = dati.email.trim().toLowerCase();
+      try {
+        if (online) {
+          const uid = await online.accesso.creaAccountCollega(email, dati.password);
+          await db.doc("staff/" + uid).set({ nome: dati.nome, email, ruolo: dati.ruolo, attivo: true, creato_il: Regole.adessoISO(), creato_da: stato.idUtente });
+          return uid;
+        }
+        if ((await leggiDove("staff", "email", email)).length) throw { messaggio: "Esiste già un account con questa email." };
+        const uid = nuovoId("staff");
+        const sale = nuovoId("staff");
+        await db.doc("staff/" + uid).set({ nome: dati.nome, email, ruolo: dati.ruolo, attivo: true, sale,
+          impronta: await impronta(dati.password, sale), creato_il: Regole.adessoISO(), creato_da: stato.idUtente });
+        return uid;
+      } catch (e) { throw erroreAccesso(e); }
+    },
+
+    aggiorna: (uid, modifiche) => aggiorna("staff", uid, modifiche),
+
+    // Versione di prova: il manager imposta una nuova password. Online: email per cambiarla.
+    async nuovaPassword(uid, email, password) {
+      if (online) { await accesso.recupera(email); return "online"; }
+      const sale = nuovoId("staff");
+      await aggiorna("staff", uid, { sale, impronta: await impronta(password, sale) });
+      return "locale";
+    },
+  };
+
+  /* --------------------------------------------- copia di sicurezza */
+  const COLLEZIONI_DATI = ["clienti", "richieste", "listino", "abbonamenti", "ingressi", "movimenti", "chiusure", "impostazioni"];
+
   const copiaSicurezza = {
-    disponibile: () => !!locale,
-    esporta: () => locale.esporta(),
-    importa: (testo) => locale.importa(testo),
+    // versione di prova: tutto quello che c'è nel browser; online: tutte le collezioni dei dati
+    async esporta() {
+      if (locale) return locale.esporta();
+      const dati = {};
+      for (const coll of COLLEZIONI_DATI) {
+        const snap = await db.collection(coll).get();
+        snap.docs.forEach((d) => { dati[coll + "/" + d.id] = d.data(); });
+      }
+      return JSON.stringify({ app: "gestionale-palestra", versione: 3, creato: new Date().toISOString(), dati });
+    },
+    // versione di prova: sostituisce tutto; online: aggiunge i dati della copia (non utenti e accessi)
+    async importa(testo) {
+      if (locale) return locale.importa(testo);
+      const pacchetto = JSON.parse(testo);
+      if (!pacchetto || pacchetto.app !== "gestionale-palestra" || typeof pacchetto.dati !== "object")
+        throw { messaggio: "Questo file non è una copia del gestionale." };
+      const operazioni = Object.keys(pacchetto.dati)
+        .filter((p) => COLLEZIONI_DATI.indexOf(p.split("/")[0]) >= 0)
+        .map((p) => ["scrivi", p, pacchetto.dati[p]]);
+      await online.scriviInsieme(operazioni);
+      return operazioni.length;
+    },
     dimensioneKB: () => (locale ? locale.dimensioneKB() : 0),
   };
 
   return { stato, IMPOSTAZIONI_PREDEFINITE, avvia, messaggioErrore, nuovoId,
-           ascolta, crea, aggiorna, elimina, creaMolti, eliminaMolti,
-           ascoltaClientiAttivi, clientiArchiviati, leggiCliente, clientiCon,
+           ascolta, ascoltaDal, leggiDove, crea, aggiorna, elimina, creaMolti, eliminaMolti,
+           ascoltaClientiAttivi, clientiArchiviati, leggiCliente, clientiCon, storicoCliente,
            creaCliente, aggiornaCliente, eliminaCliente,
-           ascoltaImpostazioni, salvaImpostazioni, copiaSicurezza };
+           ascoltaImpostazioni, leggiImpostazioni, salvaImpostazioni,
+           ascoltaRichiesteNuove, leggiRichiesta, inviaRichiesta,
+           accesso, utenti, copiaSicurezza };
 })();
 
 </script>
@@ -1255,25 +1718,35 @@ const Azioni = (() => {
 
   /* ---------------------------------------------------------- annullare */
   // Un errore si annulla, non si cancella: la riga resta nello storico, barrata.
+  // Righe recenti + storico completo dei clienti aperti, senza doppioni
+  function tutte(S, coll) {
+    const visti = {};
+    const lista = [];
+    S[coll].concat(...Object.keys(S.storici || {}).map((k) => S.storici[k][coll] || [])).forEach((x) => {
+      if (!visti[x.id]) { visti[x.id] = true; lista.push(x); }
+    });
+    return lista;
+  }
+
   async function annulla(S, tipo, id) {
     const segno = { annullato: true, annullato_il: R.adessoISO() };
     if (tipo === "ingressi") {
-      const ing = S.ingressi.find((x) => x.id === id);
+      const ing = tutte(S, "ingressi").find((x) => x.id === id);
       if (!ing || ing.annullato) return "Questo ingresso è già annullato.";
       await A.aggiorna("ingressi", id, segno);
       const abb = ing.modo === "carnet" && S.abbonamenti.find((a) => a.id === ing.abbonamento_id);
       if (abb) await A.aggiorna("abbonamenti", abb.id, { ingressi_usati: Math.max(0, (abb.ingressi_usati || 0) - 1) });
-      for (const m of S.movimenti.filter((m) => m.ingresso_id === id && !m.annullato)) await A.aggiorna("movimenti", m.id, segno);
+      for (const m of tutte(S, "movimenti").filter((m) => m.ingresso_id === id && !m.annullato)) await A.aggiorna("movimenti", m.id, segno);
       return "Ingresso annullato" + (abb ? ": l'ingresso è tornato sul carnet." : ".");
     }
     if (tipo === "abbonamenti") {
       const abb = S.abbonamenti.find((x) => x.id === id);
       if (!abb || abb.annullato) return "Questo abbonamento è già annullato.";
       await A.aggiorna("abbonamenti", id, segno);
-      for (const m of S.movimenti.filter((m) => m.abbonamento_id === id && !m.annullato)) await A.aggiorna("movimenti", m.id, segno);
+      for (const m of tutte(S, "movimenti").filter((m) => m.abbonamento_id === id && !m.annullato)) await A.aggiorna("movimenti", m.id, segno);
       return `${abb.nome} annullato. Se avevi incassato, il pagamento è stato tolto dalla cassa.`;
     }
-    const m = S.movimenti.find((x) => x.id === id);
+    const m = tutte(S, "movimenti").find((x) => x.id === id);
     if (!m || m.annullato) return "Questo movimento è già annullato.";
     if (m.abbonamento_id) return annulla(S, "abbonamenti", m.abbonamento_id);
     if (m.ingresso_id && m.categoria === "ingresso") return annulla(S, "ingressi", m.ingresso_id);
@@ -1462,32 +1935,71 @@ const Azioni = (() => {
   }
 
   /* -------------------------------------------------- copia di sicurezza */
-  function scaricaCopia() {
-    const testo = A.copiaSicurezza.esporta();
-    const blob = new Blob([testo], { type: "application/json" });
+  function scaricaFile(nome, testo, tipo) {
+    const blob = new Blob([testo], { type: tipo });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = `gestionale-palestra-copia-${R.oggiISO()}.json`;
+    link.download = nome;
     document.body.appendChild(link);
     link.click();
     setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+  }
+
+  async function scaricaCopia() {
+    scaricaFile(`gestionale-palestra-copia-${R.oggiISO()}.json`, await A.copiaSicurezza.esporta(), "application/json");
     return "Copia di sicurezza scaricata. Conservala in un posto sicuro (per esempio iCloud Drive o Google Drive).";
   }
 
-  function ripristina(file) {
+  function leggiFile(file) {
     return new Promise((ok, ko) => {
       const lettore = new FileReader();
-      lettore.onload = () => {
-        try { A.copiaSicurezza.importa(lettore.result); ok("Dati ripristinati dalla copia di sicurezza."); }
-        catch (e) { ko({ messaggio: e.message || "Il file non si può leggere." }); }
-      };
+      lettore.onload = () => ok(lettore.result);
       lettore.onerror = () => ko({ messaggio: "Il file non si può leggere." });
       lettore.readAsText(file);
     });
   }
 
-  return { registraIngresso, vendiAbbonamento, venditaBanco, movimentoManuale, chiudiCassa, annulla,
-           caricaListinoEsempio, salvaVoce, caricaDatiEsempio, eliminaDatiEsempio, scaricaCopia, ripristina };
+  async function ripristina(file) {
+    const testo = await leggiFile(file);
+    try {
+      const n = await A.copiaSicurezza.importa(testo);
+      return typeof n === "number" ? `Copiati nel database online ${n} documenti dalla copia.` : "Dati ripristinati dalla copia di sicurezza.";
+    } catch (e) {
+      throw e && e.messaggio ? e : { messaggio: (e && e.message) || "Il file non si può leggere." };
+    }
+  }
+
+  /* ------------------------------------------------- iscrizioni online */
+  // Dalla richiesta online nasce il cliente (oppure si collega a uno che c'è già)
+  async function accogliRichiesta(S, richiesta, idEsistente) {
+    let id = idEsistente;
+    if (!id) id = await A.creaCliente(R.clienteDaRichiesta(richiesta));
+    await A.aggiorna("richieste", richiesta.id, { stato: "accolta", cliente_id: id, accolta_il: R.adessoISO() });
+    return id;
+  }
+  const scartaRichiesta = (id) => A.aggiorna("richieste", id, { stato: "scartata", scartata_il: R.adessoISO() });
+
+  /* ------------------------------------------------- tesseramento FASI */
+  async function registraTessera(cliente, numero, scadenza) {
+    await A.aggiornaCliente(cliente.id, { numero_tessera: numero.toUpperCase(), scadenza_tessera: scadenza, tesserato_il: R.oggiISO() });
+    return `Tessera ${numero.toUpperCase()} registrata per ${nomeCliente(cliente)}, valida fino al ${R.dataIt(scadenza)}.`;
+  }
+
+  // Elenco per un foglio di calcolo (Excel e Numbers aprono il formato CSV con il punto e virgola)
+  function scaricaElencoFasi(clienti) {
+    const campi = [["cognome", "Cognome"], ["nome", "Nome"], ["data_nascita", "Data di nascita"], ["luogo_nascita", "Luogo di nascita"],
+      ["codice_fiscale", "Codice fiscale"], ["indirizzo", "Indirizzo"], ["email", "Email"], ["telefono", "Telefono"],
+      ["numero_tessera", "Tessera"], ["scadenza_tessera", "Scadenza tessera"]];
+    const cella = (v) => `"${String(v === null || v === undefined ? "" : v).replace(/"/g, '""')}"`;
+    const righe = [campi.map(([, t]) => cella(t)).join(";")].concat(clienti.map((c) => campi.map(([k]) =>
+      cella(k.indexOf("data") === 0 || k.indexOf("scadenza") === 0 ? R.dataIt(c[k]) : c[k])).join(";")));
+    scaricaFile(`tesseramento-fasi-${R.oggiISO()}.csv`, "\ufeff" + righe.join("\r\n"), "text/csv");
+    return `Elenco scaricato: ${clienti.length} ${clienti.length === 1 ? "persona" : "persone"}.`;
+  }
+
+  return { registraIngresso, vendiAbbonamento, venditaBanco, movimentoManuale, chiudiCassa, annulla, tutte,
+           caricaListinoEsempio, salvaVoce, caricaDatiEsempio, eliminaDatiEsempio, scaricaCopia, ripristina,
+           accogliRichiesta, scartaRichiesta, registraTessera, scaricaElencoFasi };
 })();
 
 </script>
@@ -1512,6 +2024,7 @@ const Viste = (() => {
   const crudo = (t) => new Sicuro(t);             // solo per attributi scritti da noi
 
   const R = Regole;
+  const puo = (S, cosa) => R.puo(S.ruolo, cosa);
   const plurale = (n, uno, tanti) => `${n} ${n === 1 ? uno : tanti}`;
   const maiuscola = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 
@@ -1613,6 +2126,51 @@ const Viste = (() => {
       <p class="aiuto">Se l'hai già aperta da lì, controlla la connessione a internet e ricarica.</p>
     </section>`;
 
+  // Accesso: entra, primo avvio, account non abilitato
+  function accesso(S, modo, errore, info) {
+    const nome = S.imp.nome_palestra;
+    const testa = html`<p class="marchio-grande">${nome}</p>`;
+    const err = errore ? html`<p class="avviso-flash avviso-errore" role="alert">${errore}</p>` : "";
+    const ok = info ? html`<p class="avviso-flash" role="status">${info}</p>` : "";
+    if (modo === "primo") return html`
+      <section class="pannello-centrale">
+        ${testa}<h1>Primo avvio</h1>
+        <p>Crea l'account del <strong>manager</strong>: potrà aggiungere gli altri utenti dello staff.</p>
+        ${err}
+        <form class="modulo" data-modulo="primo-avvio" novalidate>
+          ${campo("nome", "Il tuo nome", {}, {}, { extra: 'autocomplete="name" required' })}
+          ${campo("email", "Email", {}, {}, { tipo: "email", extra: 'autocomplete="username" autocapitalize="off" required' })}
+          ${campo("password", "Password", {}, {}, { tipo: "password", extra: 'autocomplete="new-password" minlength="8" required', aiuto: "Almeno 8 caratteri." })}
+          <button type="submit" class="pulsante pulsante-primario pulsante-largo">Crea l'account e inizia</button>
+        </form>
+      </section>`;
+    if (modo === "non-abilitato") return html`
+      <section class="pannello-centrale">
+        ${testa}<h1>Account non abilitato</h1>
+        <p>L'account ${info || ""} esiste, ma non è abilitato a usare il gestionale: forse è stato disattivato
+           o non è ancora stato creato dal manager.</p>
+        <button type="button" class="pulsante" data-azione="esci">Esci</button>
+      </section>`;
+    return html`
+      <section class="pannello-centrale">
+        ${testa}<h1>Accesso staff</h1>
+        ${err}${ok}
+        <form class="modulo" data-modulo="entra" novalidate>
+          ${campo("email", "Email", {}, {}, { tipo: "email", extra: 'autocomplete="username" autocapitalize="off" required' })}
+          ${campo("password", "Password", {}, {}, { tipo: "password", extra: 'autocomplete="current-password" required' })}
+          <button type="submit" class="pulsante pulsante-primario pulsante-largo">Entra</button>
+        </form>
+        <button type="button" class="pulsante-testo" data-azione="recupera">Ho dimenticato la password</button>
+        ${S.modalita === "locale" ? html`<p class="aiuto">Versione di prova: utenti e dati sono salvati solo in questo browser.</p>` : ""}
+      </section>`;
+  }
+
+  const nonPermesso = () => html`
+    <section class="pannello-centrale">
+      <h1>Questa pagina non è per il tuo ruolo</h1>
+      <p>Se ti serve, chiedi al manager di cambiare il tuo ruolo.</p>
+    </section>`;
+
   const nonTrovato = () => html`
     <section class="pannello-centrale">
       <h1>Questo cliente non esiste</h1>
@@ -1629,7 +2187,7 @@ const Viste = (() => {
       <p class="aiuto">I risultati compaiono mentre scrivi. Con un numero di tessera esatto, Invio apre la scheda.</p>
     </section>
     <div class="azioni-rapide">
-      ${S.puoScrivere ? html`<a class="pulsante" href="#nuovo-cliente">Nuovo cliente</a>` : ""}
+      ${puo(S, "modifica_clienti") ? html`<a class="pulsante" href="#nuovo-cliente">Nuovo cliente</a>` : ""}
       <p class="riepilogo" id="riepilogo">${riepilogo(S)}</p>
     </div>
     <section id="zona-oggi">${zonaOggi(S)}</section>`;
@@ -1662,6 +2220,24 @@ const Viste = (() => {
       </ol>`;
   }
 
+  function richiesteDaAccogliere(S) {
+    if (!puo(S, "richieste") || !S.richieste.length) return "";
+    const lista = S.richieste.slice().sort((a, b) => (a.creato_il < b.creato_il ? 1 : -1));
+    return html`
+      <section class="sezione richieste">
+        <h2>Iscrizioni online da accogliere <span class="conteggio">${lista.length}</span></h2>
+        <p class="aiuto">Hanno compilato il modulo e accettato liberatoria e privacy. Tocca il nome quando arrivano in reception.</p>
+        <div class="elenco-clienti">
+          ${lista.map((r) => html`
+            <a class="riga-listino" href="#richiesta-${r.id}">
+              <span class="riga-nome">${r.cognome} ${r.nome}</span>
+              <span class="riga-dati">${r.data_prova ? `Vuole provare il ${R.dataIt(r.data_prova)}` : "Nessuna data indicata"}</span>
+              <span class="riga-prezzo">${R.giornoBreve(r.creato_il)}</span>
+            </a>`)}
+        </div>
+      </section>`;
+  }
+
   function zonaOggi(S) {
     if (!S.caricati) return caricamento(S.lento ? "Il database non risponde ancora. Controlla la connessione." : "Carico i clienti…");
     if (S.ricerca.trim()) {
@@ -1673,9 +2249,10 @@ const Viste = (() => {
                <a class="pulsante" href="#clienti-archiviati">Cerca tra gli archiviati</a></div>`;
     }
     if (!S.clienti.length) return html`
+      ${richiesteDaAccogliere(S)}
       <div class="vuoto"><p>Non ci sono ancora clienti.</p>
         <div class="azioni-modulo azioni-centro">
-          ${S.puoScrivere ? html`<a class="pulsante pulsante-primario" href="#nuovo-cliente">Aggiungi il primo cliente</a>` : ""}
+          ${puo(S, "modifica_clienti") ? html`<a class="pulsante pulsante-primario" href="#nuovo-cliente">Aggiungi il primo cliente</a>` : ""}
           ${S.modalita === "locale" ? html`<button type="button" class="pulsante" data-azione="carica-esempi">Carica dati di esempio</button>` : ""}
         </div></div>`;
     const daSistemare = S.clienti
@@ -1684,6 +2261,7 @@ const Viste = (() => {
       .sort((a, b) => (a.col === "rosso" ? 0 : 1) - (b.col === "rosso" ? 0 : 1))
       .map((r) => r.c);
     return html`
+      ${richiesteDaAccogliere(S)}
       <section class="sezione">${entratiOggi(S)}</section>
       <section class="sezione">
         ${daSistemare.length ? html`
@@ -1701,7 +2279,7 @@ const Viste = (() => {
   const clienti = (S, filtro) => html`
     <div class="intestazione">
       <h1>Clienti</h1>
-      ${S.puoScrivere ? html`<a class="pulsante pulsante-primario" href="#nuovo-cliente">Nuovo cliente</a>` : ""}
+      ${puo(S, "modifica_clienti") ? html`<a class="pulsante pulsante-primario" href="#nuovo-cliente">Nuovo cliente</a>` : ""}
     </div>
     <div class="ricerca">
       <label for="cerca" class="nascosto">Cerca</label>
@@ -1730,7 +2308,7 @@ const Viste = (() => {
     if (S.ricerca.trim()) return html`
       <div class="vuoto"><p>Nessun cliente trovato per “${S.ricerca.trim()}”.</p>
         <p class="aiuto">Prova con il solo cognome, oppure aggiungilo come nuovo cliente.</p>
-        ${S.puoScrivere ? html`<a class="pulsante pulsante-primario" href="#nuovo-cliente">Nuovo cliente</a>` : ""}</div>`;
+        ${puo(S, "modifica_clienti") ? html`<a class="pulsante pulsante-primario" href="#nuovo-cliente">Nuovo cliente</a>` : ""}</div>`;
     return html`<p class="vuoto">Nessun cliente in questo elenco.</p>`;
   }
 
@@ -1745,7 +2323,7 @@ const Viste = (() => {
     };
     const voce = (etichetta, valore, mancante) => html`
       <dt>${etichetta}</dt><dd>${valore || html`<span class="manca">${mancante}</span>`}</dd>`;
-    const scrive = S.puoScrivere;
+    const scrive = puo(S, "modifica_clienti");
 
     return html`
       <a class="indietro" href="#clienti">Torna ai clienti</a>
@@ -1756,6 +2334,7 @@ const Viste = (() => {
           <p class="sottotitolo">
             ${c.numero_tessera ? `Tessera ${c.numero_tessera}. ` : ""}${anni !== null ? `${anni} anni. ` : ""}Cliente dal ${R.dataIt(c.creato_il)}.
             ${c.esempio ? html`<span class="etichetta">esempio</span>` : ""}
+            ${c.iscritto_online ? html`<span class="etichetta">iscritto online</span>` : ""}
           </p>
         </div>
         ${scrive ? html`<a class="pulsante" href="#modifica-${c.id}">Modifica</a>` : ""}
@@ -1773,7 +2352,8 @@ const Viste = (() => {
           ? html`<button type="button" class="pulsante pulsante-primario" data-azione="liberatoria" data-id="${c.id}">Liberatoria firmata oggi</button>` : ""}
       </section>
 
-      ${c.attivo ? boxAbbonamento(S, c, av) : ""}
+      ${c.attivo && puo(S, "reception") ? boxAbbonamento(S, c, av) : ""}
+      ${puo(S, "tesseramento") && !puo(S, "reception") ? boxTessera(S, c) : ""}
 
       <div class="griglia-dati">
         <section class="sezione">
@@ -1781,7 +2361,7 @@ const Viste = (() => {
           <dl class="dati">
             ${voce("Telefono", c.telefono, "non indicato")}
             ${voce("Email", c.email, "non indicata")}
-            ${voce("Indirizzo", c.indirizzo, "non indicato")}
+            ${voce("Indirizzo di residenza", c.indirizzo, "non indicato")}
             ${voce("In caso di emergenza", c.contatto_emergenza, "non indicato")}
           </dl>
         </section>
@@ -1793,6 +2373,7 @@ const Viste = (() => {
             ${S.imp.usa_tesseramento ? voce("Tesseramento", c.scadenza_tessera && `valido fino al ${R.dataIt(c.scadenza_tessera)}`, "non tesserato") : ""}
             ${voce("Consenso privacy", c.privacy_il && `dato il ${R.dataIt(c.privacy_il)}`, "non registrato")}
             ${voce("Data di nascita", R.dataIt(c.data_nascita), "non indicata")}
+            ${voce("Luogo di nascita", c.luogo_nascita, "non indicato")}
             ${voce("Codice fiscale", c.codice_fiscale, "non indicato")}
           </dl>
         </section>
@@ -1800,7 +2381,7 @@ const Viste = (() => {
 
       ${c.note ? html`<section class="sezione"><h2>Note</h2><p class="note">${c.note}</p></section>` : ""}
 
-      ${storico(S, c)}
+      ${puo(S, "reception") ? storico(S, c) : ""}
 
       ${scrive ? html`
         <div class="zona-archivio">
@@ -1809,7 +2390,7 @@ const Viste = (() => {
                    <p class="aiuto">Il cliente sparisce dagli elenchi ma i suoi dati restano. Puoi riattivarlo quando vuoi.</p>`
             : html`<div class="azioni-modulo">
                      <button type="button" class="pulsante pulsante-primario" data-azione="riattiva" data-id="${c.id}">Riattiva cliente</button>
-                     ${S.amministratore ? html`<button type="button" class="pulsante pulsante-pericolo" data-mostra="conferma-elimina">Elimina definitivamente</button>` : ""}
+                     ${puo(S, "elimina") ? html`<button type="button" class="pulsante pulsante-pericolo" data-mostra="conferma-elimina">Elimina definitivamente</button>` : ""}
                    </div>
                    <div class="conferma" id="conferma-elimina" hidden>
                      <p><strong>Eliminare per sempre ${c.nome} ${c.cognome}?</strong>
@@ -1828,7 +2409,7 @@ const Viste = (() => {
     const suoi = S.abbonamenti.filter((a) => a.cliente_id === c.id);
     const attivi = suoi.filter((a) => R.statoAbbonamento(a) === "attivo").sort((x, y) => (x.data_fine || "9") < (y.data_fine || "9") ? -1 : 1);
     const futuri = suoi.filter((a) => R.statoAbbonamento(a) === "futuro");
-    const ingressi = S.ingressi.filter((i) => i.cliente_id === c.id && !i.annullato)
+    const ingressi = Azioni.tutte(S, "ingressi").filter((i) => i.cliente_id === c.id && !i.annullato)
       .sort((a, b) => (a.data + a.ora < b.data + b.ora ? 1 : -1));
     const ultimo = ingressi[0];
     const descrivi = (a) => {
@@ -1845,7 +2426,7 @@ const Viste = (() => {
           : html`<p>Nessun abbonamento attivo: l'ingresso si paga.</p>`}
         ${futuri.map((a) => html`<p class="aiuto">${a.nome} già pagato: inizia il ${R.dataIt(a.data_inizio)}.</p>`)}
         <p class="aiuto">${ultimo ? `Ultimo ingresso: ${ultimo.data === R.oggiISO() ? "oggi" : "il " + R.dataIt(ultimo.data)} alle ${ultimo.ora}.` : "Non è mai entrato."}</p>
-        ${S.puoScrivere ? html`
+        ${puo(S, "reception") ? html`
           <div class="azioni-modulo">
             <button type="button" class="pulsante pulsante-primario pulsante-grande" data-azione="apri-pannello" data-pannello="ingresso">Registra ingresso</button>
             <button type="button" class="pulsante" data-azione="apri-pannello" data-pannello="vendita">Vendi abbonamento o carnet</button>
@@ -1868,7 +2449,8 @@ const Viste = (() => {
         ${rossi.length ? html`
           <div class="avviso-flash avviso-errore">
             <p><strong>Documenti da sistemare:</strong> ${rossi.map((a) => a.testo).join("; ")}.</p>
-            <label class="spunta"><input type="checkbox" name="conferma_documenti"><span>Ho controllato: registra comunque l'ingresso</span></label>
+            ${rossi.every(R.okPerProva) ? html`<p>Per l'ingresso di prova non servono: bastano liberatoria e privacy.</p>` : ""}
+            <label class="spunta"><input type="checkbox" name="conferma_documenti" data-prova="${rossi.every(R.okPerProva) ? "ok" : "no"}"><span>Ho controllato: registra comunque l'ingresso</span></label>
           </div>` : ""}
         ${cop ? html`
           <input type="hidden" name="modo" value="copertura"><input type="hidden" name="abbonamento_id" value="${cop.id}">
@@ -1881,7 +2463,7 @@ const Viste = (() => {
             ${!paganti.length ? html`<p class="aiuto">Nel listino non ci sono ingressi. <a href="#listino">Aggiungili al listino</a>.</p>` : ""}
             <div class="opzioni">
               ${paganti.map((v, i) => html`
-                <label class="opzione"><input type="radio" name="scelta" value="${v.id}" data-prezzo="${v.prezzo_cent}" ${i === 0 ? crudo("checked") : ""}>
+                <label class="opzione"><input type="radio" name="scelta" value="${v.id}" data-prezzo="${v.prezzo_cent}" ${(S.preseleziona ? v.tipo === S.preseleziona && paganti.filter((x) => x.tipo === S.preseleziona)[0] === v : i === 0) ? crudo("checked") : ""}>
                   <span class="opzione-nome">${v.nome}</span><span class="opzione-prezzo">${R.euro(v.prezzo_cent)}</span></label>`)}
               <label class="opzione"><input type="radio" name="scelta" value="omaggio" data-prezzo="0" ${!paganti.length ? crudo("checked") : ""}>
                 <span class="opzione-nome">Omaggio, senza pagare</span><span class="opzione-prezzo">0,00 €</span></label>
@@ -1950,11 +2532,44 @@ const Viste = (() => {
       </form>`;
   }
 
+  function boxTessera(S, c) {
+    const stato = R.statoTessera(c, S.imp.giorni_preavviso);
+    const testi = { manca: "Non ancora tesserato", scaduta: `Tessera scaduta il ${R.dataIt(c.scadenza_tessera)}`,
+                    in_scadenza: `Tessera ${c.numero_tessera}, scade il ${R.dataIt(c.scadenza_tessera)}`,
+                    ok: `Tessera ${c.numero_tessera}, valida fino al ${R.dataIt(c.scadenza_tessera)}` };
+    const mancano = R.mancantiFasi(c);
+    return html`
+      <section class="sezione box-abbonamento">
+        <h2>Tesseramento FASI</h2>
+        <p><strong>${testi[stato]}</strong></p>
+        ${mancano.length ? html`<p class="avviso-flash avviso-errore">Per tesserarlo mancano: ${mancano.join(", ")}. Chiedili alla reception.</p>` : ""}
+        ${moduloTessera(c)}
+      </section>`;
+  }
+
+  // Numero e scadenza della tessera: usato nella scheda e nella pagina Tesseramento
+  const moduloTessera = (c) => html`
+    <form class="modulo-tessera" data-modulo="tessera" data-id="${c.id}" novalidate>
+      <div class="campo">
+        <label for="tessera-${c.id}">Numero tessera</label>
+        <input id="tessera-${c.id}" name="numero" value="${c.numero_tessera || ""}" autocomplete="off" autocapitalize="characters">
+      </div>
+      <div class="campo">
+        <label for="scadenza-${c.id}">Valida fino al</label>
+        <div class="campo-con-pulsante">
+          <input id="scadenza-${c.id}" name="scadenza" type="date" value="${c.scadenza_tessera || ""}">
+          <button type="button" class="pulsante pulsante-piccolo" data-imposta="scadenza-${c.id}" data-valore="${R.oggiISO().slice(0, 4)}-12-31">Fine anno</button>
+        </div>
+      </div>
+      <p class="errore-campo" data-errore hidden></p>
+      <button type="submit" class="pulsante pulsante-primario">Salva tessera</button>
+    </form>`;
+
   /* --------------------------------------------------------- Storico */
   function eventiCliente(S, c) {
     const ev = [];
     const metodo = (m) => (m ? `, ${R.METODI[m]}` : "");
-    S.ingressi.filter((i) => i.cliente_id === c.id).forEach((i) => ev.push({
+    Azioni.tutte(S, "ingressi").filter((i) => i.cliente_id === c.id).forEach((i) => ev.push({
       tipo: "ingressi", gruppo: "ingressi", id: i.id, quando: `${i.data} ${i.ora}`, preciso: i.creato_il, annullato: i.annullato,
       testo: i.modo === "periodo" || i.modo === "carnet" ? `Ingresso con ${i.nome}` : i.nome,
       nota: i.fuori_regola ? "registrato con documenti da sistemare" : "",
@@ -1967,7 +2582,7 @@ const Viste = (() => {
         + (a.data_fine ? ` fino al ${R.dataIt(a.data_fine)}` : "") + metodo(a.prezzo_cent ? a.metodo : null),
       importo: a.prezzo_cent, cosa: "questo acquisto",
     }));
-    S.movimenti.filter((m) => m.cliente_id === c.id && m.categoria !== "ingresso" && m.categoria !== "abbonamento").forEach((m) => ev.push({
+    Azioni.tutte(S, "movimenti").filter((m) => m.cliente_id === c.id && m.categoria !== "ingresso" && m.categoria !== "abbonamento").forEach((m) => ev.push({
       tipo: "movimenti", gruppo: "pagamenti", id: m.id, quando: `${m.data} ${m.ora}`, preciso: m.creato_il, annullato: m.annullato,
       testo: m.descrizione, nota: R.METODI[m.metodo], importo: m.importo_cent, cosa: "questo pagamento",
     }));
@@ -1996,7 +2611,7 @@ const Viste = (() => {
     return html`
       <section class="sezione storico" id="storico">
         <h2>Storico</h2>
-        <p class="aiuto">${plurale(ingressi, "ingresso", "ingressi")} in totale. Speso in palestra: ${R.euro(speso)}.</p>
+        <p class="aiuto">${S.storici[c.id] ? "" : "Carico lo storico completo… "}${plurale(ingressi, "ingresso", "ingressi")} in totale. Speso in palestra: ${R.euro(speso)}.</p>
         <div class="filtri" role="group" aria-label="Cosa mostrare nello storico">
           ${SCELTE.map(([k, t]) => html`<button type="button" class="filtro" data-azione="filtro-storico" data-valore="${k}" ${k === filtro ? crudo('aria-pressed="true"') : crudo('aria-pressed="false"')}>${t}</button>`)}
         </div>
@@ -2009,7 +2624,7 @@ const Viste = (() => {
                 <span class="evento-quando">${R.giornoBreve(e.quando)}${e.quando.length > 10 ? ` ${e.quando.slice(11, 16)}` : ""}</span>
                 <span class="evento-testo">${e.testo}${e.nota ? html` <span class="aiuto">${e.nota}</span>` : ""}${e.annullato ? html` <span class="etichetta">annullato</span>` : ""}</span>
                 <span class="evento-importo">${e.importo ? R.euro(e.importo) : ""}</span>
-                <span class="evento-azioni">${e.tipo && !e.annullato && S.puoScrivere ? annullaConConferma(e.tipo, e.id, e.cosa) : ""}</span>
+                <span class="evento-azioni">${e.tipo && !e.annullato && puo(S, "reception") ? annullaConConferma(e.tipo, e.id, e.cosa) : ""}</span>
               </li>`)}
           </ol>`)}
         ${visibili.length > mostrati.length ? html`<button type="button" class="pulsante" data-azione="storico-completo">Mostra tutto lo storico (${visibili.length})</button>` : ""}
@@ -2034,6 +2649,7 @@ const Viste = (() => {
             ${campo("nome", "Nome", dati, errori, { extra: 'required autocomplete="off"' })}
             ${campo("cognome", "Cognome", dati, errori, { extra: 'required autocomplete="off"' })}
             ${campo("data_nascita", "Data di nascita", dati, errori, { tipo: "date" })}
+            ${campo("luogo_nascita", "Luogo di nascita", dati, errori, { extra: 'autocomplete="off"', aiuto: "Comune (e provincia), serve per il tesseramento." })}
             ${campo("codice_fiscale", "Codice fiscale", dati, errori, { extra: 'maxlength="16" autocapitalize="characters" autocomplete="off"' })}
           </div>
         </fieldset>
@@ -2042,7 +2658,7 @@ const Viste = (() => {
           <div class="campi-due">
             ${campo("telefono", "Telefono", dati, errori, { tipo: "tel" })}
             ${campo("email", "Email", dati, errori, { tipo: "email", aiuto: "Servirà al cliente per accedere all'area online.", extra: 'autocapitalize="off"' })}
-            ${campo("indirizzo", "Indirizzo", dati, errori)}
+            ${campo("indirizzo", "Indirizzo di residenza", dati, errori)}
             ${campo("contatto_emergenza", "Contatto in caso di emergenza", dati, errori, { aiuto: "Nome e telefono di un familiare o amico." })}
           </div>
         </fieldset>
@@ -2075,8 +2691,8 @@ const Viste = (() => {
       </form>`;
   }
 
-  return { html, crudo, esc, plurale, maiuscola, campo, sceltaMetodo, annullaConConferma,
-           messaggio, caricamento, nonDisponibile, nonTrovato, oggi, zonaOggi, riepilogo,
+  return { html, crudo, esc, plurale, maiuscola, campo, sceltaMetodo, annullaConConferma, moduloTessera,
+           messaggio, caricamento, nonDisponibile, nonTrovato, nonPermesso, accesso, oggi, zonaOggi, riepilogo,
            clienti, zonaElenco, scheda, modulo };
 })();
 
@@ -2089,6 +2705,7 @@ const Viste = (() => {
 const VisteGestione = (() => {
   const { html, crudo, plurale, maiuscola, campo, sceltaMetodo, annullaConConferma, caricamento } = Viste;
   const R = Regole;
+  const puo = (S, cosa) => R.puo(S.ruolo, cosa);
   const somma = (lista, f) => lista.reduce((s, x) => s + f(x), 0);
   const nomeDi = (S) => { const m = {}; S.clienti.forEach((c) => { m[c.id] = c; }); return m; };
 
@@ -2103,7 +2720,7 @@ const VisteGestione = (() => {
     const usciteTot = somma(validi.filter((m) => m.verso === "uscita"), (m) => m.importo_cent);
     const prodotti = S.listino.filter((v) => v.attivo && v.tipo === "prodotto").sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
     const clienti = nomeDi(S);
-    const scrive = S.puoScrivere;
+    const scrive = puo(S, "cassa");
     const ultimeChiusure = S.chiusure.slice().sort((a, b) => (a.creato_il < b.creato_il ? 1 : -1)).slice(0, 7);
 
     return html`
@@ -2414,12 +3031,12 @@ const VisteGestione = (() => {
       <a class="indietro" href="#impostazioni">Torna alle impostazioni</a>
       <div class="intestazione">
         <h1>Listino prezzi</h1>
-        ${S.puoScrivere ? html`<a class="pulsante pulsante-primario" href="#voce-nuova">Nuova voce</a>` : ""}
+        ${puo(S, "listino") ? html`<a class="pulsante pulsante-primario" href="#voce-nuova">Nuova voce</a>` : ""}
       </div>
       <p class="aiuto">Quello che la reception può vendere. Una voce tolta dalla vendita resta nello storico di chi l'ha comprata.</p>
       ${!ordinate.length ? html`
         <div class="vuoto"><p>Il listino è vuoto.</p>
-          ${S.puoScrivere ? html`<div class="azioni-modulo azioni-centro">
+          ${puo(S, "listino") ? html`<div class="azioni-modulo azioni-centro">
             <a class="pulsante pulsante-primario" href="#voce-nuova">Aggiungi la prima voce</a>
             <button type="button" class="pulsante" data-azione="carica-listino">Carica un listino di esempio</button></div>` : ""}</div>`
       : GRUPPI.map(([titolo, tipi]) => {
@@ -2478,22 +3095,22 @@ const VisteGestione = (() => {
   /* ========================================================= IMPOSTAZIONI */
   function impostazioni(S) {
     const imp = S.imp;
-    const modifica = S.amministratore;
     const locale = S.modalita === "locale";
+    const online = S.modalita === "online";
     const esempi = S.clienti.filter((c) => c.esempio).length + S.ingressi.filter((i) => i.esempio).length;
+    const linkIscrizione = new URL("iscrizione.html", location.href.split("#")[0]).href;
     return html`
       <h1>Impostazioni</h1>
       <form class="modulo" data-modulo="impostazioni" novalidate>
-        <fieldset ${modifica ? "" : crudo("disabled")}>
+        <fieldset>
           <legend>La palestra</legend>
           ${campo("nome_palestra", "Nome della palestra", imp, {}, { extra: "required" })}
           ${campo("giorni_preavviso", "Avvisa delle scadenze con quanti giorni di anticipo", imp, {}, { tipo: "number", extra: 'min="1" max="120" inputmode="numeric"' })}
           <label class="spunta">
             <input type="checkbox" name="usa_tesseramento" ${imp.usa_tesseramento ? crudo("checked") : ""}>
-            <span>La palestra rilascia una tessera associativa con scadenza (es. ASD)</span>
+            <span>La palestra tessera i soci (FASI o altro ente) e la tessera ha una scadenza</span>
           </label>
-          ${modifica ? html`<button type="submit" class="pulsante pulsante-primario">Salva impostazioni</button>`
-                     : html`<p class="aiuto">Solo il proprietario e chi ha il permesso di modifica può cambiarle.</p>`}
+          <button type="submit" class="pulsante pulsante-primario">Salva impostazioni</button>
         </fieldset>
       </form>
 
@@ -2503,69 +3120,256 @@ const VisteGestione = (() => {
         <a class="pulsante" href="#listino">Apri il listino</a>
       </section>
 
+      ${puo(S, "utenti") ? html`
+        <section class="sezione">
+          <h2>Utenti dello staff</h2>
+          <p>Chi può entrare nel gestionale e con quale ruolo: manager, normale, compilatore FASI.</p>
+          <a class="pulsante" href="#utenti">Gestisci gli utenti</a>
+        </section>` : ""}
+
+      <section class="sezione">
+        <h2>Iscrizione online</h2>
+        <p>Chi vuole provare compila il modulo da casa: dati, liberatoria e privacy. In reception resta solo da incassare.</p>
+        ${S.modalita === "claude" ? html`<p class="aiuto">Il modulo pubblico funziona sul sito GitHub, non su claude.ai.</p>` : html`
+          <p class="link-da-copiare"><a href="${linkIscrizione}" target="_blank" rel="noopener">${linkIscrizione}</a></p>
+          <div class="azioni-modulo">
+            <button type="button" class="pulsante" data-azione="copia-link" data-valore="${linkIscrizione}">Copia il link</button>
+          </div>
+          ${locale ? html`<p class="aiuto">Versione di prova: le iscrizioni arrivano solo se il modulo viene compilato su questo stesso dispositivo e browser.</p>` : ""}`}
+        <form class="modulo" data-modulo="testi" novalidate>
+          <div class="campo">
+            <label for="testo_liberatoria">Testo della liberatoria e del regolamento</label>
+            <textarea id="testo_liberatoria" name="testo_liberatoria" rows="7">${imp.testo_liberatoria || ""}</textarea>
+          </div>
+          <div class="campo">
+            <label for="testo_privacy">Informativa sulla privacy</label>
+            <textarea id="testo_privacy" name="testo_privacy" rows="7">${imp.testo_privacy || ""}</textarea>
+            <p class="aiuto">Il cliente li legge nel modulo e li accetta con una spunta. Finché sono vuoti il modulo non si può inviare.</p>
+          </div>
+          <div class="azioni-modulo">
+            <button type="submit" class="pulsante pulsante-primario">Salva i testi</button>
+            <button type="button" class="pulsante" data-azione="testi-esempio">Metti testi di esempio</button>
+          </div>
+        </form>
+      </section>
+
       ${locale ? html`
         <section class="sezione">
           <h2>Versione di prova</h2>
           <p>I dati sono salvati solo nel browser di questo dispositivo: un altro computer o un altro
-             browser vede un gestionale vuoto. Quando il gestionale andrà online (Passo 6), i dati staranno
-             in un database su internet e tutti i computer della palestra vedranno gli stessi clienti.</p>
+             browser vede un gestionale vuoto. Per usarlo davvero collegalo al database online (Firebase).</p>
           ${!S.memoriaOk ? html`<p class="avviso-flash avviso-errore">Questo browser non lascia salvare i dati
              (succede in navigazione privata): chiudendo la pagina si perdono.</p>` : ""}
           <p class="aiuto">Spazio usato: ${Archivio.copiaSicurezza.dimensioneKB()} KB su circa 5000 KB disponibili.</p>
-        </section>
+        </section>` : ""}
 
+      ${puo(S, "dati") && S.modalita !== "claude" ? html`
         <section class="sezione">
           <h2>Copia di sicurezza</h2>
-          <p>Scarica tutti i dati in un file. Ti serve per non perderli e per spostarli su un altro dispositivo.</p>
+          <p>${online ? "Scarica tutti i dati del database in un file, da conservare in un posto sicuro."
+            : "Scarica tutti i dati in un file. Ti serve per non perderli e per spostarli su un altro dispositivo o nel database online."}</p>
           <div class="azioni-modulo">
             <button type="button" class="pulsante pulsante-primario" data-azione="scarica-copia">Scarica la copia</button>
-            <label class="pulsante" for="file-ripristino">Ripristina da una copia</label>
-            <input type="file" id="file-ripristino" accept=".json,application/json" class="nascosto">
+            ${locale || puo(S, "utenti") ? html`
+              <label class="pulsante" for="file-ripristino">${online ? "Importa una copia" : "Ripristina da una copia"}</label>
+              <input type="file" id="file-ripristino" accept=".json,application/json" class="nascosto">` : ""}
           </div>
           <div class="conferma" id="conferma-ripristino" hidden>
-            <p><strong>Sostituire tutti i dati con quelli della copia?</strong> I dati che ci sono adesso
-               su questo dispositivo vengono cancellati.</p>
+            <p><strong>${online ? "Copiare nel database online i dati della copia?" : "Sostituire tutti i dati con quelli della copia?"}</strong>
+               ${online ? "Clienti, cassa e listino della copia vengono aggiunti; quelli con lo stesso codice vengono sovrascritti. Gli utenti non cambiano."
+                 : "I dati che ci sono adesso su questo dispositivo vengono cancellati."}</p>
             <div class="azioni-modulo">
-              <button type="button" class="pulsante pulsante-pericolo" data-azione="ripristina">Sì, ripristina</button>
+              <button type="button" class="pulsante pulsante-pericolo" data-azione="ripristina">${online ? "Sì, importa" : "Sì, ripristina"}</button>
               <button type="button" class="pulsante pulsante-secondario" data-nascondi="conferma-ripristino">Annulla</button>
             </div>
           </div>
-        </section>
+        </section>` : ""}
 
+      ${puo(S, "dati") ? html`
         <section class="sezione">
           <h2>Dati di esempio</h2>
           <p>Un mese di attività inventata (clienti, ingressi, abbonamenti, incassi), per provare la dashboard e la cassa.
              Tutto è segnato come esempio e si toglie con un tocco. Il listino non viene toccato.</p>
           <div class="azioni-modulo">
-            <button type="button" class="pulsante" data-azione="carica-esempi">${esempi ? "Ricarica i dati di esempio" : "Carica dati di esempio"}</button>
+            ${locale ? html`<button type="button" class="pulsante" data-azione="carica-esempi">${esempi ? "Ricarica i dati di esempio" : "Carica dati di esempio"}</button>` : ""}
             ${esempi ? html`<button type="button" class="pulsante pulsante-pericolo" data-azione="elimina-esempi">Elimina i dati di esempio</button>` : ""}
           </div>
-        </section>` : html`
-        <section class="sezione">
-          <h2>Chi può usare il gestionale</h2>
-          <p>Il gestionale vede solo chi ha accesso a questa pagina su claude.ai.
-             Per aggiungere chi lavora in reception, condividi la pagina da claude.ai
-             e dagli il permesso di modifica.</p>
-          <p class="aiuto">Hai fatto l'accesso come ${S.nomeUtente || "utente di claude.ai"}.</p>
-          ${modifica && esempi ? html`<button type="button" class="pulsante pulsante-pericolo" data-azione="elimina-esempi">Elimina i dati di esempio</button>` : ""}
-        </section>`}`;
+          ${!locale && !esempi ? html`<p class="aiuto">Nel database online non ci sono dati di esempio.</p>` : ""}
+        </section>` : ""}`;
   }
 
-  return { cassa, dashboard, listino, voce, impostazioni };
+  /* ================================================================ UTENTI */
+  function utenti(S) {
+    const lista = S.utenti.slice().sort((a, b) => (a.nome || "").localeCompare(b.nome || "", "it"));
+    const opzioniRuolo = (scelto) => Object.keys(R.RUOLI).map((k) =>
+      html`<option value="${k}" ${k === scelto ? crudo("selected") : ""}>${R.RUOLI[k].nome}</option>`);
+    return html`
+      <a class="indietro" href="#impostazioni">Torna alle impostazioni</a>
+      <h1>Utenti dello staff</h1>
+      <dl class="dati legenda-ruoli">
+        ${Object.keys(R.RUOLI).map((k) => html`<dt>${R.RUOLI[k].nome}</dt><dd>${R.RUOLI[k].aiuto}</dd>`)}
+      </dl>
+      <div class="elenco-clienti elenco-utenti">
+        ${lista.map((u) => {
+          const io = u.id === S.utente.uid;
+          return html`
+            <div class="riga-utente${u.attivo === false ? " riga-spenta" : ""}">
+              <div><strong>${u.nome}</strong>${io ? html` <span class="etichetta">sei tu</span>` : ""}${u.attivo === false ? html` <span class="etichetta">disattivato</span>` : ""}
+                <span class="aiuto blocco">${u.email}</span></div>
+              ${io ? html`<span>${R.RUOLI[u.ruolo] ? R.RUOLI[u.ruolo].nome : u.ruolo}</span>` : html`
+                <label class="nascosto" for="ruolo-${u.id}">Ruolo di ${u.nome}</label>
+                <select id="ruolo-${u.id}" data-cambia-ruolo="${u.id}">${opzioniRuolo(u.ruolo)}</select>`}
+              <div class="azioni-utente">
+                ${io ? "" : html`<button type="button" class="pulsante pulsante-piccolo" data-azione="attiva-utente" data-id="${u.id}" data-valore="${u.attivo === false ? "si" : "no"}">${u.attivo === false ? "Riattiva" : "Disattiva"}</button>`}
+                ${S.modalita === "online"
+                  ? html`<button type="button" class="pulsante pulsante-piccolo" data-azione="reset-password" data-valore="${u.email}">Email per nuova password</button>`
+                  : html`<button type="button" class="pulsante pulsante-piccolo" data-mostra="pw-${u.id}">Nuova password</button>`}
+              </div>
+              ${S.modalita !== "online" ? html`
+                <form class="conferma-riga riga-password" id="pw-${u.id}" data-modulo="password" data-id="${u.id}" hidden novalidate>
+                  <label for="nuova-${u.id}">Nuova password per ${u.nome}</label>
+                  <input id="nuova-${u.id}" name="password" type="password" autocomplete="new-password" minlength="8">
+                  <button type="submit" class="pulsante pulsante-piccolo pulsante-primario">Salva</button>
+                </form>` : ""}
+            </div>`;
+        })}
+      </div>
+
+      <form class="sezione modulo-compatto" data-modulo="nuovo-utente" novalidate>
+        <h2>Nuovo utente</h2>
+        <div class="campi-due">
+          ${campo("nome", "Nome", {}, {}, { extra: 'autocomplete="off"' })}
+          ${campo("email", "Email", {}, {}, { tipo: "email", extra: 'autocomplete="off" autocapitalize="off"' })}
+          ${campo("password", "Password provvisoria", {}, {}, { tipo: "text", extra: 'autocomplete="off" minlength="8"', aiuto: "Almeno 8 caratteri. Comunicala alla persona: potrà cambiarla." })}
+          <div class="campo"><label for="ruolo-nuovo">Ruolo</label><select id="ruolo-nuovo" name="ruolo">${opzioniRuolo("normale")}</select></div>
+        </div>
+        <p class="errore-campo" data-errore hidden></p>
+        <button type="submit" class="pulsante pulsante-primario">Crea l'utente</button>
+      </form>`;
+  }
+
+  /* ========================================================= TESSERAMENTO */
+  function tesseramento(S) {
+    if (!S.caricati) return caricamento("Carico i clienti…");
+    const preavviso = S.imp.giorni_preavviso;
+    const conStato = S.clienti.map((c) => ({ c, stato: R.statoTessera(c, preavviso) }));
+    const conta = (st) => conStato.filter((x) => x.stato === st).length;
+    const filtro = S.filtroFasi || "da-fare";
+    const lista = conStato.filter((x) => filtro === "tutti" || x.stato !== "ok")
+      .sort((a, b) => { const o = { scaduta: 0, manca: 1, in_scadenza: 2, ok: 3 }; return o[a.stato] - o[b.stato] || R.perCognome(a.c, b.c); });
+    const testi = { manca: "Da tesserare", scaduta: "Tessera scaduta", in_scadenza: "Tessera in scadenza", ok: "Tessera valida" };
+    const colori = { manca: "rosso", scaduta: "rosso", in_scadenza: "giallo", ok: "verde" };
+    return html`
+      <h1>Tesseramento FASI</h1>
+      <p class="aiuto">Chi va tesserato o rinnovato, con i dati da copiare nel gestionale FASI. Quando la tessera è fatta, scrivi numero e scadenza.</p>
+      <section class="numeri">
+        <div class="numero"><p class="numero-etichetta">Da tesserare</p><p class="numero-valore">${conta("manca")}</p></div>
+        <div class="numero"><p class="numero-etichetta">Scadute</p><p class="numero-valore">${conta("scaduta")}</p></div>
+        <div class="numero"><p class="numero-etichetta">In scadenza entro ${preavviso} giorni</p><p class="numero-valore">${conta("in_scadenza")}</p></div>
+        <div class="numero"><p class="numero-etichetta">In regola</p><p class="numero-valore">${conta("ok")}</p></div>
+      </section>
+      <div class="intestazione">
+        <div class="filtri" role="group" aria-label="Chi mostrare">
+          <button type="button" class="filtro" data-azione="filtro-fasi" data-valore="da-fare" aria-pressed="${filtro === "da-fare" ? "true" : "false"}">Da fare</button>
+          <button type="button" class="filtro" data-azione="filtro-fasi" data-valore="tutti" aria-pressed="${filtro === "tutti" ? "true" : "false"}">Tutti</button>
+        </div>
+        ${lista.length ? html`<button type="button" class="pulsante" data-azione="scarica-fasi">Scarica l'elenco (CSV)</button>` : ""}
+      </div>
+      ${!lista.length ? html`<p class="vuoto">Nessuno da tesserare: tutte le tessere sono in regola.</p>` : ""}
+      <div class="schede-fasi">
+        ${lista.map(({ c, stato }) => {
+          const mancano = R.mancantiFasi(c);
+          return html`
+            <article class="scheda-fasi">
+              <header>
+                <span class="nastro nastro-${colori[stato]}" aria-hidden="true"></span>
+                <div><h2><a href="#cliente-${c.id}">${c.cognome} ${c.nome}</a></h2>
+                  <p class="stato-${colori[stato]} piccolo">${testi[stato]}${c.scadenza_tessera ? ` (${R.dataIt(c.scadenza_tessera)})` : ""}</p></div>
+                <button type="button" class="pulsante pulsante-piccolo" data-azione="copia-dati-fasi" data-id="${c.id}">Copia i dati</button>
+              </header>
+              <dl class="dati">
+                <dt>Nato il</dt><dd>${R.dataIt(c.data_nascita) || html`<span class="manca">manca</span>`}${c.luogo_nascita ? ` a ${c.luogo_nascita}` : ""}</dd>
+                <dt>Codice fiscale</dt><dd>${c.codice_fiscale || html`<span class="manca">manca</span>`}</dd>
+                <dt>Residenza</dt><dd>${c.indirizzo || html`<span class="manca">manca</span>`}</dd>
+                <dt>Email</dt><dd>${c.email || html`<span class="manca">manca</span>`}</dd>
+              </dl>
+              ${mancano.length ? html`<p class="errore-campo">Mancano: ${mancano.join(", ")}.</p>` : ""}
+              ${Viste.moduloTessera(c)}
+            </article>`;
+        })}
+      </div>`;
+  }
+
+  /* ===================================================== RICHIESTA ONLINE */
+  function richiesta(S, r, simili) {
+    if (!r) return html`<p class="vuoto">Questa iscrizione non c'è più: forse è già stata accolta da un altro computer. <a href="#oggi">Torna a Oggi</a>.</p>`;
+    const anni = R.eta(r.data_nascita);
+    const riga = (t, v) => html`<dt>${t}</dt><dd>${v || html`<span class="manca">non indicato</span>`}</dd>`;
+    return html`
+      <a class="indietro" href="#oggi">Torna a Oggi</a>
+      <h1>${r.nome} ${r.cognome}</h1>
+      <p class="sottotitolo">Iscrizione online del ${R.dataIt(r.creato_il)} alle ${(r.creato_il || "").slice(11, 16)}.
+        ${r.data_prova ? `Vorrebbe provare il ${R.dataIt(r.data_prova)}.` : ""}</p>
+
+      <section class="stato-cliente stato-box-verde">
+        <h2>Liberatoria e privacy accettate online</h2>
+        <p>Il ${R.dataIt(r.accettato_il || r.creato_il)} ha letto e accettato liberatoria, regolamento e informativa privacy.</p>
+        ${anni !== null && anni < 18 ? html`<p class="nota-minore">Minorenne (${anni} anni). Ha accettato per lui: ${r.genitore || "genitore non indicato"}.</p>` : ""}
+        <p class="autonomia">${R.ESPERIENZE[r.esperienza] || "Esperienza non indicata"}.</p>
+      </section>
+
+      ${simili.length ? html`
+        <section class="avviso-flash avviso-info">
+          <p><strong>Forse è già cliente:</strong> ${simili.map((c) => html`<a href="#cliente-${c.id}">${c.nome} ${c.cognome}</a>`).reduce((a, b) => html`${a}, ${b}`)}.</p>
+          <p>Se è la stessa persona, collega l'iscrizione al cliente che c'è già invece di crearne uno nuovo.</p>
+          <div class="azioni-modulo">${simili.map((c) => html`<button type="button" class="pulsante" data-azione="accogli" data-id="${r.id}" data-valore="${c.id}">Collega a ${c.nome} ${c.cognome}</button>`)}</div>
+        </section>` : ""}
+
+      <div class="griglia-dati">
+        <section class="sezione"><h2>Dati</h2><dl class="dati">
+          ${riga("Data di nascita", R.dataIt(r.data_nascita))}${riga("Luogo di nascita", r.luogo_nascita)}
+          ${riga("Codice fiscale", r.codice_fiscale)}${riga("Residenza", r.indirizzo)}
+        </dl></section>
+        <section class="sezione"><h2>Contatti</h2><dl class="dati">
+          ${riga("Telefono", r.telefono)}${riga("Email", r.email)}${riga("In caso di emergenza", r.contatto_emergenza)}
+          ${r.note ? riga("Note", r.note) : ""}
+        </dl></section>
+      </div>
+
+      <div class="azioni-modulo">
+        <button type="button" class="pulsante pulsante-primario pulsante-grande" data-azione="accogli" data-id="${r.id}">Crea il cliente e registra la prova</button>
+        <button type="button" class="pulsante pulsante-secondario" data-mostra="conferma-scarta">Scarta</button>
+      </div>
+      <div class="conferma" id="conferma-scarta" hidden>
+        <p><strong>Scartare questa iscrizione?</strong> Usalo per iscrizioni doppie o compilate per scherzo.</p>
+        <div class="azioni-modulo">
+          <button type="button" class="pulsante pulsante-pericolo" data-azione="scarta" data-id="${r.id}">Sì, scarta</button>
+          <button type="button" class="pulsante pulsante-secondario" data-nascondi="conferma-scarta">No</button>
+        </div>
+      </div>`;
+  }
+
+  return { cassa, dashboard, listino, voce, impostazioni, utenti, tesseramento, richiesta };
 })();
 
 </script>
   <script>
 /* =====================================================================
    APP: collega tutto.
+   - chiede chi sei (accesso) e carica solo i dati che il tuo ruolo può vedere
    - legge l'indirizzo (#oggi, #clienti, #cliente-…, #cassa…) e mostra la vista
    - tiene i dati aggiornati in tempo reale
    - gestisce pulsanti e moduli
    ===================================================================== */
 {
   const S = {
+    utente: null,          // chi è collegato: { uid, nome, email, ruolo }
+    ruolo: null,
+    utenti: [],            // staff (solo per il manager)
     clienti: [],           // clienti attivi, in ordine di cognome
+    richieste: [],         // iscrizioni online ancora da accogliere
     listino: [], abbonamenti: [], ingressi: [], movimenti: [], chiusure: [],
+    storici: {},           // storico completo dei clienti aperti: { id: { ingressi, movimenti } }
     caricati: false,
     lento: false,          // il database non ha ancora risposto dopo 10 secondi
     imp: Object.assign({}, Archivio.IMPOSTAZIONI_PREDEFINITE),
@@ -2573,25 +3377,29 @@ const VisteGestione = (() => {
     ricerca: "",
     messaggio: null,       // { tipo: "ok" | "errore", testo } da mostrare in cima alla prossima schermata
     flash: null,           // il messaggio in cima mostrato adesso
-    puoScrivere: false,
-    amministratore: false,
-    nomeUtente: "",
     modalita: "claude",
     memoriaOk: true,
     rotta: null,
     leggiDiNuovo: null,    // id di un cliente appena modificato: rileggilo dal database
     pannello: null,        // "ingresso" | "vendita" aperto nella scheda
+    pannelloDopo: null,    // pannello da aprire alla prossima schermata (dopo un'iscrizione online)
+    preseleziona: null,    // tipo di ingresso già scelto nel pannello (es. "prova")
     filtroStorico: "tutto",
     storicoCompleto: false,
     giornoCassa: null,
     periodo: "7",
+    filtroFasi: "da-fare",
     fileRipristino: null,
+    accesso: { modo: "entra", errore: "", info: "" },
   };
 
   const contenuto = document.getElementById("contenuto");
   const banner = document.getElementById("banner");
   const toast = document.getElementById("toast");
+  const R = Regole;
+  const puo = (cosa) => R.puo(S.ruolo, cosa);
   let numeroVista = 0;
+  let ascolti = [];          // abbonamenti ai dati, da chiudere all'uscita
 
   /* ------------------------------------------------------- indirizzi */
   function leggiRotta() {
@@ -2603,9 +3411,15 @@ const VisteGestione = (() => {
     if ((m = h.match(/^modifica-(.+)$/))) return { vista: "modulo", id: m[1] };
     if (h === "voce-nuova") return { vista: "voce" };
     if ((m = h.match(/^voce-(.+)$/))) return { vista: "voce", id: m[1] };
-    if (["impostazioni", "cassa", "dashboard", "listino"].indexOf(h) >= 0) return { vista: h };
-    return { vista: "oggi" };
+    if ((m = h.match(/^richiesta-(.+)$/))) return { vista: "richiesta", id: m[1] };
+    if (["impostazioni", "cassa", "dashboard", "listino", "utenti", "tesseramento", "oggi"].indexOf(h) >= 0) return { vista: h };
+    return { vista: "inizio" };
   }
+  // Che permesso serve per ogni pagina
+  const PERMESSO_VISTA = { oggi: "oggi", clienti: "clienti", scheda: "clienti", modulo: "modifica_clienti", cassa: "cassa",
+    dashboard: "dashboard", listino: "listino", voce: "listino", impostazioni: "impostazioni", utenti: "utenti",
+    tesseramento: "tesseramento", richiesta: "richieste" };
+  const paginaIniziale = () => (puo("oggi") ? "oggi" : puo("tesseramento") ? "tesseramento" : "clienti");
 
   function vai(indirizzo, messaggio) {
     S.messaggio = messaggio || null;
@@ -2623,14 +3437,33 @@ const VisteGestione = (() => {
       || Archivio.leggiCliente(id);
   }
 
+  // Storico completo di un cliente (anche gli ingressi più vecchi di due mesi)
+  async function caricaStorico(id) {
+    if (!puo("reception")) return;
+    try {
+      S.storici[id] = await Archivio.storicoCliente(id);
+      const r = S.rotta;
+      if (r && r.vista === "scheda" && r.id === id && !staModificando()) mostra(false);
+    } catch (e) { console.warn(e); }
+  }
+
   /* ------------------------------------------------- mostra la vista */
   // scorri = false: si resta dove si è (aprire un pannello, cambiare filtro…)
   async function mostra(scorri) {
+    if (!S.utente) return mostraAccesso();
     const prima = S.rotta;
-    const r = (S.rotta = leggiRotta());
+    let r = leggiRotta();
+    if (r.vista === "inizio") { r = { vista: paginaIniziale() }; history.replaceState(null, "", "#" + r.vista); }
+    S.rotta = r;
     const cambiata = !prima || prima.vista !== r.vista || prima.id !== r.id || prima.filtro !== r.filtro;
-    if (cambiata) { S.pannello = null; }
-    if (cambiata && r.vista === "scheda" && (!prima || prima.id !== r.id)) { S.filtroStorico = "tutto"; S.storicoCompleto = false; }
+    if (cambiata) {
+      S.pannello = S.pannelloDopo; S.pannelloDopo = null;
+      if (!S.pannello) S.preseleziona = null;
+    }
+    if (cambiata && r.vista === "scheda" && (!prima || prima.id !== r.id)) {
+      S.filtroStorico = "tutto"; S.storicoCompleto = false;
+      caricaStorico(r.id);
+    }
     if (scorri === undefined) scorri = cambiata;
     const mia = ++numeroVista;
     // il messaggio in cima resta finché non si cambia pagina, anche se i dati si aggiornano
@@ -2647,11 +3480,12 @@ const VisteGestione = (() => {
       aggiornaTotali();
     };
 
-    const sezione = { scheda: "clienti", modulo: "clienti", listino: "impostazioni", voce: "impostazioni" }[r.vista] || r.vista;
+    const sezione = { scheda: "clienti", modulo: "clienti", listino: "impostazioni", voce: "impostazioni", utenti: "impostazioni", richiesta: "oggi" }[r.vista] || r.vista;
     document.querySelectorAll(".menu a").forEach((a) => {
       if (a.dataset.vista === sezione) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
+    if (!puo(PERMESSO_VISTA[r.vista])) return metti(Viste.nonPermesso());
 
     try {
       switch (r.vista) {
@@ -2668,11 +3502,10 @@ const VisteGestione = (() => {
           const c = await trovaCliente(r.id);
           metti(c ? Viste.scheda(S, c) : Viste.nonTrovato());
           const pannello = contenuto.querySelector(".pannello");
-          if (pannello && !scorri && pannello.scrollIntoView) pannello.scrollIntoView({ block: "nearest" });
+          if (pannello && pannello.scrollIntoView && (!scorri || S.preseleziona)) pannello.scrollIntoView({ block: "nearest" });
           return;
         }
         case "modulo": {
-          if (!S.puoScrivere) return metti(Viste.html`<p class="vuoto">Per aggiungere o modificare clienti serve il permesso di modifica.</p>`);
           if (!r.id) return metti(Viste.modulo(S, null, {}, {}));
           const c = await trovaCliente(r.id);
           return metti(c ? Viste.modulo(S, c, Object.assign({}, c), {}) : Viste.nonTrovato());
@@ -2683,15 +3516,38 @@ const VisteGestione = (() => {
           const dati = v ? Object.assign({}, v, { prezzo: (v.prezzo_cent / 100).toFixed(2).replace(".", ",") }) : { tipo: "singolo", attivo: true };
           return metti(VisteGestione.voce(S, v, dati, {}));
         }
+        case "richiesta": {
+          const rich = S.richieste.find((x) => x.id === r.id) || await Archivio.leggiRichiesta(r.id);
+          const valida = rich && rich.stato === "nuova" ? rich : null;
+          return metti(VisteGestione.richiesta(S, valida, valida ? clientiSimili(valida) : []));
+        }
         case "cassa": return metti(VisteGestione.cassa(S));
         case "dashboard": return metti(VisteGestione.dashboard(S));
         case "listino": return metti(VisteGestione.listino(S));
         case "impostazioni": return metti(VisteGestione.impostazioni(S));
+        case "utenti": return metti(VisteGestione.utenti(S));
+        case "tesseramento": return metti(VisteGestione.tesseramento(S));
       }
     } catch (e) {
       console.warn(e);
       metti(Viste.html`<p class="avviso-flash avviso-errore" role="alert">${Archivio.messaggioErrore(e)}</p>`);
     }
+  }
+
+  // Un'iscrizione online potrebbe essere di qualcuno che è già cliente
+  function clientiSimili(r) {
+    const semplice = (t) => String(t || "").trim().toLowerCase();
+    return S.clienti.filter((c) =>
+      (r.codice_fiscale && semplice(c.codice_fiscale) === semplice(r.codice_fiscale))
+      || (r.email && semplice(c.email) === semplice(r.email))
+      || (semplice(c.nome) === semplice(r.nome) && semplice(c.cognome) === semplice(r.cognome)));
+  }
+
+  function mostraAccesso() {
+    document.body.classList.add("senza-accesso");
+    contenuto.innerHTML = String(Viste.accesso(S, S.accesso.modo, S.accesso.errore, S.accesso.info));
+    const primo = contenuto.querySelector("input");
+    if (primo && matchMedia("(pointer: fine)").matches) primo.focus();
   }
 
   // Qualcuno sta scrivendo in un modulo o ha aperto una conferma: non ridisegnare sotto le dita
@@ -2709,14 +3565,14 @@ const VisteGestione = (() => {
     setTimeout(() => {
       inAttesa = false;
       const r = S.rotta;
-      if (!r) return;
+      if (!r || !S.utente) return;
       const metti = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = String(html); };
       if (r.vista === "oggi") {
         metti("zona-oggi", Viste.zonaOggi(S));
         metti("riepilogo", Viste.riepilogo(S));
       } else if (r.vista === "clienti") {
         metti("zona-elenco", Viste.zonaElenco(S, r.filtro));
-      } else if (["scheda", "cassa", "dashboard", "listino"].indexOf(r.vista) >= 0 && !staModificando()) {
+      } else if (["scheda", "cassa", "dashboard", "listino", "utenti", "tesseramento"].indexOf(r.vista) >= 0 && !staModificando()) {
         mostra(false);
       }
     }, 0);
@@ -2725,7 +3581,7 @@ const VisteGestione = (() => {
   async function caricaArchiviati() {
     try {
       const lista = await Archivio.clientiArchiviati();
-      S.archiviati = lista.sort(Regole.perCognome);
+      S.archiviati = lista.sort(R.perCognome);
     } catch (e) {
       S.archiviati = [];
       mostraBanner(Archivio.messaggioErrore(e));
@@ -2755,6 +3611,24 @@ const VisteGestione = (() => {
     document.title = S.imp.nome_palestra + " – Gestionale";
   }
 
+  function aggiornaTestata() {
+    document.querySelectorAll(".menu a").forEach((a) => { a.hidden = !puo(a.dataset.permesso); });
+    const chi = document.querySelector(".operatore");
+    chi.textContent = "";
+    if (!S.utente) return;
+    const nome = document.createElement("span");
+    nome.textContent = S.utente.nome + (R.RUOLI[S.ruolo] ? ", " + R.ruoloInFrase(S.ruolo) : "");
+    chi.appendChild(nome);
+    if (Archivio.accesso.richiesto()) {
+      const esci = document.createElement("button");
+      esci.type = "button";
+      esci.className = "pulsante-testo pulsante-esci";
+      esci.dataset.azione = "esci";
+      esci.textContent = "Esci";
+      chi.appendChild(esci);
+    }
+  }
+
   /* -------------------------------------------- piccoli aiuti ai moduli */
   const valoreRadio = (form, nome) => { const el = form.querySelector(`input[name="${nome}"]:checked`); return el ? el.value : null; };
   const testo = (form, nome) => (form.elements[nome] ? form.elements[nome].value.trim() : "");
@@ -2782,7 +3656,7 @@ const VisteGestione = (() => {
         else if (el.checked) totale += Number(el.dataset.prezzo);
       });
       const out = form.querySelector("[data-totale]");
-      if (out) out.textContent = Regole.euro(totale);
+      if (out) out.textContent = R.euro(totale);
       const zona = form.querySelector("[data-zona-pagamento]");
       if (zona) zona.hidden = totale === 0;
     });
@@ -2790,12 +3664,12 @@ const VisteGestione = (() => {
     if (chiusura) {
       const out = chiusura.querySelector("[data-differenza]");
       const attesi = Number(out.dataset.attesi);
-      const contati = Regole.leggiEuro(chiusura.elements.contati.value);
-      const versato = Regole.leggiEuro(chiusura.elements.versato.value) || 0;
+      const contati = R.leggiEuro(chiusura.elements.contati.value);
+      const versato = R.leggiEuro(chiusura.elements.versato.value) || 0;
       if (contati === null) { out.textContent = ""; return; }
       const diff = contati - attesi;
-      out.textContent = (diff === 0 ? "I contanti tornano esattamente." : diff > 0 ? `Ci sono ${Regole.euro(diff)} in più.` : `Mancano ${Regole.euro(-diff)}.`)
-        + ` Resteranno in cassa ${Regole.euro(Math.max(0, contati - versato))}.`;
+      out.textContent = (diff === 0 ? "I contanti tornano esattamente." : diff > 0 ? `Ci sono ${R.euro(diff)} in più.` : `Mancano ${R.euro(-diff)}.`)
+        + ` Resteranno in cassa ${R.euro(Math.max(0, contati - versato))}.`;
     }
   }
 
@@ -2806,17 +3680,132 @@ const VisteGestione = (() => {
       if (dopo) dopo();
       if (testoEsito) avvisa(testoEsito);
     } catch (e) {
-      console.warn(e);
-      avvisa(e && e.messaggio ? e.messaggio : Archivio.messaggioErrore(e), "errore");
+      if (!(e && e.messaggio)) console.warn(e);     // gli errori "previsti" hanno già un messaggio per chi lavora
+      avvisa(Archivio.messaggioErrore(e), "errore");
     } finally {
       libera();
     }
   }
 
+  async function copia(testoDaCopiare, conferma) {
+    try {
+      await navigator.clipboard.writeText(testoDaCopiare);
+      avvisa(conferma);
+    } catch (e) {
+      avvisa("Questo browser non lascia copiare: seleziona il testo e copialo a mano.", "errore");
+    }
+  }
+
+  /* ---------------------------------------------------------- accesso */
+  async function inviaEntra(form) {
+    const email = testo(form, "email");
+    const password = form.elements.password.value;
+    if (!email || !password) return mostraErroreAccesso("Scrivi email e password.");
+    const libera = occupato(form.querySelector("button[type=submit]"), "Accesso…");
+    try {
+      await Archivio.accesso.entra(email, password);
+    } catch (e) {
+      mostraErroreAccesso(Archivio.messaggioErrore(e), email);
+    } finally {
+      libera();
+    }
+  }
+
+  async function inviaPrimoAvvio(form) {
+    const nome = testo(form, "nome");
+    const email = testo(form, "email");
+    const password = form.elements.password.value;
+    if (!nome || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return mostraErroreAccesso("Scrivi il tuo nome e un'email valida.");
+    if (password.length < 8) return mostraErroreAccesso("La password deve avere almeno 8 caratteri.");
+    const libera = occupato(form.querySelector("button[type=submit]"), "Creazione…");
+    try {
+      await Archivio.accesso.primoAvvio(nome, email, password);
+      S.messaggio = { tipo: "ok", testo: `Benvenuto, ${nome}. Sei il manager: da Impostazioni → Utenti puoi aggiungere lo staff.` };
+      mostra();
+    } catch (e) {
+      mostraErroreAccesso(Archivio.messaggioErrore(e));
+    } finally {
+      libera();
+    }
+  }
+
+  function mostraErroreAccesso(t, email) {
+    S.accesso.errore = t;
+    S.accesso.info = "";
+    mostraAccesso();
+    if (email) { const campo = contenuto.querySelector("#email"); if (campo) campo.value = email; }
+  }
+
+  // Cambia chi è collegato: si caricano (o si chiudono) i dati
+  async function cambioUtente(profilo) {
+    // stesso utente annunciato di nuovo (succede subito dopo aver creato l'account): niente da ricaricare
+    if (profilo && !profilo.nonAbilitato && S.utente && S.utente.uid === profilo.uid) {
+      S.utente = profilo; S.ruolo = profilo.ruolo; aggiornaTestata();
+      return;
+    }
+    chiudiAscolti();
+    S.utente = null; S.ruolo = null;
+    if (!profilo || profilo.nonAbilitato) {
+      svuotaDati();
+      document.body.classList.add("senza-accesso");
+      aggiornaTestata();
+      if (profilo && profilo.nonAbilitato) S.accesso = { modo: "non-abilitato", errore: "", info: profilo.email || "" };
+      else {
+        let primo = false;
+        try { primo = await Archivio.accesso.servePrimoAvvio(); } catch (e) { primo = false; }
+        S.accesso = { modo: primo ? "primo" : "entra", errore: "", info: S.accesso.info || "" };
+      }
+      return mostraAccesso();
+    }
+    S.utente = profilo;
+    S.ruolo = profilo.ruolo;
+    S.accesso = { modo: "entra", errore: "", info: "" };
+    document.body.classList.remove("senza-accesso");
+    aggiornaTestata();
+    apriAscolti();
+    S.rotta = null;
+    mostra();
+  }
+
+  function svuotaDati() {
+    ["clienti", "richieste", "listino", "abbonamenti", "ingressi", "movimenti", "chiusure", "utenti"].forEach((k) => { S[k] = []; });
+    S.storici = {}; S.archiviati = null; S.caricati = false; S.ricerca = ""; S.rotta = null;
+  }
+
+  function chiudiAscolti() {
+    ascolti.forEach((stop) => { try { stop(); } catch (e) { /* già chiuso */ } });
+    ascolti = [];
+  }
+
+  // Si leggono solo i dati che il ruolo può vedere, e per ingressi e cassa solo gli ultimi due mesi
+  function apriAscolti() {
+    const erroreDati = (errore) => { console.warn(errore); mostraBanner(Archivio.messaggioErrore(errore)); aggiornaDati(); };
+    const attesa = setTimeout(() => { S.lento = true; aggiornaDati(); }, 10000);
+    const dal = R.dataTra(-62);
+    if (puo("clienti")) {
+      ascolti.push(Archivio.ascoltaClientiAttivi((lista, info) => {
+        S.clienti = lista.sort(R.perCognome);
+        S.caricati = true;
+        if (!info || !info.fromCache) { clearTimeout(attesa); S.lento = false; }
+        aggiornaDati();
+      }, (errore) => { clearTimeout(attesa); S.caricati = true; erroreDati(errore); }));
+    }
+    const segui = (coll, ascolto) => ascolti.push(ascolto((lista) => { S[coll] = lista; aggiornaDati(); }, erroreDati));
+    if (puo("reception") || puo("listino")) segui("listino", (ok, ko) => Archivio.ascolta("listino", ok, ko));
+    if (puo("reception")) {
+      segui("abbonamenti", (ok, ko) => Archivio.ascolta("abbonamenti", ok, ko));
+      segui("ingressi", (ok, ko) => Archivio.ascoltaDal("ingressi", "data", dal, ok, ko));
+      segui("movimenti", (ok, ko) => Archivio.ascoltaDal("movimenti", "data", dal, ok, ko));
+      segui("chiusure", (ok, ko) => Archivio.ascoltaDal("chiusure", "data", dal, ok, ko));
+    }
+    if (puo("richieste")) segui("richieste", (ok, ko) => Archivio.ascoltaRichiesteNuove(ok, ko));
+    if (puo("utenti")) segui("utenti", (ok, ko) => Archivio.utenti.ascolta(ok, ko));
+  }
+
   /* ------------------------------------------------------- clienti */
   async function controllaUnici(dati, idEscluso) {
     const errori = {};
-    for (const [campo, t] of Object.entries(Regole.CAMPI_UNICI)) {
+    for (const [campo, t] of Object.entries(R.CAMPI_UNICI)) {
       if (!dati[campo]) continue;
       const ids = await Archivio.clientiCon(campo, dati[campo]);
       if (ids.some((id) => id !== idEscluso)) errori[campo] = t;
@@ -2827,7 +3816,7 @@ const VisteGestione = (() => {
   async function salvaCliente(form) {
     const id = form.dataset.id || null;
     const pulsante = form.querySelector("button[type=submit]");
-    const { dati, errori } = Regole.leggiModuloCliente(form);
+    const { dati, errori } = R.leggiModuloCliente(form);
     const cliente = id ? await trovaCliente(id) : null;
     const rimostra = (err) => {
       contenuto.innerHTML = String(Viste.modulo(S, cliente, dati, err));
@@ -2875,15 +3864,27 @@ const VisteGestione = (() => {
     }
   }
 
+  async function salvaTesti(form) {
+    const nuove = { testo_liberatoria: form.elements.testo_liberatoria.value.trim(), testo_privacy: form.elements.testo_privacy.value.trim() };
+    await esegui(form.querySelector("button[type=submit]"), async () => {
+      await Archivio.salvaImpostazioni(nuove);
+      S.imp = Object.assign({}, S.imp, nuove);
+      return "Testi salvati: il modulo di iscrizione online li mostra già.";
+    });
+  }
+
   /* ------------------------------------------- reception: ingresso e vendita */
   async function inviaIngresso(form) {
     const c = await trovaCliente(form.dataset.id);
     const conferma = form.elements.conferma_documenti;
-    if (conferma && !conferma.checked) return erroreModulo(form, "Spunta la conferma sui documenti per registrare comunque l'ingresso.");
+    const voceScelta = S.listino.find((v) => v.id === valoreRadio(form, "scelta"));
+    const provaSenzaCertificato = conferma && conferma.dataset.prova === "ok" && voceScelta && voceScelta.tipo === "prova";
+    if (conferma && !conferma.checked && !provaSenzaCertificato)
+      return erroreModulo(form, "Spunta la conferma sui documenti per registrare comunque l'ingresso.");
     const scelta = {
       metodo: valoreRadio(form, "metodo") || "contanti",
       noleggi: Array.prototype.map.call(form.querySelectorAll("input[name=noleggi]:checked"), (el) => el.value),
-      fuori_regola: !!conferma,
+      fuori_regola: !!conferma && !provaSenzaCertificato,
     };
     if (form.elements.modo && form.elements.modo.value === "copertura") {
       scelta.modo = "copertura";
@@ -2895,7 +3896,7 @@ const VisteGestione = (() => {
       scelta.listino_id = v;
     }
     await esegui(form.querySelector("button[type=submit]"), () => Azioni.registraIngresso(S, c, scelta),
-      () => { S.pannello = null; mostra(false); });
+      () => { S.pannello = null; S.preseleziona = null; mostra(false); });
   }
 
   async function inviaVendita(form) {
@@ -2904,10 +3905,10 @@ const VisteGestione = (() => {
     const v = S.listino.find((x) => x.id === voceId);
     if (!v) return erroreModulo(form, "Scegli cosa compra il cliente.");
     const inizio = form.elements.data_inizio.value;
-    if (!Regole.aData(inizio)) return erroreModulo(form, "Scegli da che giorno vale.");
+    if (!R.aData(inizio)) return erroreModulo(form, "Scegli da che giorno vale.");
     let prezzo = v.prezzo_cent;
     if (testo(form, "prezzo")) {
-      prezzo = Regole.leggiEuro(testo(form, "prezzo"));
+      prezzo = R.leggiEuro(testo(form, "prezzo"));
       if (prezzo === null) return erroreModulo(form, "Scrivi il prezzo in euro, per esempio 45 oppure 45,50.");
     }
     await esegui(form.querySelector("button[type=submit]"),
@@ -2924,7 +3925,7 @@ const VisteGestione = (() => {
   }
 
   async function inviaMovimento(form) {
-    const importo = Regole.leggiEuro(testo(form, "importo"));
+    const importo = R.leggiEuro(testo(form, "importo"));
     if (!importo) return erroreModulo(form, "Scrivi l'importo in euro, per esempio 24 oppure 24,50.");
     const sel = form.elements.categoria;
     const descrizione = testo(form, "descrizione") || sel.options[sel.selectedIndex].text;
@@ -2935,8 +3936,8 @@ const VisteGestione = (() => {
   }
 
   async function inviaChiusura(form) {
-    const contati = Regole.leggiEuro(testo(form, "contati"));
-    const versato = testo(form, "versato") ? Regole.leggiEuro(testo(form, "versato")) : 0;
+    const contati = R.leggiEuro(testo(form, "contati"));
+    const versato = testo(form, "versato") ? R.leggiEuro(testo(form, "versato")) : 0;
     if (contati === null) return erroreModulo(form, "Scrivi quanti contanti hai contato, per esempio 245,50.");
     if (versato === null || versato > contati) return erroreModulo(form, "L'importo portato via non può superare i contanti contati.");
     await esegui(form.querySelector("button[type=submit]"),
@@ -2950,7 +3951,7 @@ const VisteGestione = (() => {
     const grezzi = { tipo, nome: testo(form, "nome"), prezzo: testo(form, "prezzo"), ingressi: testo(form, "ingressi"),
                      giorni: testo(form, "giorni"), attivo: form.elements.attivo.checked };
     const errori = {};
-    const prezzo = Regole.leggiEuro(grezzi.prezzo);
+    const prezzo = R.leggiEuro(grezzi.prezzo);
     const ingressi = parseInt(grezzi.ingressi, 10);
     const giorni = parseInt(grezzi.giorni, 10);
     if (!grezzi.nome) errori.nome = "Scrivi il nome, come lo vedrà la reception.";
@@ -2977,10 +3978,64 @@ const VisteGestione = (() => {
     }
   }
 
+  /* ------------------------------------------------ utenti e tesseramento */
+  async function inviaNuovoUtente(form) {
+    const dati = { nome: testo(form, "nome"), email: testo(form, "email"), password: form.elements.password.value, ruolo: form.elements.ruolo.value };
+    if (!dati.nome) return erroreModulo(form, "Scrivi il nome della persona.");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dati.email)) return erroreModulo(form, "Scrivi un'email valida: servirà per entrare.");
+    if (dati.password.length < 8) return erroreModulo(form, "La password provvisoria deve avere almeno 8 caratteri.");
+    await esegui(form.querySelector("button[type=submit]"), async () => {
+      await Archivio.utenti.crea(dati);
+      return `${dati.nome} può entrare con ${dati.email.toLowerCase()} e la password provvisoria, come ${R.ruoloInFrase(dati.ruolo)}.`;
+    }, () => setTimeout(() => mostra(false), 50));
+  }
+
+  async function inviaPassword(form) {
+    const pw = form.elements.password.value;
+    if (pw.length < 8) return avvisa("La nuova password deve avere almeno 8 caratteri.", "errore");
+    const u = S.utenti.find((x) => x.id === form.dataset.id);
+    await esegui(form.querySelector("button[type=submit]"), async () => {
+      await Archivio.utenti.nuovaPassword(u.id, u.email, pw);
+      return `Nuova password impostata per ${u.nome}.`;
+    }, () => { form.hidden = true; });
+  }
+
+  async function inviaTessera(form) {
+    const numero = testo(form, "numero");
+    const scadenza = form.elements.scadenza.value;
+    if (!numero) return erroreModulo(form, "Scrivi il numero della tessera.");
+    if (!R.aData(scadenza)) return erroreModulo(form, "Scegli fino a quando vale la tessera.");
+    const c = await trovaCliente(form.dataset.id);
+    await esegui(form.querySelector("button[type=submit]"), () => Azioni.registraTessera(c, numero, scadenza),
+      () => { S.leggiDiNuovo = S.rotta.vista === "scheda" ? c.id : null; setTimeout(() => mostra(false), 50); });
+  }
+
+  function datiPerFasi(c) {
+    return [["Cognome", c.cognome], ["Nome", c.nome], ["Data di nascita", R.dataIt(c.data_nascita)],
+      ["Luogo di nascita", c.luogo_nascita], ["Codice fiscale", c.codice_fiscale], ["Residenza", c.indirizzo],
+      ["Email", c.email], ["Telefono", c.telefono]].map(([k, v]) => `${k}: ${v || ""}`).join("\n");
+  }
+
+  const TESTI_ESEMPIO = {
+    liberatoria: "Testo di esempio, da adattare e far verificare al consulente della palestra.\n\n"
+      + "Dichiaro di sapere che l'arrampicata è un'attività che comporta dei rischi, anche di caduta e di lesioni.\n"
+      + "Mi impegno a rispettare il regolamento della palestra e le indicazioni dello staff, a usare l'attrezzatura in modo corretto "
+      + "e ad arrampicare in autonomia solo dopo aver superato la verifica di sicura.\n"
+      + "Dichiaro di essere in buono stato di salute e di consegnare il certificato medico richiesto dalla palestra.\n"
+      + "Se la persona iscritta è minorenne, questa dichiarazione è fatta da un genitore o da chi ne ha la tutela.",
+    privacy: "Testo di esempio, da adattare e far verificare al consulente della palestra.\n\n"
+      + "Titolare del trattamento: [nome, indirizzo e email della palestra].\n"
+      + "I dati che inserisci servono per iscriverti, gestire ingressi e abbonamenti, tesserarti presso la federazione "
+      + "e rispettare gli obblighi di legge. Non li diamo ad altri, se non alla federazione per il tesseramento e a chi "
+      + "ci aiuta a gestirli (per esempio il fornitore del database).\n"
+      + "Li conserviamo finché sei socio e poi per il tempo richiesto dalla legge.\n"
+      + "Puoi chiedere in ogni momento di vedere, correggere o cancellare i tuoi dati scrivendo a [email della palestra].",
+  };
+
   /* ------------------------------------------------- azioni dei pulsanti */
   const AZIONI = {
     async liberatoria(id) {
-      await Archivio.aggiornaCliente(id, { liberatoria_il: Regole.oggiISO() });
+      await Archivio.aggiornaCliente(id, { liberatoria_il: R.oggiISO() });
       S.leggiDiNuovo = id;
       return { tipo: "ok", testo: "Liberatoria registrata con la data di oggi." };
     },
@@ -3007,14 +4062,33 @@ const VisteGestione = (() => {
   async function azione(pulsante) {
     const nome = pulsante.dataset.azione;
     const valore = pulsante.dataset.valore;
+    const id = pulsante.dataset.id;
     switch (nome) {
+      case "esci":
+        try { await Archivio.accesso.esci(); } catch (e) { console.warn(e); }
+        return;
+      case "recupera": {
+        const campo = contenuto.querySelector("#email");
+        const email = campo ? campo.value.trim() : "";
+        if (!email) return mostraErroreAccesso("Scrivi la tua email qui sopra, poi tocca di nuovo «Ho dimenticato la password».");
+        try {
+          await Archivio.accesso.recupera(email);
+          S.accesso.errore = ""; S.accesso.info = `Ti abbiamo mandato un'email a ${email}: apri il link per scegliere una nuova password.`;
+          mostraAccesso();
+        } catch (e) { mostraErroreAccesso(Archivio.messaggioErrore(e), email); }
+        return;
+      }
       case "apri-pannello": S.pannello = pulsante.dataset.pannello; return mostra(false);
-      case "chiudi-pannello": S.pannello = null; return mostra(false);
+      case "chiudi-pannello": S.pannello = null; S.preseleziona = null; return mostra(false);
       case "filtro-storico": S.filtroStorico = valore; S.storicoCompleto = false; return mostra(false);
       case "storico-completo": S.storicoCompleto = true; return mostra(false);
       case "periodo": S.periodo = valore; return mostra(false);
+      case "filtro-fasi": S.filtroFasi = valore; return mostra(false);
       case "annulla":
-        return esegui(pulsante, () => Azioni.annulla(S, pulsante.dataset.tipo, pulsante.dataset.id), () => setTimeout(() => mostra(false), 50));
+        return esegui(pulsante, () => Azioni.annulla(S, pulsante.dataset.tipo, id), () => {
+          if (S.rotta.vista === "scheda") caricaStorico(S.rotta.id);
+          setTimeout(() => mostra(false), 50);
+        });
       case "carica-esempi":
         return esegui(pulsante, () => Azioni.caricaDatiEsempio(S), () => setTimeout(() => mostra(false), 50));
       case "elimina-esempi":
@@ -3023,15 +4097,54 @@ const VisteGestione = (() => {
       case "carica-listino":
         return esegui(pulsante, () => Azioni.caricaListinoEsempio(), () => setTimeout(() => mostra(false), 50));
       case "scarica-copia":
-        return esegui(pulsante, async () => Azioni.scaricaCopia());
+        return esegui(pulsante, () => Azioni.scaricaCopia());
       case "ripristina":
         if (!S.fileRipristino) return avvisa("Scegli prima il file della copia.", "errore");
         return esegui(pulsante, () => Azioni.ripristina(S.fileRipristino), () => { S.fileRipristino = null; S.archiviati = null; setTimeout(() => mostra(false), 50); });
+      case "copia-link": return copia(valore, "Link copiato: incollalo nel sito, sui social o in un messaggio.");
+      case "copia-dati-fasi": {
+        const c = S.clienti.find((x) => x.id === id);
+        return copia(datiPerFasi(c), `Dati di ${c.nome} ${c.cognome} copiati: incollali nel gestionale FASI.`);
+      }
+      case "scarica-fasi": {
+        const preavviso = S.imp.giorni_preavviso;
+        const lista = S.clienti.filter((c) => S.filtroFasi === "tutti" || R.statoTessera(c, preavviso) !== "ok").sort(R.perCognome);
+        return esegui(pulsante, async () => Azioni.scaricaElencoFasi(lista));
+      }
+      case "testi-esempio": {
+        const form = contenuto.querySelector("form[data-modulo=testi]");
+        if (!form.elements.testo_liberatoria.value.trim()) form.elements.testo_liberatoria.value = TESTI_ESEMPIO.liberatoria;
+        if (!form.elements.testo_privacy.value.trim()) form.elements.testo_privacy.value = TESTI_ESEMPIO.privacy;
+        return avvisa("Testi di esempio inseriti nei campi vuoti. Completali con i dati della palestra e tocca «Salva i testi».");
+      }
+      case "accogli": {
+        const r = S.richieste.find((x) => x.id === id) || await Archivio.leggiRichiesta(id);
+        const libera = occupato(pulsante, "Un momento…");
+        try {
+          const idCliente = await Azioni.accogliRichiesta(S, r, valore || null);
+          S.leggiDiNuovo = idCliente;
+          S.pannelloDopo = "ingresso";
+          S.preseleziona = "prova";
+          vai("cliente-" + idCliente, { tipo: "ok", testo: `${r.nome} ${r.cognome} è tra i clienti. Registra l'ingresso di prova e incassa.` });
+        } catch (e) {
+          avvisa(Archivio.messaggioErrore(e), "errore");
+        } finally { libera(); }
+        return;
+      }
+      case "scarta":
+        return esegui(pulsante, async () => { await Azioni.scartaRichiesta(id); return "Iscrizione scartata."; }, () => vai("oggi"));
+      case "attiva-utente":
+        return esegui(pulsante, async () => {
+          await Archivio.utenti.aggiorna(id, { attivo: valore === "si" });
+          return valore === "si" ? "Utente riattivato." : "Utente disattivato: non può più entrare.";
+        });
+      case "reset-password":
+        return esegui(pulsante, async () => { await Archivio.accesso.recupera(valore); return `Email per la nuova password mandata a ${valore}.`; });
     }
     if (!AZIONI[nome]) return;
     const libera = occupato(pulsante, "Un momento…");
     try {
-      const esito = await AZIONI[nome](pulsante.dataset.id);
+      const esito = await AZIONI[nome](id);
       if (esito) { S.messaggio = esito; mostra(); }
     } catch (err) {
       S.messaggio = { tipo: "errore", testo: Archivio.messaggioErrore(err) };
@@ -3061,6 +4174,12 @@ const VisteGestione = (() => {
       if (S.fileRipristino) document.getElementById("conferma-ripristino").hidden = false;
       return;
     }
+    if (el.dataset.cambiaRuolo) {
+      return esegui(null, async () => {
+        await Archivio.utenti.aggiorna(el.dataset.cambiaRuolo, { ruolo: el.value });
+        return `Ruolo cambiato in ${R.ruoloInFrase(el.value)}. Vale dal prossimo accesso della persona.`;
+      });
+    }
     // listino: mostra solo i campi che servono per quel tipo
     if (form && form.dataset.modulo === "voce" && el.name === "tipo") {
       form.querySelectorAll("[data-per]").forEach((d) => { d.hidden = d.dataset.per.split(" ").indexOf(el.value) < 0; });
@@ -3084,7 +4203,7 @@ const VisteGestione = (() => {
     const scritto = S.ricerca.trim().toLowerCase();
     const lista = S.rotta.filtro === "clienti-archiviati" ? (S.archiviati || []) : S.clienti;
     const perTessera = lista.find((c) => (c.numero_tessera || "").toLowerCase() === scritto);
-    const trovati = lista.filter((c) => Regole.corrisponde(c, S.ricerca));
+    const trovati = lista.filter((c) => R.corrisponde(c, S.ricerca));
     const scelto = perTessera || (trovati.length === 1 ? trovati[0] : null);
     if (scelto) { S.ricerca = ""; vai("cliente-" + scelto.id); }
   });
@@ -3092,7 +4211,7 @@ const VisteGestione = (() => {
   document.addEventListener("click", (e) => {
     const t = e.target;
     const oggi = t.closest("[data-oggi]");
-    if (oggi) { document.getElementById(oggi.dataset.oggi).value = Regole.oggiISO(); return; }
+    if (oggi) { document.getElementById(oggi.dataset.oggi).value = R.oggiISO(); return; }
     const imposta = t.closest("[data-imposta]");
     if (imposta) { document.getElementById(imposta.dataset.imposta).value = imposta.dataset.valore; return; }
     const mostraEl = t.closest("[data-mostra]");
@@ -3118,8 +4237,9 @@ const VisteGestione = (() => {
   document.addEventListener("submit", (e) => {
     const form = e.target;
     e.preventDefault();
-    const gestori = { cliente: salvaCliente, impostazioni: salvaImpostazioni, ingresso: inviaIngresso, vendita: inviaVendita,
-                      banco: inviaBanco, movimento: inviaMovimento, chiusura: inviaChiusura, voce: inviaVoce };
+    const gestori = { entra: inviaEntra, "primo-avvio": inviaPrimoAvvio, cliente: salvaCliente, impostazioni: salvaImpostazioni,
+                      testi: salvaTesti, ingresso: inviaIngresso, vendita: inviaVendita, banco: inviaBanco, movimento: inviaMovimento,
+                      chiusura: inviaChiusura, voce: inviaVoce, "nuovo-utente": inviaNuovoUtente, password: inviaPassword, tessera: inviaTessera };
     const errore = form.querySelector("[data-errore]");
     if (errore) errore.hidden = true;
     if (gestori[form.dataset.modulo]) gestori[form.dataset.modulo](form);
@@ -3129,13 +4249,9 @@ const VisteGestione = (() => {
   async function avvia() {
     contenuto.innerHTML = String(Viste.caricamento("Collegamento al database…"));
     const st = await Archivio.avvia();
-    S.puoScrivere = st.puoScrivere !== false;   // se non si sa, si prova: decide il database
-    S.amministratore = st.amministratore;
-    S.nomeUtente = st.nomeUtente;
     S.modalita = st.modalita;
     S.memoriaOk = st.memoriaOk;
-    document.querySelector(".operatore").textContent = st.nomeUtente;
-
+    if (st.erroreAvvio) { mostraBanner(st.erroreAvvio); contenuto.innerHTML = ""; return; }
     if (!st.disponibile) {
       contenuto.innerHTML = String(Viste.nonDisponibile());
       return;
@@ -3145,26 +4261,17 @@ const VisteGestione = (() => {
         ? "Versione di prova: i dati restano solo in questo browser, su questo dispositivo."
         : "Versione di prova: questo browser non lascia salvare i dati, chiudendo la pagina si perdono.", "info");
     }
-    if (!S.puoScrivere) mostraBanner("Puoi solo consultare: per aggiungere o modificare clienti serve il permesso di modifica.");
+    if (S.modalita === "claude" && st.puoScrivere === false) mostraBanner("Puoi solo consultare: per aggiungere o modificare clienti serve il permesso di modifica.");
 
-    const erroreDati = (errore) => { mostraBanner(Archivio.messaggioErrore(errore)); aggiornaDati(); };
-    const attesa = setTimeout(() => { S.lento = true; aggiornaDati(); }, 10000);
-    Archivio.ascoltaClientiAttivi((lista, info) => {
-      S.clienti = lista.sort(Regole.perCognome);
-      S.caricati = true;
-      if (!info.fromCache) { clearTimeout(attesa); S.lento = false; }
-      aggiornaDati();
-    }, (errore) => { clearTimeout(attesa); S.caricati = true; erroreDati(errore); });
-    ["listino", "abbonamenti", "ingressi", "movimenti", "chiusure"].forEach((coll) => {
-      Archivio.ascolta(coll, (lista) => { S[coll] = lista; aggiornaDati(); }, erroreDati);
-    });
+    // le impostazioni (nome della palestra) si vedono anche prima di entrare
     Archivio.ascoltaImpostazioni((imp) => {
       S.imp = imp;
       aggiornaNomePalestra();
-      aggiornaDati();
+      if (S.utente) aggiornaDati();
+      else { const marchio = contenuto.querySelector(".marchio-grande"); if (marchio) marchio.textContent = imp.nome_palestra; }
     }, () => { /* restano le impostazioni predefinite */ });
 
-    mostra();
+    Archivio.accesso.suCambio(cambioUtente);
   }
 
   avvia();
