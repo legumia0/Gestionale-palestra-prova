@@ -574,6 +574,24 @@ body.pagina-pubblica { display: block; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
+/* ------------------------------------------- scheda: certificato medico */
+.box-certificato { background: var(--pannello); border: 1px solid var(--linea); border-radius: var(--raggio); padding: 1.25rem 1.5rem; }
+.box-certificato > p:first-of-type .aiuto { margin-left: 0.25rem; }
+.modulo-certificato { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 0 1rem; align-items: start;
+  margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--linea); }
+.modulo-certificato .campo { margin-bottom: 0.75rem; }
+.modulo-certificato .errore-campo, .modulo-certificato button[type=submit] { grid-column: 1 / -1; justify-self: start; }
+.modulo-certificato input[type=file] { width: 100%; min-height: 44px; padding: 0.45rem 0; font: inherit; }
+.anteprima-certificato { margin: 0.5rem 0 0; }
+.anteprima-certificato img { display: block; max-width: 100%; max-height: 70vh; width: auto; height: auto;
+  border: 1px solid var(--linea); border-radius: var(--raggio); background: #fff; }
+.anteprima-certificato .azioni-modulo { margin-top: 0.75rem; align-items: center; }
+.zona-elimina-certificato { margin-top: 1rem; }
+.aiuto-sotto { display: block; margin-top: 0.15rem; }
+@media (max-width: 600px) {
+  .modulo-certificato { grid-template-columns: minmax(0, 1fr); }
+}
+
 </style>
 </head>
 <body class="senza-accesso">
@@ -717,14 +735,15 @@ const Regole = (() => {
   const CAMPI_DATA = ["data_nascita", "scadenza_tessera", "scadenza_certificato", "liberatoria_il", "privacy_il"];
 
   // Legge i campi del modulo e li controlla. Restituisce { dati, errori }.
+  // Prende solo i campi presenti nel modulo: quelli che non ci sono (per esempio la
+  // scadenza del certificato, che si gestisce nella scheda) restano come sono nel database.
   function leggiModuloCliente(form) {
     const valore = (nome) => {
-      const el = form.elements[nome];
-      const v = ((el && el.value) || "").trim();
+      const v = (form.elements[nome].value || "").trim();
       return v === "" ? null : v;
     };
     const dati = {};
-    [...CAMPI_TESTO, ...CAMPI_DATA].forEach((campo) => { dati[campo] = valore(campo); });
+    [...CAMPI_TESTO, ...CAMPI_DATA].forEach((campo) => { if (form.elements[campo]) dati[campo] = valore(campo); });
     dati.autonomo = !!(form.elements.autonomo && form.elements.autonomo.checked);
 
     const errori = {};
@@ -849,16 +868,18 @@ const Regole = (() => {
 
   /* ---------------------------------------------- ruoli e permessi */
   const RUOLI = {
-    manager: { nome: "Manager", aiuto: "Può fare tutto, compreso creare e gestire gli account dello staff." },
-    normale: { nome: "Normale", aiuto: "Reception, cassa, dashboard, listino e impostazioni: tutto tranne gli account." },
-    fasi:    { nome: "Compilatore FASI", aiuto: "Vede i clienti e gestisce solo il tesseramento FASI." },
+    manager: { nome: "Manager", aiuto: "Può fare tutto, compresi gli account dello staff e i certificati medici." },
+    normale: { nome: "Normale", aiuto: "Reception, cassa, dashboard, listino e impostazioni. Del certificato medico vede solo la scadenza." },
+    fasi:    { nome: "Compilatore FASI", aiuto: "Vede i clienti, gestisce il tesseramento FASI e i certificati medici." },
   };
   const TUTTO = ["oggi", "clienti", "modifica_clienti", "reception", "cassa", "dashboard", "listino",
-                 "impostazioni", "tesseramento", "richieste", "elimina", "dati", "utenti"];
+                 "impostazioni", "tesseramento", "richieste", "elimina", "dati", "utenti", "certificati"];
+  // "certificati" = vedere, caricare e cambiare il file del certificato medico e la sua scadenza.
+  // La scadenza la vedono tutti.
   const PERMESSI = {
     manager: TUTTO,
-    normale: TUTTO.filter((p) => p !== "utenti"),
-    fasi: ["clienti", "tesseramento"],
+    normale: TUTTO.filter((p) => p !== "utenti" && p !== "certificati"),
+    fasi: ["clienti", "tesseramento", "certificati"],
     lettura: ["oggi", "clienti"],          // su claude.ai senza permesso di modifica
   };
   // "manager", "normale", "compilatore FASI": il nome del ruolo dentro una frase
@@ -1158,7 +1179,8 @@ const ArchivioFirebase = (() => {
 
    Struttura dei dati (una "collezione" per tipo, un documento per riga):
      clienti/<id>        anagrafica e documenti
-     richieste/<id>      iscrizioni arrivate dal modulo online
+     certificati/<id>    file del certificato medico (stesso id del cliente)
+     richieste/<id>     iscrizioni arrivate dal modulo online
      listino/<id>        cosa si vende: ingressi, carnet, abbonamenti, noleggi
      abbonamenti/<id>    carnet e abbonamenti venduti a un cliente
      ingressi/<id>       ogni passaggio in reception
@@ -1356,7 +1378,36 @@ const Archivio = (() => {
 
   const creaCliente = (dati) => crea("clienti", Object.assign({}, dati, { attivo: true }));
   const aggiornaCliente = (id, modifiche) => aggiorna("clienti", id, modifiche);
-  const eliminaCliente = (id) => elimina("clienti", id);
+  // Eliminando un cliente si elimina anche il file del suo certificato medico (prima il file:
+  // se qualcosa va storto il cliente resta e si può riprovare, senza file dimenticati)
+  async function eliminaCliente(id) {
+    await elimina("certificati", id);
+    await elimina("clienti", id);
+  }
+
+  /* ------------------------------------------------ certificati medici */
+  // Il file sta in certificati/<id del cliente>, separato dalla scheda: le regole del
+  // database lo fanno leggere solo a manager e compilatore FASI. Nella scheda del cliente
+  // restano la scadenza (la vedono tutti) e se il file c'è.
+  async function leggiCertificato(idCliente) {
+    const doc = await db.doc("certificati/" + idCliente).get();
+    return doc.exists ? conId(doc) : null;
+  }
+  // file = { dati, tipo, nome_file, dimensione } oppure null per cambiare solo la scadenza
+  async function salvaCertificato(idCliente, file, scadenza) {
+    const modifiche = { scadenza_certificato: scadenza };
+    if (file) {
+      await scrivi(() => db.doc("certificati/" + idCliente).set(Object.assign({}, file, {
+        caricato_il: Regole.adessoISO(), caricato_da: stato.idUtente,
+      })));
+      Object.assign(modifiche, { certificato_caricato: true, certificato_il: Regole.oggiISO() });
+    }
+    await aggiorna("clienti", idCliente, modifiche);
+  }
+  async function eliminaCertificato(idCliente) {
+    await elimina("certificati", idCliente);
+    await aggiorna("clienti", idCliente, { certificato_caricato: false, certificato_il: null });
+  }
 
   // Tutti gli ingressi e i pagamenti di un cliente, anche quelli vecchi
   async function storicoCliente(id) {
@@ -1580,7 +1631,7 @@ const Archivio = (() => {
   return { stato, IMPOSTAZIONI_PREDEFINITE, avvia, messaggioErrore, nuovoId,
            ascolta, ascoltaDal, leggiDove, crea, aggiorna, elimina, creaMolti, eliminaMolti,
            ascoltaClientiAttivi, clientiArchiviati, leggiCliente, clientiCon, storicoCliente,
-           creaCliente, aggiornaCliente, eliminaCliente,
+           creaCliente, aggiornaCliente, eliminaCliente, leggiCertificato, salvaCertificato, eliminaCertificato,
            ascoltaImpostazioni, leggiImpostazioni, salvaImpostazioni,
            ascoltaRichiesteNuove, leggiRichiesta, inviaRichiesta,
            accesso, utenti, copiaSicurezza };
@@ -1969,6 +2020,89 @@ const Azioni = (() => {
     }
   }
 
+  /* ------------------------------------------------- certificato medico */
+  // Il file si salva dentro il database (lo spazio file di Firebase chiede il piano a pagamento).
+  // Un documento del database tiene al massimo 1 MB: le foto si rimpiccioliscono qui,
+  // nel browser, prima di partire. Restano ben leggibili, come una buona scansione.
+  const MASSIMO_TESTO = 900000;           // caratteri del file codificato (circa 650 KB veri)
+  const MASSIMO_PDF = 650 * 1024;
+
+  const leggiComeIndirizzo = (file) => new Promise((ok, ko) => {
+    const lettore = new FileReader();
+    lettore.onload = () => ok(lettore.result);
+    lettore.onerror = () => ko({ messaggio: "Il file non si può leggere. Riprova o scegline un altro." });
+    lettore.readAsDataURL(file);
+  });
+
+  const apriImmagine = (file) => new Promise((ok, ko) => {
+    const indirizzo = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(indirizzo); ok(img); };
+    img.onerror = () => { URL.revokeObjectURL(indirizzo);
+      ko({ messaggio: "Questa foto non si apre su questo computer. Scegli una foto JPG o PNG, oppure un PDF." }); };
+    img.src = indirizzo;
+  });
+
+  async function preparaCertificato(file) {
+    const nome = (file.name || "certificato").replace(/\.[^.]+$/, "");
+    if (file.type === "application/pdf" || /\.pdf$/i.test(file.name || "")) {
+      if (file.size > MASSIMO_PDF) {
+        throw { messaggio: `Il PDF è troppo grande (${Math.round(file.size / 1024)} KB, al massimo 650 KB). `
+          + "Fai una foto del certificato: la foto viene rimpicciolita da sola." };
+      }
+      const dati = await leggiComeIndirizzo(file);
+      return { dati: dati.replace(/^data:[^;,]*/, "data:application/pdf"), tipo: "application/pdf", nome_file: nome + ".pdf", dimensione: file.size };
+    }
+    if (file.type && file.type.indexOf("image/") !== 0) throw { messaggio: "Scegli una foto del certificato oppure un PDF." };
+    const img = await apriImmagine(file);
+    let lato = 1600;
+    let qualita = 0.72;
+    for (let tentativo = 0; tentativo < 8; tentativo++) {
+      const scala = Math.min(1, lato / Math.max(img.naturalWidth, img.naturalHeight));
+      const tela = document.createElement("canvas");
+      tela.width = Math.max(1, Math.round(img.naturalWidth * scala));
+      tela.height = Math.max(1, Math.round(img.naturalHeight * scala));
+      const g = tela.getContext("2d");
+      g.fillStyle = "#fff";                         // le PNG trasparenti diventano su fondo bianco
+      g.fillRect(0, 0, tela.width, tela.height);
+      g.drawImage(img, 0, 0, tela.width, tela.height);
+      const dati = tela.toDataURL("image/jpeg", qualita);
+      if (dati.length <= MASSIMO_TESTO) {
+        return { dati, tipo: "image/jpeg", nome_file: nome + ".jpg", dimensione: Math.round(dati.length * 0.75) };
+      }
+      if (qualita > 0.5) qualita -= 0.1; else lato = Math.round(lato * 0.8);
+    }
+    throw { messaggio: "Non riesco a rimpicciolire abbastanza questa foto. Prova con un'altra foto." };
+  }
+
+  async function salvaCertificato(cliente, file, scadenza) {
+    const pronto = file ? await preparaCertificato(file) : null;
+    await A.salvaCertificato(cliente.id, pronto, scadenza);
+    return pronto
+      ? `Certificato di ${nomeCliente(cliente)} caricato, valido fino al ${R.dataIt(scadenza)}.`
+      : `Scadenza del certificato aggiornata: ${R.dataIt(scadenza)}.`;
+  }
+
+  // Da "data:image/jpeg;base64,..." a un file da aprire o scaricare
+  function fileDaIndirizzo(indirizzo) {
+    const [testa, corpo] = indirizzo.split(",");
+    const tipo = (testa.match(/^data:([^;]+)/) || [])[1] || "application/octet-stream";
+    const binario = atob(corpo);
+    const byte = new Uint8Array(binario.length);
+    for (let i = 0; i < binario.length; i++) byte[i] = binario.charCodeAt(i);
+    return new Blob([byte], { type: tipo });
+  }
+
+  function scaricaCertificato(cliente, cert) {
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(fileDaIndirizzo(cert.dati));
+    const estensione = cert.tipo === "application/pdf" ? ".pdf" : ".jpg";
+    link.download = `certificato-${nomeCliente(cliente).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-")}${estensione}`;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => { URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+  }
+
   /* ------------------------------------------------- iscrizioni online */
   // Dalla richiesta online nasce il cliente (oppure si collega a uno che c'è già)
   async function accogliRichiesta(S, richiesta, idEsistente) {
@@ -1999,7 +2133,8 @@ const Azioni = (() => {
 
   return { registraIngresso, vendiAbbonamento, venditaBanco, movimentoManuale, chiudiCassa, annulla, tutte,
            caricaListinoEsempio, salvaVoce, caricaDatiEsempio, eliminaDatiEsempio, scaricaCopia, ripristina,
-           accogliRichiesta, scartaRichiesta, registraTessera, scaricaElencoFasi };
+           accogliRichiesta, scartaRichiesta, registraTessera, scaricaElencoFasi,
+           preparaCertificato, salvaCertificato, fileDaIndirizzo, scaricaCertificato };
 })();
 
 </script>
@@ -2231,7 +2366,7 @@ const Viste = (() => {
           ${lista.map((r) => html`
             <a class="riga-listino" href="#richiesta-${r.id}">
               <span class="riga-nome">${r.cognome} ${r.nome}</span>
-              <span class="riga-dati">${r.data_prova ? `Vuole provare il ${R.dataIt(r.data_prova)}` : "Nessuna data indicata"}</span>
+              <span class="riga-dati">${r.telefono || r.email || ""}</span>
               <span class="riga-prezzo">${R.giornoBreve(r.creato_il)}</span>
             </a>`)}
         </div>
@@ -2354,6 +2489,7 @@ const Viste = (() => {
 
       ${c.attivo && puo(S, "reception") ? boxAbbonamento(S, c, av) : ""}
       ${puo(S, "tesseramento") && !puo(S, "reception") ? boxTessera(S, c) : ""}
+      ${puo(S, "certificati") ? boxCertificato(S, c) : ""}
 
       <div class="griglia-dati">
         <section class="sezione">
@@ -2368,7 +2504,9 @@ const Viste = (() => {
         <section class="sezione">
           <h2>Documenti</h2>
           <dl class="dati">
-            ${voce("Certificato medico", c.scadenza_certificato && `scade il ${R.dataIt(c.scadenza_certificato)}`, "non consegnato")}
+            <dt>Certificato medico</dt>
+            <dd>${c.scadenza_certificato ? `scade il ${R.dataIt(c.scadenza_certificato)}` : html`<span class="manca">non consegnato</span>`}
+              ${!puo(S, "certificati") && notaCertificato(c) ? html`<span class="aiuto aiuto-sotto">${notaCertificato(c)}</span>` : ""}</dd>
             ${voce("Liberatoria", c.liberatoria_il && `firmata il ${R.dataIt(c.liberatoria_il)}`, "da firmare")}
             ${S.imp.usa_tesseramento ? voce("Tesseramento", c.scadenza_tessera && `valido fino al ${R.dataIt(c.scadenza_tessera)}`, "non tesserato") : ""}
             ${voce("Consenso privacy", c.privacy_il && `dato il ${R.dataIt(c.privacy_il)}`, "non registrato")}
@@ -2402,6 +2540,75 @@ const Viste = (() => {
                      </div>
                    </div>`}
         </div>` : ""}`;
+  }
+
+  /* ------------------------------------------------- certificato medico */
+  // Per chi vede solo la scadenza: a chi rivolgersi
+  function notaCertificato(c) {
+    const g = R.giorniDaOggi(c.scadenza_certificato);
+    if (g === null) return "Lo carica il manager o il compilatore FASI.";
+    if (g < 0) return "Quello nuovo lo carica il manager o il compilatore FASI.";
+    return c.certificato_caricato ? "Il documento lo vedono solo il manager e il compilatore FASI." : "";
+  }
+
+  // Solo manager e compilatore FASI: vedere il file, caricarne uno nuovo, cambiare la scadenza
+  function boxCertificato(S, c) {
+    const g = R.giorniDaOggi(c.scadenza_certificato);
+    const stato = g === null ? "Non ancora consegnato"
+      : g < 0 ? `Scaduto il ${R.dataIt(c.scadenza_certificato)}`
+      : `Valido fino al ${R.dataIt(c.scadenza_certificato)}`;
+    const aperto = S.certificato && S.certificato.id === c.id ? S.certificato : null;
+    const nuovo = !c.certificato_caricato;
+    return html`
+      <section class="sezione box-certificato" id="certificato">
+        <h2>Certificato medico</h2>
+        <p><strong>${stato}</strong>${c.certificato_caricato
+          ? html` <span class="aiuto">File caricato il ${R.dataIt(c.certificato_il)}.</span>`
+          : html` <span class="aiuto">Nessun file caricato.</span>`}</p>
+        ${c.certificato_caricato ? html`
+          ${aperto && aperto.errore ? html`<p class="avviso-flash avviso-errore">${aperto.errore}</p>` : ""}
+          ${aperto && aperto.dati ? anteprimaCertificato(aperto) : html`
+            <button type="button" class="pulsante" data-azione="vedi-certificato" data-id="${c.id}">${aperto && aperto.carica ? "Apro il certificato…" : "Vedi il certificato"}</button>`}` : ""}
+        <form class="modulo-certificato" data-modulo="certificato" data-id="${c.id}" novalidate>
+          <div class="campo">
+            <label for="file-certificato">${nuovo ? "Foto o PDF del certificato" : "Sostituisci con un nuovo file"}</label>
+            <input id="file-certificato" name="file" type="file" accept="image/*,application/pdf">
+            <p class="aiuto">${nuovo ? "Dall'iPad puoi fare direttamente la foto." : "Facoltativo: lascialo vuoto per cambiare solo la data."} La foto viene rimpicciolita da sola; un PDF può pesare al massimo 650 KB.</p>
+          </div>
+          <div class="campo">
+            <label for="scadenza-certificato">Valido fino al</label>
+            <input id="scadenza-certificato" name="scadenza" type="date" value="${c.scadenza_certificato || ""}">
+            <p class="aiuto">Di solito un anno dalla data scritta sul certificato.</p>
+          </div>
+          <p class="errore-campo" data-errore hidden></p>
+          <button type="submit" class="pulsante pulsante-primario">Salva certificato</button>
+        </form>
+        ${c.certificato_caricato ? html`
+          <div class="zona-elimina-certificato">
+            <button type="button" class="pulsante-testo" data-mostra="conferma-elimina-certificato">Elimina il file del certificato</button>
+            <div class="conferma" id="conferma-elimina-certificato" hidden>
+              <p><strong>Eliminare il file del certificato?</strong> La data di scadenza resta: cambiala se non è più giusta.</p>
+              <div class="azioni-modulo">
+                <button type="button" class="pulsante pulsante-pericolo" data-azione="elimina-certificato" data-id="${c.id}">Sì, elimina il file</button>
+                <button type="button" class="pulsante pulsante-secondario" data-nascondi="conferma-elimina-certificato">Annulla</button>
+              </div>
+            </div>
+          </div>` : ""}
+      </section>`;
+  }
+
+  function anteprimaCertificato(cert) {
+    const pdf = cert.tipo === "application/pdf";
+    return html`
+      <div class="anteprima-certificato">
+        ${pdf ? html`<p>Certificato in PDF: ${cert.nome_file || "certificato.pdf"}.</p>`
+              : html`<img src="${cert.dati}" alt="Foto del certificato medico">`}
+        <div class="azioni-modulo">
+          ${pdf && cert.indirizzo ? html`<a class="pulsante" href="${cert.indirizzo}" target="_blank" rel="noopener">Apri il PDF</a>` : ""}
+          <button type="button" class="pulsante pulsante-secondario" data-azione="scarica-certificato" data-id="${cert.id}">Scarica il file</button>
+          <button type="button" class="pulsante-testo" data-azione="chiudi-certificato">Nascondi</button>
+        </div>
+      </div>`;
   }
 
   /* ----------------------------------- abbonamento, ingresso, vendita */
@@ -2665,12 +2872,12 @@ const Viste = (() => {
         <fieldset>
           <legend>Documenti</legend>
           <div class="campi-due">
-            ${campo("scadenza_certificato", "Scadenza certificato medico", dati, errori, { tipo: "date" })}
             ${campoDataConOggi("liberatoria_il", "Liberatoria firmata il", dati, errori)}
             ${campo("numero_tessera", tess ? "Numero tessera" : "Numero tessera o badge", dati, errori, { extra: 'autocapitalize="characters" autocomplete="off"' })}
             ${tess ? campo("scadenza_tessera", "Tessera valida fino al", dati, errori, { tipo: "date" }) : ""}
             ${campoDataConOggi("privacy_il", "Consenso privacy dato il", dati, errori)}
           </div>
+          <p class="aiuto">Il certificato medico e la sua scadenza si inseriscono nella scheda del cliente${puo(S, "certificati") ? "" : ", dal manager o dal compilatore FASI"}.</p>
         </fieldset>
         <fieldset>
           <legend>Arrampicata</legend>
@@ -3166,7 +3373,7 @@ const VisteGestione = (() => {
       ${puo(S, "dati") && S.modalita !== "claude" ? html`
         <section class="sezione">
           <h2>Copia di sicurezza</h2>
-          <p>${online ? "Scarica tutti i dati del database in un file, da conservare in un posto sicuro."
+          <p>${online ? "Scarica tutti i dati del database in un file, da conservare in un posto sicuro. Le scadenze dei certificati medici ci sono; i file dei certificati no, restano solo nel database."
             : "Scarica tutti i dati in un file. Ti serve per non perderli e per spostarli su un altro dispositivo o nel database online."}</p>
           <div class="azioni-modulo">
             <button type="button" class="pulsante pulsante-primario" data-azione="scarica-copia">Scarica la copia</button>
@@ -3308,14 +3515,13 @@ const VisteGestione = (() => {
     return html`
       <a class="indietro" href="#oggi">Torna a Oggi</a>
       <h1>${r.nome} ${r.cognome}</h1>
-      <p class="sottotitolo">Iscrizione online del ${R.dataIt(r.creato_il)} alle ${(r.creato_il || "").slice(11, 16)}.
-        ${r.data_prova ? `Vorrebbe provare il ${R.dataIt(r.data_prova)}.` : ""}</p>
+      <p class="sottotitolo">Iscrizione online del ${R.dataIt(r.creato_il)} alle ${(r.creato_il || "").slice(11, 16)}.</p>
 
       <section class="stato-cliente stato-box-verde">
         <h2>Liberatoria e privacy accettate online</h2>
         <p>Il ${R.dataIt(r.accettato_il || r.creato_il)} ha letto e accettato liberatoria, regolamento e informativa privacy.</p>
         ${anni !== null && anni < 18 ? html`<p class="nota-minore">Minorenne (${anni} anni). Ha accettato per lui: ${r.genitore || "genitore non indicato"}.</p>` : ""}
-        <p class="autonomia">${R.ESPERIENZE[r.esperienza] || "Esperienza non indicata"}.</p>
+        ${R.ESPERIENZE[r.esperienza] ? html`<p class="autonomia">${R.ESPERIENZE[r.esperienza]}.</p>` : ""}
       </section>
 
       ${simili.length ? html`
@@ -3390,6 +3596,7 @@ const VisteGestione = (() => {
     periodo: "7",
     filtroFasi: "da-fare",
     fileRipristino: null,
+    certificato: null,     // file del certificato aperto nella scheda: { id, dati, tipo, indirizzo } (solo manager e FASI)
     accesso: { modo: "entra", errore: "", info: "" },
   };
 
@@ -3459,6 +3666,7 @@ const VisteGestione = (() => {
     if (cambiata) {
       S.pannello = S.pannelloDopo; S.pannelloDopo = null;
       if (!S.pannello) S.preseleziona = null;
+      if (S.certificato && (r.vista !== "scheda" || r.id !== S.certificato.id)) chiudiCertificato();
     }
     if (cambiata && r.vista === "scheda" && (!prima || prima.id !== r.id)) {
       S.filtroStorico = "tutto"; S.storicoCompleto = false;
@@ -3744,6 +3952,7 @@ const VisteGestione = (() => {
       return;
     }
     chiudiAscolti();
+    chiudiCertificato();
     S.utente = null; S.ruolo = null;
     if (!profilo || profilo.nonAbilitato) {
       svuotaDati();
@@ -3770,6 +3979,13 @@ const VisteGestione = (() => {
   function svuotaDati() {
     ["clienti", "richieste", "listino", "abbonamenti", "ingressi", "movimenti", "chiusure", "utenti"].forEach((k) => { S[k] = []; });
     S.storici = {}; S.archiviati = null; S.caricati = false; S.ricerca = ""; S.rotta = null;
+    chiudiCertificato();
+  }
+
+  // Il certificato aperto resta solo in memoria, finché si resta nella sua scheda
+  function chiudiCertificato() {
+    if (S.certificato && S.certificato.indirizzo) URL.revokeObjectURL(S.certificato.indirizzo);
+    S.certificato = null;
   }
 
   function chiudiAscolti() {
@@ -4010,6 +4226,58 @@ const VisteGestione = (() => {
       () => { S.leggiDiNuovo = S.rotta.vista === "scheda" ? c.id : null; setTimeout(() => mostra(false), 50); });
   }
 
+  /* ------------------------------------------------- certificato medico */
+  async function inviaCertificato(form) {
+    const file = form.elements.file.files && form.elements.file.files[0];
+    const scadenza = form.elements.scadenza.value;
+    const c = await trovaCliente(form.dataset.id);
+    if (!R.aData(scadenza)) return erroreModulo(form, "Scegli fino a quando vale il certificato.");
+    const g = R.giorniDaOggi(scadenza);
+    if (g < 0) return erroreModulo(form, "Questa data è già passata: controlla la scadenza scritta sul certificato.");
+    if (g > 1100) return erroreModulo(form, "Controlla la data: un certificato medico vale di solito un anno.");
+    if (!file && scadenza === c.scadenza_certificato) return erroreModulo(form, "Scegli il file del certificato, oppure cambia la data.");
+    const pulsante = form.querySelector("button[type=submit]");
+    const libera = occupato(pulsante, file ? "Carico il file…" : "Salvataggio…");
+    try {
+      const esito = await Azioni.salvaCertificato(c, file || null, scadenza);
+      chiudiCertificato();
+      S.leggiDiNuovo = c.id;
+      mostra(false);
+      avvisa(esito);
+    } catch (e) {
+      if (!(e && e.messaggio)) console.warn(e);
+      erroreModulo(form, Archivio.messaggioErrore(e));
+    } finally {
+      libera();
+    }
+  }
+
+  async function apriCertificato(id) {
+    chiudiCertificato();
+    S.certificato = { id, carica: true };
+    mostra(false);
+    let aperto;
+    try {
+      const cert = await Archivio.leggiCertificato(id);
+      const tipoOk = cert && typeof cert.dati === "string"
+        && (cert.tipo === "application/pdf" ? cert.dati.indexOf("data:application/pdf") === 0 : cert.dati.indexOf("data:image/") === 0);
+      if (!tipoOk) aperto = { id, errore: "Il file del certificato non si trova. Caricalo di nuovo." };
+      else {
+        aperto = Object.assign({}, cert, { id });
+        if (cert.tipo === "application/pdf") aperto.indirizzo = URL.createObjectURL(Azioni.fileDaIndirizzo(cert.dati));
+      }
+    } catch (e) {
+      aperto = { id, errore: Archivio.messaggioErrore(e) };
+    }
+    const r = S.rotta;
+    if (!S.certificato || S.certificato.id !== id || !r || r.vista !== "scheda" || r.id !== id) {
+      if (aperto.indirizzo) URL.revokeObjectURL(aperto.indirizzo);   // nel frattempo si è cambiata pagina
+      return;
+    }
+    S.certificato = aperto;
+    mostra(false);
+  }
+
   function datiPerFasi(c) {
     return [["Cognome", c.cognome], ["Nome", c.nome], ["Data di nascita", R.dataIt(c.data_nascita)],
       ["Luogo di nascita", c.luogo_nascita], ["Codice fiscale", c.codice_fiscale], ["Residenza", c.indirizzo],
@@ -4084,6 +4352,20 @@ const VisteGestione = (() => {
       case "storico-completo": S.storicoCompleto = true; return mostra(false);
       case "periodo": S.periodo = valore; return mostra(false);
       case "filtro-fasi": S.filtroFasi = valore; return mostra(false);
+      case "vedi-certificato": return apriCertificato(id);
+      case "chiudi-certificato": chiudiCertificato(); return mostra(false);
+      case "scarica-certificato": {
+        if (!S.certificato || !S.certificato.dati) return;
+        const c = await trovaCliente(id);
+        return esegui(null, async () => { Azioni.scaricaCertificato(c, S.certificato); return "Certificato scaricato."; });
+      }
+      case "elimina-certificato":
+        return esegui(pulsante, async () => {
+          await Archivio.eliminaCertificato(id);
+          chiudiCertificato();
+          S.leggiDiNuovo = id;
+          return "File del certificato eliminato.";
+        }, () => mostra(false));
       case "annulla":
         return esegui(pulsante, () => Azioni.annulla(S, pulsante.dataset.tipo, id), () => {
           if (S.rotta.vista === "scheda") caricaStorico(S.rotta.id);
@@ -4239,7 +4521,7 @@ const VisteGestione = (() => {
     e.preventDefault();
     const gestori = { entra: inviaEntra, "primo-avvio": inviaPrimoAvvio, cliente: salvaCliente, impostazioni: salvaImpostazioni,
                       testi: salvaTesti, ingresso: inviaIngresso, vendita: inviaVendita, banco: inviaBanco, movimento: inviaMovimento,
-                      chiusura: inviaChiusura, voce: inviaVoce, "nuovo-utente": inviaNuovoUtente, password: inviaPassword, tessera: inviaTessera };
+                      chiusura: inviaChiusura, voce: inviaVoce, "nuovo-utente": inviaNuovoUtente, password: inviaPassword, tessera: inviaTessera, certificato: inviaCertificato };
     const errore = form.querySelector("[data-errore]");
     if (errore) errore.hidden = true;
     if (gestori[form.dataset.modulo]) gestori[form.dataset.modulo](form);
