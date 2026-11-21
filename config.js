@@ -15,10 +15,10 @@
    I dati dei clienti li proteggono le regole di sicurezza di Firestore.
    ===================================================================== */
 window.CONFIG_FIREBASE = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyCbtAphrMDT7f1AJ97SvXRvAxbtUDszKuQ",
+  authDomain: "gestionale-palestra-e6062.firebaseapp.com",
+  projectId: "gestionale-palestra-e6062",
+  storageBucket: "gestionale-palestra-e6062.firebasestorage.app",
+  messagingSenderId: "38137990576",
+  appId: "1:38137990576:web:0d24f46ec28bd3ecc11a75",
 };
