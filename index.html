@@ -623,6 +623,22 @@ body.pagina-pubblica { display: block; }
   .riquadro-valore { font-size: 1.125rem; }
 }
 
+/* ------------------------------------------- certificato: link e controllo */
+.link-certificato { margin: 0.9rem 0 0; padding-top: 0.9rem; border-top: 1px solid var(--linea); }
+.link-certificato p { margin: 0 0 0.4rem; }
+.link-certificato .azioni-modulo { align-items: center; }
+.certificato-arrivato { margin: 0.75rem 0 1rem; padding: 1rem 1.1rem; background: var(--sopra);
+  border: 1px solid var(--linea); border-left: 5px solid var(--giallo); border-radius: var(--raggio); }
+.certificato-arrivato h3 { margin: 0 0 0.4rem; font-size: 1.0625rem; }
+.certificato-arrivato p { margin: 0 0 0.6rem; }
+.certificato-arrivato .modulo-certificato { grid-template-columns: minmax(0, 20rem); margin-top: 0.5rem; }
+.certificato-arrivato .azioni-modulo { grid-column: 1 / -1; }
+.campo-intero { grid-column: 1 / -1; margin: 0 0 0.75rem; }
+.codice { display: block; width: 100%; margin: 0.75rem 0; padding: 0.6rem 0.75rem; font: 0.8125rem/1.45 ui-monospace, Menlo, Consolas, monospace;
+  color: var(--ink); background: var(--sfondo); border: 1px solid var(--linea); border-radius: var(--raggio); resize: vertical; }
+.istruzioni-drive ol { padding-left: 1.3rem; margin: 0 0 0.75rem; }
+.istruzioni-drive li { margin-bottom: 0.5rem; }
+
 </style>
 </head>
 <body class="senza-accesso">
@@ -987,6 +1003,211 @@ const Regole = (() => {
 </script>
   <script>
 /* =====================================================================
+   CERTIFICATI MEDICI: preparare il file e mandarlo a Google Drive.
+   Usato dal gestionale (scheda del cliente) e dalla pagina pubblica
+   certificato.html, dove il cliente carica il suo certificato da un link.
+
+   Come arriva a Drive: un piccolo programma di Google (Apps Script) messo
+   sull'account Google della palestra riceve il file e lo salva nella cartella
+   "Certificati medici". Accetta solo file che arrivano con un link valido
+   (inviti_certificato/<codice> nel database, in attesa e non scaduto).
+   I file restano privati: li apre solo chi ha accesso a quella cartella.
+   ===================================================================== */
+const Certificati = (() => {
+  const LIMITI = {
+    drive: { testo: 4000000, pdf: 8 * 1024 * 1024 },     // su Drive: foto fino a ~3 MB, PDF fino a 8 MB
+    database: { testo: 900000, pdf: 650 * 1024 },         // versione di prova: dentro il database (1 MB al massimo)
+  };
+
+  const leggiComeIndirizzo = (file) => new Promise((ok, ko) => {
+    const lettore = new FileReader();
+    lettore.onload = () => ok(lettore.result);
+    lettore.onerror = () => ko({ messaggio: "Il file non si può leggere. Riprova o scegline un altro." });
+    lettore.readAsDataURL(file);
+  });
+
+  const apriImmagine = (file) => new Promise((ok, ko) => {
+    const indirizzo = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(indirizzo); ok(img); };
+    img.onerror = () => { URL.revokeObjectURL(indirizzo);
+      ko({ messaggio: "Questa foto non si apre su questo dispositivo. Scegli una foto JPG o PNG, oppure un PDF." }); };
+    img.src = indirizzo;
+  });
+
+  // Foto: rimpicciolita nel browser (lato lungo 1600 px), resta leggibile come una buona scansione.
+  // PDF: così com'è, se non è troppo grande. dove = "drive" | "database"
+  async function prepara(file, dove) {
+    const lim = LIMITI[dove] || LIMITI.drive;
+    const nome = (file.name || "certificato").replace(/\.[^.]+$/, "");
+    if (file.type === "application/pdf" || /\.pdf$/i.test(file.name || "")) {
+      if (file.size > lim.pdf) {
+        throw { messaggio: `Il PDF è troppo grande (${Math.round(file.size / 1024)} KB, al massimo ${Math.round(lim.pdf / 1024)} KB). `
+          + "Fai una foto del certificato: la foto viene rimpicciolita da sola." };
+      }
+      const dati = await leggiComeIndirizzo(file);
+      return { dati: dati.replace(/^data:[^;,]*/, "data:application/pdf"), tipo: "application/pdf", nome_file: nome + ".pdf", dimensione: file.size };
+    }
+    if (file.type && file.type.indexOf("image/") !== 0) throw { messaggio: "Scegli una foto del certificato oppure un PDF." };
+    const img = await apriImmagine(file);
+    let lato = 1600;
+    let qualita = 0.75;
+    for (let tentativo = 0; tentativo < 8; tentativo++) {
+      const scala = Math.min(1, lato / Math.max(img.naturalWidth, img.naturalHeight));
+      const tela = document.createElement("canvas");
+      tela.width = Math.max(1, Math.round(img.naturalWidth * scala));
+      tela.height = Math.max(1, Math.round(img.naturalHeight * scala));
+      const g = tela.getContext("2d");
+      g.fillStyle = "#fff";                         // le PNG trasparenti diventano su fondo bianco
+      g.fillRect(0, 0, tela.width, tela.height);
+      g.drawImage(img, 0, 0, tela.width, tela.height);
+      const dati = tela.toDataURL("image/jpeg", qualita);
+      if (dati.length <= lim.testo) {
+        return { dati, tipo: "image/jpeg", nome_file: nome + ".jpg", dimensione: Math.round(dati.length * 0.75) };
+      }
+      if (qualita > 0.5) qualita -= 0.1; else lato = Math.round(lato * 0.8);
+    }
+    throw { messaggio: "Non riesco a rimpicciolire abbastanza questa foto. Prova con un'altra foto." };
+  }
+
+  // Da "data:image/jpeg;base64,..." a un file da aprire o scaricare
+  function fileDaIndirizzo(indirizzo) {
+    const [testa, corpo] = indirizzo.split(",");
+    const tipo = (testa.match(/^data:([^;]+)/) || [])[1] || "application/octet-stream";
+    const binario = atob(corpo);
+    const byte = new Uint8Array(binario.length);
+    for (let i = 0; i < binario.length; i++) byte[i] = binario.charCodeAt(i);
+    return new Blob([byte], { type: tipo });
+  }
+
+  // Codice del link: 32 caratteri casuali, impossibile da indovinare
+  function nuovoCodice() {
+    const byte = new Uint8Array(24);
+    crypto.getRandomValues(byte);
+    return btoa(String.fromCharCode.apply(null, byte)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+
+  // Scadenza proposta: un anno dalla data del certificato (il giorno prima dello stesso giorno dell'anno dopo)
+  function scadenzaDa(dataCertificato) {
+    if (!Regole.aData(dataCertificato)) return "";
+    const [a, m, g] = dataCertificato.split("-").map(Number);
+    const d = new Date(a + 1, m - 1, g);
+    d.setDate(d.getDate() - 1);
+    const due = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${due(d.getMonth() + 1)}-${due(d.getDate())}`;
+  }
+
+  /* ------------------------------------------------- dialogo con Google */
+  const ERRORE_RETE = "Google Drive non risponde. Controlla la connessione a internet e riprova.";
+
+  async function chiama(indirizzo, corpo) {
+    if (!indirizzo) throw { messaggio: "Google Drive non è ancora collegato: il manager lo collega da Impostazioni." };
+    let risposta;
+    try {
+      // testo semplice, senza intestazioni: così il browser non blocca la chiamata verso Google
+      risposta = await fetch(indirizzo, corpo ? { method: "POST", body: JSON.stringify(corpo) } : { method: "GET" });
+    } catch (e) {
+      throw { messaggio: ERRORE_RETE };
+    }
+    let esito;
+    try { esito = await risposta.json(); } catch (e) {
+      throw { messaggio: "Il collegamento a Google Drive non risponde come dovrebbe. Il manager lo controlla da Impostazioni." };
+    }
+    if (!esito || !esito.ok) throw { messaggio: (esito && esito.errore) || "Google Drive ha rifiutato il file." };
+    return esito;
+  }
+
+  // Manda il file a Drive con il codice del link. Risponde { id, url, nome }.
+  async function mandaADrive(indirizzo, codice, file) {
+    return chiama(indirizzo, { azione: "carica", codice, tipo: file.tipo, nome_file: file.nome_file,
+                               dati: file.dati.slice(file.dati.indexOf(",") + 1) });
+  }
+  // Sposta nel cestino di Drive il file arrivato con quel codice
+  const cestina = (indirizzo, codice) => chiama(indirizzo, { azione: "cestina", codice });
+  // Per Impostazioni: il collegamento risponde?
+  const prova = (indirizzo) => chiama(indirizzo, null);
+
+  /* ------------------------------------- il programma da mettere su Google */
+  function codiceAppsScript(progetto, chiave) {
+    return `// Certificati medici della palestra: riceve i file e li salva su Google Drive.
+// Da incollare in script.google.com con l'account Google della palestra (vedi Impostazioni del gestionale).
+
+const CARTELLA = "Certificati medici";            // nome della cartella su Google Drive (la crea da solo)
+const PROGETTO_FIREBASE = "${progetto || "INCOLLA-QUI-projectId"}";
+const CHIAVE_FIREBASE = "${chiave || "INCOLLA-QUI-apiKey"}";
+const TIPI = { "image/jpeg": ".jpg", "application/pdf": ".pdf" };
+const MASSIMO = 8 * 1024 * 1024;
+
+function doGet() {
+  return risposta({ ok: true, servizio: "certificati palestra", cartella: cartella().getName() });
+}
+
+function doPost(e) {
+  try {
+    const d = JSON.parse(e.postData.contents);
+    const invito = leggiLink(d.codice);
+    if (!invito) return risposta({ ok: false, errore: "Questo link non è valido. Chiedine uno nuovo alla palestra." });
+    if (d.azione === "carica") return carica(d, invito);
+    if (d.azione === "cestina") return cestinaFile(invito);
+    return risposta({ ok: false, errore: "Richiesta sconosciuta." });
+  } catch (err) {
+    return risposta({ ok: false, errore: "Errore su Google Drive: " + err });
+  }
+}
+
+function carica(d, invito) {
+  if (invito.stato !== "attesa") return risposta({ ok: false, errore: "Con questo link il certificato è già stato inviato." });
+  const oggi = Utilities.formatDate(new Date(), "Europe/Rome", "yyyy-MM-dd");
+  if (invito.scade_il && invito.scade_il < oggi) return risposta({ ok: false, errore: "Questo link è scaduto. Chiedine uno nuovo alla palestra." });
+  if (!TIPI[d.tipo]) return risposta({ ok: false, errore: "Si possono inviare solo foto o PDF." });
+  const byte = Utilities.base64Decode(d.dati);
+  if (byte.length > MASSIMO) return risposta({ ok: false, errore: "Il file è troppo grande." });
+  const nome = (invito.cognome + " " + invito.nome).trim() + " - certificato " + oggi + TIPI[d.tipo];
+  const file = cartella().createFile(Utilities.newBlob(byte, d.tipo, nome));
+  file.setDescription("Inviato con il link " + d.codice.slice(0, 6) + "… il " + oggi);
+  return risposta({ ok: true, id: file.getId(), url: file.getUrl(), nome: nome });
+}
+
+function cestinaFile(invito) {
+  if (!invito.file_id) return risposta({ ok: true, cestinato: false });
+  const file = DriveApp.getFileById(invito.file_id);
+  const giusta = cartella().getId();
+  const padri = file.getParents();
+  while (padri.hasNext()) {
+    if (padri.next().getId() === giusta) { file.setTrashed(true); return risposta({ ok: true, cestinato: true }); }
+  }
+  return risposta({ ok: false, errore: "Il file non è nella cartella dei certificati." });
+}
+
+// Il link è valido se esiste nel database del gestionale (lo legge come una persona qualsiasi)
+function leggiLink(codice) {
+  if (!/^[A-Za-z0-9_-]{20,64}$/.test(codice || "")) return null;
+  const url = "https://firestore.googleapis.com/v1/projects/" + PROGETTO_FIREBASE
+    + "/databases/(default)/documents/inviti_certificato/" + codice + "?key=" + CHIAVE_FIREBASE;
+  const r = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  if (r.getResponseCode() !== 200) return null;
+  const f = JSON.parse(r.getContentText()).fields || {};
+  const testo = (k) => (f[k] && f[k].stringValue) || "";
+  return { stato: testo("stato"), nome: testo("nome"), cognome: testo("cognome"), scade_il: testo("scade_il"), file_id: testo("file_id") };
+}
+
+function cartella() {
+  const trovate = DriveApp.getFoldersByName(CARTELLA);
+  return trovate.hasNext() ? trovate.next() : DriveApp.createFolder(CARTELLA);
+}
+
+function risposta(oggetto) {
+  return ContentService.createTextOutput(JSON.stringify(oggetto)).setMimeType(ContentService.MimeType.JSON);
+}
+`;
+  }
+
+  return { prepara, fileDaIndirizzo, nuovoCodice, scadenzaDa, mandaADrive, cestina, prova, codiceAppsScript };
+})();
+
+</script>
+  <script>
+/* =====================================================================
    ARCHIVIO LOCALE (versione di prova)
    Quando la pagina NON è aperta su claude.ai, i dati si salvano nella
    memoria del browser di questo dispositivo.
@@ -1233,7 +1454,9 @@ const ArchivioFirebase = (() => {
 
    Struttura dei dati (una "collezione" per tipo, un documento per riga):
      clienti/<id>        anagrafica e documenti
-     certificati/<id>    file del certificato medico (stesso id del cliente)
+     certificati/<id>    certificato medico del cliente (stesso id): collegamento a Google Drive
+                         (nella versione di prova il file stesso)
+     inviti_certificato/<codice>  link per far inviare il certificato al cliente
      richieste/<id>     iscrizioni arrivate dal modulo online
      listino/<id>        cosa si vende: ingressi, carnet, abbonamenti, noleggi
      abbonamenti/<id>    carnet e abbonamenti venduti a un cliente
@@ -1266,6 +1489,7 @@ const Archivio = (() => {
     giorni_preavviso: 30,       // da quanti giorni prima segnalare una scadenza
     testo_liberatoria: "",
     testo_privacy: "",
+    indirizzo_drive: "",        // app web di Google (Apps Script) che salva i certificati su Drive
   };
 
   const PREFISSI = { clienti: "c", listino: "l", abbonamenti: "a", ingressi: "i", movimenti: "m", chiusure: "k", richieste: "r", staff: "u" };
@@ -1436,7 +1660,42 @@ const Archivio = (() => {
   // se qualcosa va storto il cliente resta e si può riprovare, senza file dimenticati)
   async function eliminaCliente(id) {
     await elimina("certificati", id);
+    for (const inv of await invitiCliente(id)) await elimina("inviti_certificato", inv.id);
     await elimina("clienti", id);
+  }
+
+  /* ------------------------------------- link per inviare il certificato */
+  // inviti_certificato/<codice>: il codice è nel link che riceve il cliente.
+  // stato: "attesa" → "inviato" (dal cliente) → "accettato" | "rifiutato"; oppure "annullato", "sostituito".
+  // "aperto" è vero finché qualcuno deve ancora fare qualcosa (attesa o inviato).
+  async function creaInvito(cliente, origine) {
+    const codice = Certificati.nuovoCodice();
+    await crea("inviti_certificato", { cliente_id: cliente.id, nome: cliente.nome, cognome: cliente.cognome,
+      stato: "attesa", aperto: true, origine, scade_il: Regole.dataTra(30) }, codice);
+    return codice;
+  }
+  const chiudiInvito = (codice, stato, altro) =>
+    aggiorna("inviti_certificato", codice, Object.assign({ stato, aperto: false }, altro || {}));
+  const invitiCliente = (idCliente) => leggiDove("inviti_certificato", "cliente_id", idCliente);
+  function ascoltaInvitiAperti(suDati, suErrore) {
+    return limita(db.collection("inviti_certificato").where("aperto", "==", true))
+      .onSnapshot((snap) => suDati(snap.docs.map(conId), snap.metadata), suErrore);
+  }
+  // Dalla pagina pubblica, senza accesso: si legge solo il link che si conosce
+  async function leggiInvito(codice) {
+    const doc = await db.doc("inviti_certificato/" + codice).get();
+    return doc.exists ? conId(doc) : null;
+  }
+  // Dalla pagina pubblica: il file è su Drive, si segna il link come usato (le regole permettono solo questo)
+  async function consegnaInvito(codice, dati) {
+    await scrivi(() => db.doc("inviti_certificato/" + codice).update(Object.assign({ stato: "inviato" }, dati)));
+  }
+  // File su Google Drive: nel database resta solo il collegamento (lo leggono manager e compilatore FASI)
+  async function salvaCertificatoDrive(idCliente, info, scadenza) {
+    await scrivi(() => db.doc("certificati/" + idCliente).set(Object.assign({}, info, {
+      caricato_il: Regole.adessoISO(), caricato_da: stato.idUtente,
+    })));
+    await aggiorna("clienti", idCliente, { scadenza_certificato: scadenza, certificato_caricato: true, certificato_il: Regole.oggiISO() });
   }
 
   /* ------------------------------------------------ certificati medici */
@@ -1686,6 +1945,7 @@ const Archivio = (() => {
            ascolta, ascoltaDal, leggiDove, crea, aggiorna, elimina, creaMolti, eliminaMolti,
            ascoltaClientiAttivi, clientiArchiviati, leggiCliente, clientiCon, storicoCliente,
            creaCliente, aggiornaCliente, eliminaCliente, leggiCertificato, salvaCertificato, eliminaCertificato,
+           creaInvito, chiudiInvito, invitiCliente, ascoltaInvitiAperti, leggiInvito, consegnaInvito, salvaCertificatoDrive,
            ascoltaImpostazioni, leggiImpostazioni, salvaImpostazioni,
            ascoltaRichiesteNuove, leggiRichiesta, inviaRichiesta,
            accesso, utenti, copiaSicurezza };
@@ -2141,81 +2401,101 @@ const Azioni = (() => {
   }
 
   /* ------------------------------------------------- certificato medico */
-  // Il file si salva dentro il database (lo spazio file di Firebase chiede il piano a pagamento).
-  // Un documento del database tiene al massimo 1 MB: le foto si rimpiccioliscono qui,
-  // nel browser, prima di partire. Restano ben leggibili, come una buona scansione.
-  const MASSIMO_TESTO = 900000;           // caratteri del file codificato (circa 650 KB veri)
-  const MASSIMO_PDF = 650 * 1024;
+  // Online i file vanno su Google Drive (cartella della palestra), passando da un link:
+  // anche quando li carica lo staff si crea un link "interno" usato una volta sola.
+  // Nella versione di prova (o su claude.ai) restano dentro il database.
+  const indirizzoDrive = (S) => (S.modalita === "online" && S.imp.indirizzo_drive) || "";
 
-  const leggiComeIndirizzo = (file) => new Promise((ok, ko) => {
-    const lettore = new FileReader();
-    lettore.onload = () => ok(lettore.result);
-    lettore.onerror = () => ko({ messaggio: "Il file non si può leggere. Riprova o scegline un altro." });
-    lettore.readAsDataURL(file);
-  });
-
-  const apriImmagine = (file) => new Promise((ok, ko) => {
-    const indirizzo = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => { URL.revokeObjectURL(indirizzo); ok(img); };
-    img.onerror = () => { URL.revokeObjectURL(indirizzo);
-      ko({ messaggio: "Questa foto non si apre su questo computer. Scegli una foto JPG o PNG, oppure un PDF." }); };
-    img.src = indirizzo;
-  });
-
-  async function preparaCertificato(file) {
-    const nome = (file.name || "certificato").replace(/\.[^.]+$/, "");
-    if (file.type === "application/pdf" || /\.pdf$/i.test(file.name || "")) {
-      if (file.size > MASSIMO_PDF) {
-        throw { messaggio: `Il PDF è troppo grande (${Math.round(file.size / 1024)} KB, al massimo 650 KB). `
-          + "Fai una foto del certificato: la foto viene rimpicciolita da sola." };
-      }
-      const dati = await leggiComeIndirizzo(file);
-      return { dati: dati.replace(/^data:[^;,]*/, "data:application/pdf"), tipo: "application/pdf", nome_file: nome + ".pdf", dimensione: file.size };
+  // Link personale per il cliente: lo apre dal telefono e carica il certificato
+  async function creaLinkCertificato(S, cliente) {
+    if (S.modalita !== "online") throw { messaggio: "Il link per il certificato funziona con il database online." };
+    if (!indirizzoDrive(S)) throw { messaggio: "Prima il manager deve collegare Google Drive da Impostazioni." };
+    // un solo link aperto per cliente: quello vecchio non vale più
+    for (const vecchio of S.inviti.filter((x) => x.cliente_id === cliente.id && x.stato === "attesa")) {
+      await A.chiudiInvito(vecchio.id, "sostituito");
     }
-    if (file.type && file.type.indexOf("image/") !== 0) throw { messaggio: "Scegli una foto del certificato oppure un PDF." };
-    const img = await apriImmagine(file);
-    let lato = 1600;
-    let qualita = 0.72;
-    for (let tentativo = 0; tentativo < 8; tentativo++) {
-      const scala = Math.min(1, lato / Math.max(img.naturalWidth, img.naturalHeight));
-      const tela = document.createElement("canvas");
-      tela.width = Math.max(1, Math.round(img.naturalWidth * scala));
-      tela.height = Math.max(1, Math.round(img.naturalHeight * scala));
-      const g = tela.getContext("2d");
-      g.fillStyle = "#fff";                         // le PNG trasparenti diventano su fondo bianco
-      g.fillRect(0, 0, tela.width, tela.height);
-      g.drawImage(img, 0, 0, tela.width, tela.height);
-      const dati = tela.toDataURL("image/jpeg", qualita);
-      if (dati.length <= MASSIMO_TESTO) {
-        return { dati, tipo: "image/jpeg", nome_file: nome + ".jpg", dimensione: Math.round(dati.length * 0.75) };
-      }
-      if (qualita > 0.5) qualita -= 0.1; else lato = Math.round(lato * 0.8);
-    }
-    throw { messaggio: "Non riesco a rimpicciolire abbastanza questa foto. Prova con un'altra foto." };
+    return A.creaInvito(cliente, "cliente");
   }
 
-  async function salvaCertificato(cliente, file, scadenza) {
-    const pronto = file ? await preparaCertificato(file) : null;
-    await A.salvaCertificato(cliente.id, pronto, scadenza);
-    return pronto
-      ? `Certificato di ${nomeCliente(cliente)} caricato, valido fino al ${R.dataIt(scadenza)}.`
-      : `Scadenza del certificato aggiornata: ${R.dataIt(scadenza)}.`;
+  async function annullaLinkCertificato(id) {
+    await A.chiudiInvito(id, "annullato");
+    return "Link annullato: non si può più usare.";
   }
 
-  // Da "data:image/jpeg;base64,..." a un file da aprire o scaricare
-  function fileDaIndirizzo(indirizzo) {
-    const [testa, corpo] = indirizzo.split(",");
-    const tipo = (testa.match(/^data:([^;]+)/) || [])[1] || "application/octet-stream";
-    const binario = atob(corpo);
-    const byte = new Uint8Array(binario.length);
-    for (let i = 0; i < binario.length; i++) byte[i] = binario.charCodeAt(i);
-    return new Blob([byte], { type: tipo });
+  // Il vecchio file su Drive va nel cestino quando arriva quello nuovo (se non riesce, resta: nessun danno)
+  async function cestinaVecchio(S, vecchio) {
+    if (!vecchio || !vecchio.invito || !vecchio.drive_id) return;
+    try { await Certificati.cestina(indirizzoDrive(S), vecchio.invito); } catch (e) { console.warn(e); }
+  }
+
+  async function salvaCertificato(S, cliente, file, scadenza) {
+    const nome = nomeCliente(cliente);
+    if (!file) {
+      await A.salvaCertificato(cliente.id, null, scadenza);
+      return `Scadenza del certificato aggiornata: ${R.dataIt(scadenza)}.`;
+    }
+    const drive = indirizzoDrive(S);
+    if (S.modalita === "online" && !drive) throw { messaggio: "I certificati si salvano su Google Drive: prima il manager lo collega da Impostazioni." };
+    if (!drive) {                                      // versione di prova: dentro il database
+      await A.salvaCertificato(cliente.id, await Certificati.prepara(file, "database"), scadenza);
+      return `Certificato di ${nome} caricato, valido fino al ${R.dataIt(scadenza)}.`;
+    }
+    const pronto = await Certificati.prepara(file, "drive");
+    const vecchio = await A.leggiCertificato(cliente.id);
+    const codice = await A.creaInvito(cliente, "staff");
+    let su;
+    try {
+      su = await Certificati.mandaADrive(drive, codice, pronto);
+    } catch (e) {
+      await A.chiudiInvito(codice, "annullato").catch(() => {});
+      throw e;
+    }
+    await A.salvaCertificatoDrive(cliente.id, { drive_id: su.id, drive_url: su.url, nome_file: su.nome || pronto.nome_file,
+      tipo: pronto.tipo, origine: "staff", invito: codice }, scadenza);
+    await A.chiudiInvito(codice, "accettato", { file_id: su.id, file_url: su.url, file_nome: su.nome || pronto.nome_file, file_tipo: pronto.tipo });
+    await cestinaVecchio(S, vecchio);
+    return `Certificato di ${nome} salvato su Google Drive, valido fino al ${R.dataIt(scadenza)}.`;
+  }
+
+  // Il cliente l'ha inviato dal link: chi controlla lo guarda su Drive e conferma la scadenza
+  async function accettaCertificatoInviato(S, cliente, invito, scadenza) {
+    const vecchio = await A.leggiCertificato(cliente.id);
+    await A.salvaCertificatoDrive(cliente.id, { drive_id: invito.file_id, drive_url: invito.file_url, nome_file: invito.file_nome,
+      tipo: invito.file_tipo, origine: "cliente", invito: invito.id }, scadenza);
+    await A.chiudiInvito(invito.id, "accettato");
+    if (vecchio && vecchio.invito !== invito.id) await cestinaVecchio(S, vecchio);
+    return `Certificato di ${nomeCliente(cliente)} accettato, valido fino al ${R.dataIt(scadenza)}.`;
+  }
+
+  async function rifiutaCertificatoInviato(S, invito) {
+    try { await Certificati.cestina(indirizzoDrive(S), invito.id); } catch (e) { console.warn(e); }
+    await A.chiudiInvito(invito.id, "rifiutato");
+    return "Certificato rifiutato: il file è nel cestino di Google Drive. Se serve, crea un nuovo link per il cliente.";
+  }
+
+  async function eliminaFileCertificato(S, cliente) {
+    const cert = await A.leggiCertificato(cliente.id);
+    let restaSuDrive = false;
+    if (cert && cert.drive_id) {
+      try { await Certificati.cestina(indirizzoDrive(S), cert.invito); } catch (e) { restaSuDrive = true; }
+    }
+    await A.eliminaCertificato(cliente.id);
+    return restaSuDrive ? "File tolto dal gestionale. Non sono riuscito a spostarlo nel cestino di Google Drive: eliminalo da lì."
+      : cert && cert.drive_id ? "File del certificato eliminato (è nel cestino di Google Drive)." : "File del certificato eliminato.";
+  }
+
+  // Prima di eliminare un cliente: i suoi file su Drive vanno nel cestino (privacy)
+  async function cestinaFileCliente(S, idCliente) {
+    if (!indirizzoDrive(S)) return;
+    const inviti = await A.invitiCliente(idCliente);
+    for (const inv of inviti.filter((x) => x.file_id)) {
+      try { await Certificati.cestina(indirizzoDrive(S), inv.id); } catch (e) { console.warn(e); }
+    }
   }
 
   function scaricaCertificato(cliente, cert) {
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(fileDaIndirizzo(cert.dati));
+    link.href = URL.createObjectURL(Certificati.fileDaIndirizzo(cert.dati));
     const estensione = cert.tipo === "application/pdf" ? ".pdf" : ".jpg";
     link.download = `certificato-${nomeCliente(cliente).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-")}${estensione}`;
     document.body.appendChild(link);
@@ -2254,7 +2534,8 @@ const Azioni = (() => {
   return { registraIngresso, vendiAbbonamento, venditaBanco, movimentoManuale, chiudiCassa, annulla, tutte,
            caricaListinoEsempio, salvaVoce, caricaDatiEsempio, eliminaDatiEsempio, scaricaCopia, ripristina,
            accogliRichiesta, scartaRichiesta, registraTessera, scaricaElencoFasi,
-           preparaCertificato, salvaCertificato, fileDaIndirizzo, scaricaCertificato };
+           salvaCertificato, scaricaCertificato, creaLinkCertificato, annullaLinkCertificato,
+           accettaCertificatoInviato, rifiutaCertificatoInviato, eliminaFileCertificato, cestinaFileCliente };
 })();
 
 </script>
@@ -2475,6 +2756,26 @@ const Viste = (() => {
       </ol>`;
   }
 
+  // Certificati inviati dai clienti con il link, da controllare (manager e compilatore FASI)
+  function certificatiArrivati(S) {
+    if (!puo(S, "certificati")) return "";
+    const lista = S.inviti.filter((x) => x.stato === "inviato").sort((a, b) => (a.inviato_il < b.inviato_il ? -1 : 1));
+    if (!lista.length) return "";
+    return html`
+      <section class="sezione richieste">
+        <h2>Certificati inviati da controllare <span class="conteggio">${lista.length}</span></h2>
+        <p class="aiuto">Sono arrivati dal link e sono già su Google Drive. Apri la scheda, controllali e conferma la scadenza.</p>
+        <div class="elenco-clienti">
+          ${lista.map((x) => html`
+            <a class="riga-listino" href="#cliente-${x.cliente_id}">
+              <span class="riga-nome">${x.cognome} ${x.nome}</span>
+              <span class="riga-dati">${x.data_certificato ? `certificato del ${R.dataIt(x.data_certificato)}` : ""}</span>
+              <span class="riga-prezzo">${R.giornoBreve(x.inviato_il)}</span>
+            </a>`)}
+        </div>
+      </section>`;
+  }
+
   function richiesteDaAccogliere(S) {
     if (!puo(S, "richieste") || !S.richieste.length) return "";
     const lista = S.richieste.slice().sort((a, b) => (a.creato_il < b.creato_il ? 1 : -1));
@@ -2505,6 +2806,7 @@ const Viste = (() => {
     }
     if (!S.clienti.length) return html`
       ${richiesteDaAccogliere(S)}
+      ${certificatiArrivati(S)}
       <div class="vuoto"><p>Non ci sono ancora clienti.</p>
         <div class="azioni-modulo azioni-centro">
           ${puo(S, "modifica_clienti") ? html`<a class="pulsante pulsante-primario" href="#nuovo-cliente">Aggiungi il primo cliente</a>` : ""}
@@ -2517,6 +2819,7 @@ const Viste = (() => {
       .map((r) => r.c);
     return html`
       ${richiesteDaAccogliere(S)}
+      ${certificatiArrivati(S)}
       <section class="sezione">${entratiOggi(S)}</section>
       <section class="sezione">
         ${daSistemare.length ? html`
@@ -2610,7 +2913,7 @@ const Viste = (() => {
       </section>
 
       ${puo(S, "tesseramento") && !puo(S, "reception") ? boxTessera(S, c) : ""}
-      ${puo(S, "certificati") ? boxCertificato(S, c) : ""}
+      ${puo(S, "certificati") ? boxCertificato(S, c) : boxLinkCertificato(S, c)}
 
       <div class="griglia-dati">
         <section class="sezione">
@@ -2672,6 +2975,90 @@ const Viste = (() => {
     return c.certificato_caricato ? "Il documento lo vedono solo il manager e il compilatore FASI." : "";
   }
 
+  /* --------------------------------- link per far inviare il certificato */
+  const linkCertificato = (codice) => new URL("certificato.html", location.href.split("#")[0]).href + "?c=" + codice;
+  // numero per WhatsApp: solo cifre, con il prefisso dell'Italia se manca
+  function telefonoWhatsApp(t) {
+    let n = String(t || "").replace(/\D/g, "");
+    if (n.indexOf("00") === 0) n = n.slice(2);
+    else if (n.length >= 9 && n.length <= 10) n = "39" + n;
+    return n;
+  }
+  const invitoDi = (S, c, stato) => S.inviti.filter((x) => x.cliente_id === c.id && x.stato === stato && x.origine !== "staff")[0] || null;
+
+  // Per tutti i ruoli: creare il link, copiarlo, mandarlo su WhatsApp o per email
+  function zonaLinkCertificato(S, c) {
+    if (S.modalita !== "online" || !c.attivo) return "";
+    if (!S.imp.indirizzo_drive) {
+      return html`<p class="aiuto">Per mandare al cliente un link dove caricare il certificato, il manager deve prima collegare Google Drive da Impostazioni.</p>`;
+    }
+    const attesa = invitoDi(S, c, "attesa");
+    if (!attesa) {
+      return html`
+        <div class="link-certificato">
+          <button type="button" class="pulsante" data-azione="crea-link-certificato" data-id="${c.id}">Crea il link per inviare il certificato</button>
+          <p class="aiuto">Il cliente lo apre dal telefono, fotografa il certificato e lo invia. Il file va nella cartella di Google Drive della palestra.</p>
+        </div>`;
+    }
+    const link = linkCertificato(attesa.id);
+    const testo = `Ciao ${c.nome}, da questo link puoi inviarci il tuo certificato medico (una foto o un PDF): ${link}`;
+    return html`
+      <div class="link-certificato">
+        <p><strong>Link per il cliente</strong>, valido fino al ${R.dataIt(attesa.scade_il)}:</p>
+        <p class="link-da-copiare"><a href="${link}" target="_blank" rel="noopener">${link}</a></p>
+        <div class="azioni-modulo">
+          <button type="button" class="pulsante" data-azione="copia-link" data-valore="${link}">Copia il link</button>
+          <a class="pulsante" href="https://wa.me/${telefonoWhatsApp(c.telefono)}?text=${encodeURIComponent(testo)}" target="_blank" rel="noopener">Manda su WhatsApp</a>
+          ${c.email ? html`<a class="pulsante" href="mailto:${c.email}?subject=${encodeURIComponent("Certificato medico")}&amp;body=${encodeURIComponent(testo)}">Manda per email</a>` : ""}
+          <button type="button" class="pulsante-testo" data-azione="annulla-link-certificato" data-id="${attesa.id}">Annulla il link</button>
+        </div>
+      </div>`;
+  }
+
+  // Ruolo normale: solo il link (il certificato lo vedono manager e compilatore FASI)
+  function boxLinkCertificato(S, c) {
+    if (S.modalita !== "online" || !c.attivo || !puo(S, "modifica_clienti")) return "";
+    const inviato = invitoDi(S, c, "inviato");
+    return html`
+      <section class="sezione box-certificato">
+        <h2>Certificato medico</h2>
+        ${inviato
+          ? html`<p>Il cliente ha inviato il certificato il ${R.dataIt(inviato.inviato_il)}: lo controllano il manager o il compilatore FASI.</p>`
+          : zonaLinkCertificato(S, c)}
+      </section>`;
+  }
+
+  // Arrivato dal cliente: chi controlla lo apre su Drive e conferma la scadenza
+  function certificatoDaControllare(S, c, inv) {
+    const proposta = Certificati.scadenzaDa(inv.data_certificato);
+    return html`
+      <div class="certificato-arrivato">
+        <h3>Inviato dal cliente il ${R.dataIt(inv.inviato_il)}: da controllare</h3>
+        <p>${inv.data_certificato ? `Data scritta sul certificato, secondo il cliente: ${R.dataIt(inv.data_certificato)}.` : ""}
+          Aprilo, controlla che sia un certificato valido e la data, poi accettalo.</p>
+        <p><a class="pulsante" href="${inv.file_url}" target="_blank" rel="noopener">Apri su Google Drive</a></p>
+        <form class="modulo-certificato" data-modulo="accetta-certificato" data-id="${c.id}" data-invito="${inv.id}" novalidate>
+          <div class="campo">
+            <label for="scadenza-arrivato">Valido fino al</label>
+            <input id="scadenza-arrivato" name="scadenza" type="date" value="${proposta}">
+            <p class="aiuto">${proposta ? "Proposta: un anno dalla data del certificato. Correggila se sul certificato è scritto altro." : "Di solito un anno dalla data scritta sul certificato."}</p>
+          </div>
+          <p class="errore-campo" data-errore hidden></p>
+          <div class="azioni-modulo">
+            <button type="submit" class="pulsante pulsante-primario">Accetta il certificato</button>
+            <button type="button" class="pulsante pulsante-secondario" data-mostra="conferma-rifiuta-${inv.id}">Rifiuta</button>
+          </div>
+        </form>
+        <div class="conferma" id="conferma-rifiuta-${inv.id}" hidden>
+          <p><strong>Rifiutare questo certificato?</strong> Il file va nel cestino di Google Drive. Poi puoi creare un nuovo link per il cliente.</p>
+          <div class="azioni-modulo">
+            <button type="button" class="pulsante pulsante-pericolo" data-azione="rifiuta-certificato" data-id="${inv.id}">Sì, rifiuta</button>
+            <button type="button" class="pulsante pulsante-secondario" data-nascondi="conferma-rifiuta-${inv.id}">Annulla</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
   // Solo manager e compilatore FASI: vedere il file, caricarne uno nuovo, cambiare la scadenza
   function boxCertificato(S, c) {
     const g = R.giorniDaOggi(c.scadenza_certificato);
@@ -2680,22 +3067,31 @@ const Viste = (() => {
       : `Valido fino al ${R.dataIt(c.scadenza_certificato)}`;
     const aperto = S.certificato && S.certificato.id === c.id ? S.certificato : null;
     const nuovo = !c.certificato_caricato;
+    const online = S.modalita === "online";
+    const drive = online && !!S.imp.indirizzo_drive;
+    const caricaFile = drive || !online;            // online i file vanno solo su Drive
+    const inviato = invitoDi(S, c, "inviato");
     return html`
       <section class="sezione box-certificato" id="certificato">
         <h2>Certificato medico</h2>
         <p><strong>${stato}</strong>${c.certificato_caricato
           ? html` <span class="aiuto">File caricato il ${R.dataIt(c.certificato_il)}.</span>`
           : html` <span class="aiuto">Nessun file caricato.</span>`}</p>
+        ${inviato ? certificatoDaControllare(S, c, inviato) : ""}
         ${c.certificato_caricato ? html`
           ${aperto && aperto.errore ? html`<p class="avviso-flash avviso-errore">${aperto.errore}</p>` : ""}
-          ${aperto && aperto.dati ? anteprimaCertificato(aperto) : html`
+          ${aperto && (aperto.dati || aperto.drive_url) ? anteprimaCertificato(aperto) : html`
             <button type="button" class="pulsante" data-azione="vedi-certificato" data-id="${c.id}">${aperto && aperto.carica ? "Apro il certificato…" : "Vedi il certificato"}</button>`}` : ""}
+        ${!inviato ? zonaLinkCertificato(S, c) : ""}
         <form class="modulo-certificato" data-modulo="certificato" data-id="${c.id}" novalidate>
-          <div class="campo">
-            <label for="file-certificato">${nuovo ? "Foto o PDF del certificato" : "Sostituisci con un nuovo file"}</label>
-            <input id="file-certificato" name="file" type="file" accept="image/*,application/pdf">
-            <p class="aiuto">${nuovo ? "Dall'iPad puoi fare direttamente la foto." : "Facoltativo: lascialo vuoto per cambiare solo la data."} La foto viene rimpicciolita da sola; un PDF può pesare al massimo 650 KB.</p>
-          </div>
+          ${caricaFile ? html`
+            <div class="campo">
+              <label for="file-certificato">${nuovo ? "Foto o PDF del certificato" : "Sostituisci con un nuovo file"}</label>
+              <input id="file-certificato" name="file" type="file" accept="image/*,application/pdf">
+              <p class="aiuto">${nuovo ? "Dall'iPad puoi fare direttamente la foto." : "Facoltativo: lascialo vuoto per cambiare solo la data."}
+                La foto viene rimpicciolita da sola; un PDF può pesare al massimo ${drive ? "8 MB" : "650 KB"}.${drive ? " Il file va nella cartella di Google Drive della palestra." : ""}</p>
+            </div>` : html`
+            <p class="aiuto campo-intero">Per caricare il file, il manager deve prima collegare Google Drive da Impostazioni. Intanto puoi segnare la scadenza.</p>`}
           <div class="campo">
             <label for="scadenza-certificato">Valido fino al</label>
             <input id="scadenza-certificato" name="scadenza" type="date" value="${c.scadenza_certificato || ""}">
@@ -2708,7 +3104,7 @@ const Viste = (() => {
           <div class="zona-elimina-certificato">
             <button type="button" class="pulsante-testo" data-mostra="conferma-elimina-certificato">Elimina il file del certificato</button>
             <div class="conferma" id="conferma-elimina-certificato" hidden>
-              <p><strong>Eliminare il file del certificato?</strong> La data di scadenza resta: cambiala se non è più giusta.</p>
+              <p><strong>Eliminare il file del certificato?</strong> ${drive ? "Va nel cestino di Google Drive. " : ""}La data di scadenza resta: cambiala se non è più giusta.</p>
               <div class="azioni-modulo">
                 <button type="button" class="pulsante pulsante-pericolo" data-azione="elimina-certificato" data-id="${c.id}">Sì, elimina il file</button>
                 <button type="button" class="pulsante pulsante-secondario" data-nascondi="conferma-elimina-certificato">Annulla</button>
@@ -2720,6 +3116,15 @@ const Viste = (() => {
 
   function anteprimaCertificato(cert) {
     const pdf = cert.tipo === "application/pdf";
+    if (cert.drive_url) return html`
+      <div class="anteprima-certificato">
+        <p>Il certificato è su Google Drive${cert.nome_file ? `: ${cert.nome_file}` : ""}.</p>
+        <div class="azioni-modulo">
+          <a class="pulsante" href="${cert.drive_url}" target="_blank" rel="noopener">Apri su Google Drive</a>
+          <button type="button" class="pulsante-testo" data-azione="chiudi-certificato">Nascondi</button>
+        </div>
+        <p class="aiuto">Si apre con l'account Google della palestra, o con chi ha accesso alla cartella «Certificati medici».</p>
+      </div>`;
     return html`
       <div class="anteprima-certificato">
         ${pdf ? html`<p>Certificato in PDF: ${cert.nome_file || "certificato.pdf"}.</p>`
@@ -3104,7 +3509,7 @@ const Viste = (() => {
       </form>`;
   }
 
-  return { html, crudo, esc, plurale, maiuscola, campo, sceltaMetodo, annullaConConferma, moduloTessera,
+  return { html, crudo, esc, plurale, maiuscola, campo, sceltaMetodo, annullaConConferma, moduloTessera, certificatiArrivati,
            messaggio, caricamento, nonDisponibile, nonTrovato, nonPermesso, accesso, oggi, zonaOggi, riepilogo,
            clienti, zonaElenco, scheda, modulo };
 })();
@@ -3507,6 +3912,48 @@ const VisteGestione = (() => {
   }
 
   /* ========================================================= IMPOSTAZIONI */
+  // Certificati su Google Drive: il manager incolla il programma su Google una volta sola
+  function sezioneDrive(S) {
+    const online = S.modalita === "online";
+    const cfg = window.CONFIG_FIREBASE || {};
+    const collegato = online && !!S.imp.indirizzo_drive;
+    return html`
+      <section class="sezione" id="drive">
+        <h2>Certificati su Google Drive</h2>
+        <p>I certificati medici, sia quelli caricati qui sia quelli inviati dai clienti con il link, si salvano nella cartella
+           «Certificati medici» del Google Drive della palestra. Nel gestionale resta solo il collegamento al file.</p>
+        ${!online ? html`<p class="aiuto">Funziona con il database online (Firebase). In questa versione i certificati restano nel gestionale.</p>` : html`
+          <p class="${collegato ? "stato-verde" : "stato-rosso"}"><strong>${collegato ? "Collegato" : "Non ancora collegato"}</strong></p>
+          <details class="testo-legale"${collegato ? "" : crudo(" open")}>
+            <summary>Come collegarlo (una volta sola, meglio dal computer)</summary>
+            <div class="testo-legale-corpo istruzioni-drive">
+              <ol>
+                <li>Entra in Google con l'account della palestra e apri <a href="https://script.google.com/home/projects/create" target="_blank" rel="noopener">script.google.com</a> (si apre un progetto nuovo).</li>
+                <li>Cancella quello che c'è, incolla il codice qui sotto (pulsante «Copia il codice») e salva con l'icona del dischetto.</li>
+                <li>In alto a destra: <strong>Esegui il deployment → Nuovo deployment</strong>. Come tipo scegli <strong>App web</strong>.
+                    «Esegui come»: <strong>Me</strong>. «Chi ha accesso»: <strong>Chiunque</strong>. Poi <strong>Esegui il deployment</strong>.</li>
+                <li>Google chiede di autorizzare l'accesso a Drive: conferma con l'account della palestra
+                    (se compare «Google non ha verificato questa app», tocca «Avanzate» e poi «Vai a …»).</li>
+                <li>Copia l'<strong>URL dell'app web</strong> (finisce con /exec), incollalo qui sotto e tocca «Salva e prova».</li>
+              </ol>
+              <p>Il programma accetta solo i file che arrivano con un link creato dal gestionale. Per far vedere i certificati
+                 al compilatore FASI, condividi con lui la cartella «Certificati medici» da Google Drive.</p>
+              <textarea id="codice-drive" class="codice" rows="10" readonly>${Certificati.codiceAppsScript(cfg.projectId, cfg.apiKey)}</textarea>
+              <button type="button" class="pulsante" data-azione="copia-codice-drive">Copia il codice</button>
+            </div>
+          </details>
+          <form class="modulo" data-modulo="drive" novalidate>
+            <div class="campo">
+              <label for="indirizzo_drive">URL dell'app web di Google</label>
+              <input id="indirizzo_drive" name="indirizzo_drive" type="url" autocomplete="off" autocapitalize="off"
+                     placeholder="https://script.google.com/macros/s/…/exec" value="${S.imp.indirizzo_drive || ""}">
+            </div>
+            <p class="errore-campo" data-errore hidden></p>
+            <button type="submit" class="pulsante pulsante-primario">Salva e prova</button>
+          </form>`}
+      </section>`;
+  }
+
   function impostazioni(S) {
     const imp = S.imp;
     const locale = S.modalita === "locale";
@@ -3567,6 +4014,8 @@ const VisteGestione = (() => {
         </form>
       </section>
 
+      ${puo(S, "certificati") ? sezioneDrive(S) : ""}
+
       ${locale ? html`
         <section class="sezione">
           <h2>Versione di prova</h2>
@@ -3580,7 +4029,7 @@ const VisteGestione = (() => {
       ${puo(S, "dati") && S.modalita !== "claude" ? html`
         <section class="sezione">
           <h2>Copia di sicurezza</h2>
-          <p>${online ? "Scarica tutti i dati del database in un file, da conservare in un posto sicuro. Le scadenze dei certificati medici ci sono; i file dei certificati no, restano solo nel database."
+          <p>${online ? "Scarica tutti i dati del database in un file, da conservare in un posto sicuro. Le scadenze dei certificati medici ci sono; i file dei certificati no: sono su Google Drive."
             : "Scarica tutti i dati in un file. Ti serve per non perderli e per spostarli su un altro dispositivo o nel database online."}</p>
           <div class="azioni-modulo">
             <button type="button" class="pulsante pulsante-primario" data-azione="scarica-copia">Scarica la copia</button>
@@ -3680,6 +4129,7 @@ const VisteGestione = (() => {
     return html`
       <h1>Tesseramento FASI</h1>
       <p class="aiuto">Chi ha pagato il tesseramento in reception e va registrato nel gestionale FASI, con i dati da copiare. Quando la tessera è fatta, scrivi numero e scadenza.</p>
+      ${Viste.certificatiArrivati(S)}
       <section class="numeri">
         <div class="numero"><p class="numero-etichetta">Pagati, da registrare</p><p class="numero-valore">${conta("da_registrare")}</p></div>
         <div class="numero"><p class="numero-etichetta">In regola</p><p class="numero-valore">${conta("ok")}</p></div>
@@ -3785,6 +4235,7 @@ const VisteGestione = (() => {
     utenti: [],            // staff (solo per il manager)
     clienti: [],           // clienti attivi, in ordine di cognome
     richieste: [],         // iscrizioni online ancora da accogliere
+    inviti: [],            // link per il certificato ancora aperti (in attesa o inviati da controllare)
     listino: [], abbonamenti: [], ingressi: [], movimenti: [], chiusure: [],
     storici: {},           // storico completo dei clienti aperti: { id: { ingressi, movimenti } }
     caricati: false,
@@ -4195,7 +4646,7 @@ const VisteGestione = (() => {
   }
 
   function svuotaDati() {
-    ["clienti", "richieste", "listino", "abbonamenti", "ingressi", "movimenti", "chiusure", "utenti"].forEach((k) => { S[k] = []; });
+    ["clienti", "richieste", "inviti", "listino", "abbonamenti", "ingressi", "movimenti", "chiusure", "utenti"].forEach((k) => { S[k] = []; });
     S.storici = {}; S.archiviati = null; S.caricati = false; S.ricerca = ""; S.rotta = null;
     chiudiCertificato();
   }
@@ -4234,6 +4685,7 @@ const VisteGestione = (() => {
     }
     if (puo("richieste")) segui("richieste", (ok, ko) => Archivio.ascoltaRichiesteNuove(ok, ko));
     if (puo("utenti")) segui("utenti", (ok, ko) => Archivio.utenti.ascolta(ok, ko));
+    if (S.modalita === "online" && puo("clienti")) segui("inviti", (ok, ko) => Archivio.ascoltaInvitiAperti(ok, ko));
   }
 
   /* ------------------------------------------------------- clienti */
@@ -4463,7 +4915,7 @@ const VisteGestione = (() => {
     const pulsante = form.querySelector("button[type=submit]");
     const libera = occupato(pulsante, file ? "Carico il file…" : "Salvataggio…");
     try {
-      const esito = await Azioni.salvaCertificato(c, file || null, scadenza);
+      const esito = await Azioni.salvaCertificato(S, c, file || null, scadenza);
       chiudiCertificato();
       S.leggiDiNuovo = c.id;
       mostra(false);
@@ -4476,6 +4928,36 @@ const VisteGestione = (() => {
     }
   }
 
+  async function accettaCertificato(form) {
+    const scadenza = form.elements.scadenza.value;
+    if (!R.aData(scadenza)) return erroreModulo(form, "Scegli fino a quando vale il certificato.");
+    const g = R.giorniDaOggi(scadenza);
+    if (g < 0) return erroreModulo(form, "Questa data è già passata: il certificato è scaduto. Rifiutalo e chiedine uno nuovo.");
+    if (g > 1100) return erroreModulo(form, "Controlla la data: un certificato medico vale di solito un anno.");
+    const c = await trovaCliente(form.dataset.id);
+    const invito = S.inviti.find((x) => x.id === form.dataset.invito);
+    if (!invito) return erroreModulo(form, "Questo certificato è già stato controllato da un altro computer.");
+    await esegui(form.querySelector("button[type=submit]"), () => Azioni.accettaCertificatoInviato(S, c, invito, scadenza),
+      () => { chiudiCertificato(); S.leggiDiNuovo = c.id; mostra(false); });
+  }
+
+  async function salvaDrive(form) {
+    const indirizzo = testo(form, "indirizzo_drive");
+    if (indirizzo && !/^https:\/\/script\.google(usercontent)?\.com\//.test(indirizzo))
+      return erroreModulo(form, "L'indirizzo deve iniziare con https://script.google.com/ (è quello della «App web» che hai pubblicato).");
+    await esegui(form.querySelector("button[type=submit]"), async () => {
+      if (indirizzo) await Certificati.prova(indirizzo);
+      await Archivio.salvaImpostazioni({ indirizzo_drive: indirizzo });
+      S.imp = Object.assign({}, S.imp, { indirizzo_drive: indirizzo });
+      return indirizzo ? "Google Drive collegato: i certificati si salvano nella cartella «Certificati medici»." : "Google Drive scollegato.";
+    }, () => setTimeout(() => mostra(false), 50));
+  }
+
+  // WhatsApp e email preparano il messaggio con il link; il resto lo scrive chi lo manda
+  function messaggioLink(c, link) {
+    return `Ciao ${c.nome}, da questo link puoi inviarci il tuo certificato medico (una foto o un PDF): ${link}`;
+  }
+
   async function apriCertificato(id) {
     chiudiCertificato();
     S.certificato = { id, carica: true };
@@ -4485,7 +4967,9 @@ const VisteGestione = (() => {
       const cert = await Archivio.leggiCertificato(id);
       const tipoOk = cert && typeof cert.dati === "string"
         && (cert.tipo === "application/pdf" ? cert.dati.indexOf("data:application/pdf") === 0 : cert.dati.indexOf("data:image/") === 0);
-      if (!tipoOk) aperto = { id, errore: "Il file del certificato non si trova. Caricalo di nuovo." };
+      const suDrive = cert && typeof cert.drive_url === "string" && /^https:\/\/drive\.google\.com\//.test(cert.drive_url);
+      if (suDrive) aperto = Object.assign({}, cert, { id });
+      else if (!tipoOk) aperto = { id, errore: "Il file del certificato non si trova. Caricalo di nuovo." };
       else {
         aperto = Object.assign({}, cert, { id });
         if (cert.tipo === "application/pdf") aperto.indirizzo = URL.createObjectURL(Azioni.fileDaIndirizzo(cert.dati));
@@ -4544,6 +5028,7 @@ const VisteGestione = (() => {
       return { tipo: "ok", testo: "Cliente riattivato." };
     },
     async elimina(id) {
+      await Azioni.cestinaFileCliente(S, id);
       await Archivio.eliminaCliente(id);
       S.archiviati = null;
       vai("clienti-archiviati", { tipo: "ok", testo: "Cliente eliminato definitivamente." });
@@ -4577,19 +5062,39 @@ const VisteGestione = (() => {
       case "periodo": S.periodo = valore; return mostra(false);
       case "filtro-fasi": S.filtroFasi = valore; return mostra(false);
       case "vedi-certificato": return apriCertificato(id);
+      case "crea-link-certificato": {
+        const c = await trovaCliente(id);
+        return esegui(pulsante, async () => {
+          await Azioni.creaLinkCertificato(S, c);
+          return "Link creato: copialo o mandalo al cliente. Vale 30 giorni.";
+        });
+      }
+      case "annulla-link-certificato":
+        return esegui(pulsante, () => Azioni.annullaLinkCertificato(id));
+      case "rifiuta-certificato": {
+        const invito = S.inviti.find((x) => x.id === id);
+        if (!invito) return;
+        return esegui(pulsante, () => Azioni.rifiutaCertificatoInviato(S, invito), () => mostra(false));
+      }
+      case "copia-codice-drive": {
+        const area = contenuto.querySelector("#codice-drive");
+        return copia(area.value, "Codice copiato: incollalo in script.google.com al posto di tutto quello che c'è.");
+      }
       case "chiudi-certificato": chiudiCertificato(); return mostra(false);
       case "scarica-certificato": {
         if (!S.certificato || !S.certificato.dati) return;
         const c = await trovaCliente(id);
         return esegui(null, async () => { Azioni.scaricaCertificato(c, S.certificato); return "Certificato scaricato."; });
       }
-      case "elimina-certificato":
+      case "elimina-certificato": {
+        const c = await trovaCliente(id);
         return esegui(pulsante, async () => {
-          await Archivio.eliminaCertificato(id);
+          const esito = await Azioni.eliminaFileCertificato(S, c);
           chiudiCertificato();
           S.leggiDiNuovo = id;
-          return "File del certificato eliminato.";
+          return esito;
         }, () => mostra(false));
+      }
       case "annulla":
         return esegui(pulsante, () => Azioni.annulla(S, pulsante.dataset.tipo, id), () => {
           if (S.rotta.vista === "scheda") caricaStorico(S.rotta.id);
@@ -4745,7 +5250,8 @@ const VisteGestione = (() => {
     e.preventDefault();
     const gestori = { entra: inviaEntra, "primo-avvio": inviaPrimoAvvio, cliente: salvaCliente, impostazioni: salvaImpostazioni,
                       testi: salvaTesti, ingresso: inviaIngresso, vendita: inviaVendita, banco: inviaBanco, movimento: inviaMovimento,
-                      chiusura: inviaChiusura, voce: inviaVoce, "nuovo-utente": inviaNuovoUtente, password: inviaPassword, tessera: inviaTessera, certificato: inviaCertificato };
+                      chiusura: inviaChiusura, voce: inviaVoce, "nuovo-utente": inviaNuovoUtente, password: inviaPassword, tessera: inviaTessera, certificato: inviaCertificato,
+                      "accetta-certificato": accettaCertificato, drive: salvaDrive };
     const errore = form.querySelector("[data-errore]");
     if (errore) errore.hidden = true;
     if (gestori[form.dataset.modulo]) gestori[form.dataset.modulo](form);
