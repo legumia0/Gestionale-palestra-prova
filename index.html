@@ -592,6 +592,37 @@ body.pagina-pubblica { display: block; }
   .modulo-certificato { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* ------------------------------------- scheda: abbonamenti e ingressi (in cima) */
+.box-ingressi {
+  background: var(--pannello); border: 1px solid var(--linea); border-top: 6px solid var(--barra);
+  border-radius: var(--raggio); padding: 1.25rem 1.5rem 1.5rem; margin-bottom: 1.5rem;
+}
+.box-ingressi h2 { font-size: var(--medio); margin: 0 0 0.9rem; }
+.riquadri { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+.riquadro { background: var(--sfondo); border-left: 5px solid var(--grigio); border-radius: var(--raggio); padding: 0.75rem 1rem; min-width: 0; }
+.riquadro p { margin: 0; }
+.riquadro-etichetta { color: var(--ink-soft); font-size: var(--piccolo); font-weight: 500; }
+.riquadro-valore { font-size: 1.375rem; font-weight: 700; line-height: 1.25; margin: 0.15rem 0 0.2rem !important; overflow-wrap: anywhere; }
+.riquadro-nota { color: var(--ink-soft); font-size: var(--piccolo); }
+.riquadro-ok { border-left-color: var(--verde); }
+.riquadro-attenzione { border-left-color: var(--giallo); }
+.riquadro-no { border-left-color: var(--rosso); background: var(--err-sfondo); }
+.riquadro-no .riquadro-valore { color: var(--rosso); }
+.box-ingressi > .aiuto { margin: 0 0 0.75rem; }
+.box-ingressi .azioni-modulo { margin-top: 0.25rem; }
+
+/* tesseramento obbligatorio dentro "Registra ingresso" */
+.obbligo-tessera { margin: 0 0 1rem; padding: 0.9rem 1rem; background: var(--pannello);
+  border: 1px solid var(--linea); border-left: 5px solid var(--blu); border-radius: var(--raggio); }
+.obbligo-tessera p { margin: 0.25rem 0 0; }
+.obbligo-titolo { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; margin: 0 !important; font-size: 1.0625rem; }
+@media (max-width: 600px) {
+  .box-ingressi { padding: 1rem; }
+  .riquadri { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+  .riquadro { padding: 0.6rem 0.75rem; }
+  .riquadro-valore { font-size: 1.125rem; }
+}
+
 </style>
 </head>
 <body class="senza-accesso">
@@ -696,7 +727,7 @@ const Regole = (() => {
     const cert = scadenza("Certificato medico", c.scadenza_certificato, preavviso);
     if (cert) lista.push(Object.assign(cert, { campo: "certificato" }));
     if (imp.usa_tesseramento) {
-      const tess = scadenza("Tesseramento", c.scadenza_tessera, preavviso);
+      const tess = scadenza("Tesseramento", fineTessera(c), preavviso);
       if (tess) lista.push(Object.assign(tess, { campo: "tessera" }));
     }
     if (!c.liberatoria_il) lista.push({ livello: "rosso", testo: "Liberatoria da firmare", campo: "liberatoria" });
@@ -816,7 +847,8 @@ const Regole = (() => {
   /* ---------------------------------------------------- listino */
   const TIPI_LISTINO = {
     singolo:  { nome: "Ingresso singolo",       aiuto: "Un ingresso pagato sul momento." },
-    prova:    { nome: "Ingresso di prova",       aiuto: "Per chi viene a provare la prima volta." },
+    prova:    { nome: "Ingresso di prova",       aiuto: "Una volta all'anno, senza tesseramento né certificato." },
+    tesseramento: { nome: "Tesseramento annuale", aiuto: "Obbligatorio dal secondo ingresso. Vale fino al 31 dicembre." },
     carnet:   { nome: "Carnet a ingressi",       aiuto: "Un numero di ingressi da usare entro una scadenza." },
     periodo:  { nome: "Abbonamento a tempo",     aiuto: "Ingressi liberi per un certo numero di giorni." },
     prodotto: { nome: "Noleggio o prodotto",     aiuto: "Scarpette, imbrago, magnesite e altro venduto in cassa." },
@@ -824,7 +856,7 @@ const Regole = (() => {
   const METODI = { contanti: "contanti", carta: "carta", bonifico: "bonifico", altro: "altro" };
   // Movimenti di cassa: cosa conta come incasso (il fondo cassa e i versamenti no)
   const CATEGORIE = {
-    abbonamento: "Abbonamenti e carnet", ingresso: "Ingressi", prodotto: "Noleggi e prodotti",
+    abbonamento: "Abbonamenti e carnet", tesseramento: "Tesseramenti", ingresso: "Ingressi", prodotto: "Noleggi e prodotti",
     altro: "Altre entrate", fondo: "Fondo cassa", spesa: "Spese", versamento: "Versamenti in banca", uscita: "Altre uscite",
   };
   const eIncasso = (m) => !m.annullato && m.verso === "entrata" && m.categoria !== "fondo";
@@ -887,8 +919,29 @@ const Regole = (() => {
   const puo = (ruolo, cosa) => !!ruolo && (PERMESSI[ruolo] || []).indexOf(cosa) >= 0;
 
   /* ------------------------------------------------- tesseramento FASI */
-  // Stato della tessera: "manca", "scaduta", "in_scadenza", "ok"
+  // Il tesseramento si paga in reception (voce del listino "tesseramento") e vale fino
+  // al 31 dicembre: con quei soldi la palestra paga la tessera alla FASI.
+  // Nella scheda del cliente: tessera_pagata_fino / tessera_pagata_il (li scrive la reception),
+  // numero_tessera / scadenza_tessera / tesserato_il (li scrive il compilatore FASI).
+  const fineAnno = (data) => `${(data || oggiISO()).slice(0, 4)}-12-31`;
+  const fineTessera = (c) => [c.scadenza_tessera, c.tessera_pagata_fino].filter(Boolean).sort().pop() || null;
+  const tesseraValida = (c, oggi) => { const f = fineTessera(c); return !!f && f >= (oggi || oggiISO()); };
+
+  // L'ingresso di prova si fa una volta sola per anno solare.
+  // Restituisce la data della prova di quest'anno, oppure null se è ancora da fare.
+  function provaDellAnno(c, ingressiCliente, oggi) {
+    const anno = (oggi || oggiISO()).slice(0, 4);
+    const date = (ingressiCliente || []).filter((i) => !i.annullato && i.modo === "prova" && String(i.data).slice(0, 4) === anno)
+      .map((i) => i.data);
+    if (c.prova_il && c.prova_il.slice(0, 4) === anno) date.push(c.prova_il);
+    return date.sort()[0] || null;
+  }
+
+  // Stato della tessera per il compilatore FASI:
+  // "da_registrare" (pagata in reception, da fare nel gestionale FASI), "manca", "scaduta", "in_scadenza", "ok"
   function statoTessera(c, preavviso) {
+    if (c.tessera_pagata_fino && giorniDaOggi(c.tessera_pagata_fino) >= 0
+        && (!c.numero_tessera || !c.scadenza_tessera || c.scadenza_tessera < c.tessera_pagata_fino)) return "da_registrare";
     if (!c.numero_tessera || !c.scadenza_tessera) return "manca";
     const g = giorniDaOggi(c.scadenza_tessera);
     if (g === null) return "manca";
@@ -924,7 +977,8 @@ const Regole = (() => {
   // Avvisi che non fermano un ingresso di prova: certificato o tessera non ancora consegnati
   const okPerProva = (a) => a.manca && (a.campo === "certificato" || a.campo === "tessera");
 
-  return { oggiISO, dataTra, adessoISO, okPerProva, RUOLI, ruoloInFrase, PERMESSI, puo, statoTessera, mancantiFasi, ESPERIENZE, clienteDaRichiesta, aggiungiGiorni, oraAdesso, meseAnno, giornoBreve,
+  return { oggiISO, dataTra, adessoISO, okPerProva, RUOLI, ruoloInFrase, PERMESSI, puo, statoTessera, mancantiFasi,
+           fineAnno, fineTessera, tesseraValida, provaDellAnno, ESPERIENZE, clienteDaRichiesta, aggiungiGiorni, oraAdesso, meseAnno, giornoBreve,
            euro, leggiEuro, TIPI_LISTINO, METODI, CATEGORIE, eIncasso,
            statoAbbonamento, rimasti, copertura, saldoContanti, aData, dataIt, giorniDaOggi, eta, avvisi, colore,
            corrisponde, perCognome, leggiModuloCliente, CAMPI_UNICI };
@@ -1652,8 +1706,34 @@ const Azioni = (() => {
   const nomeCliente = (c) => `${c.nome} ${c.cognome}`;
 
   /* ----------------------------------------------------------- ingresso */
+  const ingressiDi = (S, cliente) => tutte(S, "ingressi").filter((i) => i.cliente_id === cliente.id);
+
+  // Le regole dell'ingresso, controllate anche qui oltre che nel pannello:
+  // - l'ingresso di prova si fa una volta per anno solare;
+  // - ogni altro ingresso (anche con carnet, abbonamento od omaggio) chiede il tesseramento valido.
+  //   Se manca, si vende insieme all'ingresso (scelta.tesseramento_id).
+  function controllaRegoleIngresso(S, cliente, scelta) {
+    const v = scelta.modo === "pagato" ? voce(S, scelta.listino_id) : null;
+    const prova = !!v && v.tipo === "prova";
+    if (prova) {
+      const giaFatta = R.provaDellAnno(cliente, ingressiDi(S, cliente));
+      if (giaFatta) throw { messaggio: `${nomeCliente(cliente)} ha già fatto l'ingresso di prova il ${R.dataIt(giaFatta)}: si fa una volta all'anno. Da ora servono tesseramento e certificato medico.` };
+    } else if (S.imp.usa_tesseramento && !R.tesseraValida(cliente) && !scelta.tesseramento_id) {
+      throw { messaggio: `Per entrare ${nomeCliente(cliente)} deve fare il tesseramento ${R.oggiISO().slice(0, 4)}.` };
+    }
+    return prova;
+  }
+
   // scelta.modo: "copertura" (abbonamento o carnet), "pagato" (voce del listino), "omaggio"
   async function registraIngresso(S, cliente, scelta) {
+    const prova = controllaRegoleIngresso(S, cliente, scelta);
+    let testoTessera = "";
+    if (!prova && scelta.tesseramento_id) {
+      const vt = voce(S, scelta.tesseramento_id);
+      if (!vt || vt.tipo !== "tesseramento") throw { messaggio: "Nel listino manca il tesseramento: aggiungilo e riprova." };
+      await vendiAbbonamento(S, cliente, { listino_id: vt.id, data_inizio: R.oggiISO(), prezzo_cent: vt.prezzo_cent, metodo: scelta.metodo || "contanti" });
+      testoTessera = ` Tesseramento pagato fino al ${R.dataIt(R.fineAnno())} (${R.euro(vt.prezzo_cent)}).`;
+    }
     const t = adesso();
     const idIngresso = A.nuovoId("ingressi");
     const ingresso = {
@@ -1692,6 +1772,8 @@ const Azioni = (() => {
     await A.crea("ingressi", ingresso, idIngresso);
     if (abbonamento && abbonamento.tipo === "carnet")
       await A.aggiorna("abbonamenti", abbonamento.id, { ingressi_usati: (abbonamento.ingressi_usati || 0) + 1 });
+    // la data della prova resta anche nella scheda: così si sa subito, senza leggere tutto lo storico
+    if (prova) await A.aggiornaCliente(cliente.id, { prova_il: t.data });
 
     const totale = movimenti.reduce((s, [, m]) => s + m.importo_cent, 0);
     let testo = `Ingresso registrato: ${nomeCliente(cliente)}, ${ingresso.nome.toLowerCase()}.`;
@@ -1700,33 +1782,53 @@ const Azioni = (() => {
       testo = `Ingresso registrato: ${nomeCliente(cliente)}. Sul carnet ${restano === 1 ? "resta 1 ingresso" : `restano ${restano} ingressi`}.`;
     }
     if (totale > 0) testo += ` Incassati ${R.euro(totale)} (${R.METODI[scelta.metodo || "contanti"]}).`;
-    return testo;
+    return testo + testoTessera;
   }
 
   /* ------------------------------------------------- vendita abbonamento */
+  // Vale anche per il tesseramento: un "abbonamento" che non dà ingressi e scade il 31 dicembre
   async function vendiAbbonamento(S, cliente, scelta) {
     const v = voce(S, scelta.listino_id);
     if (!v) throw { messaggio: "Scegli cosa vendere." };
+    const tessera = v.tipo === "tesseramento";
+    const fine = tessera ? R.fineAnno(scelta.data_inizio)
+      : v.giorni ? R.aggiungiGiorni(scelta.data_inizio, v.giorni - 1) : null;
+    if (tessera && R.fineTessera(cliente) && R.fineTessera(cliente) >= fine)
+      throw { messaggio: `${nomeCliente(cliente)} ha già il tesseramento valido fino al ${R.dataIt(R.fineTessera(cliente))}.` };
+    const nome = tessera && v.nome.indexOf(fine.slice(0, 4)) < 0 ? `${v.nome} ${fine.slice(0, 4)}` : v.nome;
     const t = adesso();
     const idAbb = A.nuovoId("abbonamenti");
     const idMov = scelta.prezzo_cent > 0 ? A.nuovoId("movimenti") : null;
-    const fine = v.giorni ? R.aggiungiGiorni(scelta.data_inizio, v.giorni - 1) : null;
     if (idMov) {
       await A.crea("movimenti", {
-        data: t.data, ora: t.ora, creato_il: t.creato_il, verso: "entrata", categoria: "abbonamento",
-        descrizione: v.nome, importo_cent: scelta.prezzo_cent, metodo: scelta.metodo,
+        data: t.data, ora: t.ora, creato_il: t.creato_il, verso: "entrata", categoria: tessera ? "tesseramento" : "abbonamento",
+        descrizione: nome, importo_cent: scelta.prezzo_cent, metodo: scelta.metodo,
         cliente_id: cliente.id, abbonamento_id: idAbb, ingresso_id: null, annullato: false,
       }, idMov);
     }
     await A.crea("abbonamenti", {
-      cliente_id: cliente.id, listino_id: v.id, nome: v.nome, tipo: v.tipo,
+      cliente_id: cliente.id, listino_id: v.id, nome, tipo: v.tipo,
       data_inizio: scelta.data_inizio, data_fine: fine,
       ingressi_totali: v.tipo === "carnet" ? v.ingressi : null, ingressi_usati: 0,
       prezzo_cent: scelta.prezzo_cent, metodo: scelta.metodo, movimento_id: idMov,
       creato_il: t.creato_il, annullato: false,
     }, idAbb);
-    return `${v.nome} attivato per ${nomeCliente(cliente)}` + (fine ? `, valido fino al ${R.dataIt(fine)}.` : ".")
-      + (idMov ? ` Incassati ${R.euro(scelta.prezzo_cent)} (${R.METODI[scelta.metodo]}).` : "");
+    if (tessera) {
+      await A.aggiornaCliente(cliente.id, { tessera_pagata_fino: fine, tessera_pagata_il: t.data });
+      cliente.tessera_pagata_fino = fine;              // per l'ingresso registrato subito dopo
+    }
+    return `${nome} ${tessera ? "pagato" : "attivato"} per ${nomeCliente(cliente)}` + (fine ? `, valido fino al ${R.dataIt(fine)}.` : ".")
+      + (idMov ? ` Incassati ${R.euro(scelta.prezzo_cent)} (${R.METODI[scelta.metodo]}).` : "")
+      + (tessera ? " Il compilatore FASI lo trova tra i tesseramenti da registrare." : "");
+  }
+
+  // Dopo aver annullato un tesseramento: la scheda torna a dire fino a quando è davvero pagato
+  async function ricalcolaTesseraPagata(S, clienteId, escluso) {
+    const pagati = S.abbonamenti.filter((a) => a.cliente_id === clienteId && a.tipo === "tesseramento" && !a.annullato && a.id !== escluso)
+      .sort((a, b) => (a.data_fine < b.data_fine ? -1 : 1));
+    const ultimo = pagati[pagati.length - 1];
+    await A.aggiornaCliente(clienteId, { tessera_pagata_fino: ultimo ? ultimo.data_fine : null,
+                                         tessera_pagata_il: ultimo ? ultimo.creato_il.slice(0, 10) : null });
   }
 
   /* -------------------------------------------------------------- cassa */
@@ -1788,6 +1890,12 @@ const Azioni = (() => {
       const abb = ing.modo === "carnet" && S.abbonamenti.find((a) => a.id === ing.abbonamento_id);
       if (abb) await A.aggiorna("abbonamenti", abb.id, { ingressi_usati: Math.max(0, (abb.ingressi_usati || 0) - 1) });
       for (const m of tutte(S, "movimenti").filter((m) => m.ingresso_id === id && !m.annullato)) await A.aggiorna("movimenti", m.id, segno);
+      if (ing.modo === "prova") {
+        // la prova annullata non conta: torna disponibile (se non ce n'è un'altra)
+        const altre = tutte(S, "ingressi").filter((i) => i.cliente_id === ing.cliente_id && i.modo === "prova" && !i.annullato && i.id !== id)
+          .map((i) => i.data).sort();
+        await A.aggiornaCliente(ing.cliente_id, { prova_il: altre.length ? altre[altre.length - 1] : null });
+      }
       return "Ingresso annullato" + (abb ? ": l'ingresso è tornato sul carnet." : ".");
     }
     if (tipo === "abbonamenti") {
@@ -1795,6 +1903,7 @@ const Azioni = (() => {
       if (!abb || abb.annullato) return "Questo abbonamento è già annullato.";
       await A.aggiorna("abbonamenti", id, segno);
       for (const m of tutte(S, "movimenti").filter((m) => m.abbonamento_id === id && !m.annullato)) await A.aggiorna("movimenti", m.id, segno);
+      if (abb.tipo === "tesseramento") await ricalcolaTesseraPagata(S, abb.cliente_id, id);
       return `${abb.nome} annullato. Se avevi incassato, il pagamento è stato tolto dalla cassa.`;
     }
     const m = tutte(S, "movimenti").find((x) => x.id === id);
@@ -1810,6 +1919,7 @@ const Azioni = (() => {
     ["l-es-singolo", { nome: "Ingresso singolo", tipo: "singolo", prezzo_cent: 1200, ordine: 1 }],
     ["l-es-ridotto", { nome: "Ingresso ridotto under 14", tipo: "singolo", prezzo_cent: 900, ordine: 2 }],
     ["l-es-prova", { nome: "Ingresso di prova con istruttore", tipo: "prova", prezzo_cent: 1000, ordine: 3 }],
+    ["l-es-tesseramento", { nome: "Tesseramento FASI", tipo: "tesseramento", prezzo_cent: 3000, ordine: 3.5 }],
     ["l-es-carnet", { nome: "Carnet 10 ingressi", tipo: "carnet", prezzo_cent: 10000, ingressi: 10, giorni: 365, ordine: 4 }],
     ["l-es-mensile", { nome: "Mensile", tipo: "periodo", prezzo_cent: 5500, giorni: 30, ordine: 5 }],
     ["l-es-trimestrale", { nome: "Trimestrale", tipo: "periodo", prezzo_cent: 15000, giorni: 90, ordine: 6 }],
@@ -1855,7 +1965,7 @@ const Azioni = (() => {
     if (!S.listino.length) await caricaListinoEsempio();
     const listino = S.listino.length ? S.listino : LISTINO_ESEMPIO.map(([id, v]) => Object.assign({ id }, v));
     const diTipo = (tipo) => listino.find((v) => v.tipo === tipo && v.attivo !== false);
-    const singolo = diTipo("singolo"), prova = diTipo("prova"), carnetV = diTipo("carnet");
+    const singolo = diTipo("singolo"), prova = diTipo("prova"), carnetV = diTipo("carnet"), tesseraV = diTipo("tesseramento");
     const periodo = listino.filter((v) => v.tipo === "periodo" && v.attivo !== false).sort((a, b) => a.giorni - b.giorni)[0];
     const scarpette = diTipo("prodotto");
 
@@ -1881,7 +1991,7 @@ const Azioni = (() => {
         telefono: `3${intero(20, 49)} ${intero(1000000, 9999999)}`,
         codice_fiscale: null, indirizzo: null, contatto_emergenza: null, note: null,
         numero_tessera: "A" + String(i + 1).padStart(3, "0"),
-        scadenza_tessera: t(intero(60, 330)), scadenza_certificato: t(intero(40, 360)),
+        scadenza_tessera: R.fineAnno(), scadenza_certificato: t(intero(40, 360)),
         liberatoria_il: t(-intero(31, 300)), privacy_il: t(-intero(31, 300)),
         autonomo: i % 4 !== 3, creato_il: t(-intero(35, 300)) + " 18:00:00",
       };
@@ -1889,7 +1999,9 @@ const Azioni = (() => {
       if (i === 2) { c.liberatoria_il = null; c.contatto_emergenza = "Paolo Conti (papà) 320 1112224"; c.note = "Viene con il papà il sabato mattina."; }
       if (i === 3) c.scadenza_certificato = t(12);                     // in scadenza
       if (i >= 12) c.creato_il = t(-intero(1, 15)) + " 18:30:00";      // nuovi di questo mese
-      docs.push(["clienti", Object.assign({}, c), c.id]);
+      // gli ultimi due sono arrivati con l'ingresso di prova: ancora senza tessera FASI
+      if (i >= 13) { c.creato_il = t(-intero(20, 28)) + " 18:30:00"; c.numero_tessera = null; c.scadenza_tessera = null; }
+      if (i === 14) c.scadenza_certificato = null;
       return c;
     });
 
@@ -1897,15 +2009,16 @@ const Azioni = (() => {
     const abbonamenti = [];
     const vendi = (cliente, v, giorno, ora) => {
       if (!v) return;
-      const a = { id: id("abbonamenti"), cliente_id: cliente.id, listino_id: v.id, nome: v.nome, tipo: v.tipo,
-                  data_inizio: t(giorno), data_fine: v.giorni ? R.aggiungiGiorni(t(giorno), v.giorni - 1) : null,
+      const tessera = v.tipo === "tesseramento";
+      const a = { id: id("abbonamenti"), cliente_id: cliente.id, listino_id: v.id, nome: tessera ? `${v.nome} ${t(giorno).slice(0, 4)}` : v.nome, tipo: v.tipo,
+                  data_inizio: t(giorno), data_fine: tessera ? R.fineAnno(t(giorno)) : v.giorni ? R.aggiungiGiorni(t(giorno), v.giorni - 1) : null,
                   ingressi_totali: v.tipo === "carnet" ? v.ingressi : null, ingressi_usati: 0,
                   prezzo_cent: v.prezzo_cent, metodo: giorno % 2 ? "carta" : "contanti",
                   creato_il: `${t(giorno)} ${ora}:00`, annullato: false, esempio: true };
       a.movimento_id = id("movimenti");
       abbonamenti.push(a);
-      docs.push(["movimenti", { data: t(giorno), ora, creato_il: a.creato_il, verso: "entrata", categoria: "abbonamento",
-        descrizione: v.nome, importo_cent: v.prezzo_cent, metodo: a.metodo, cliente_id: cliente.id,
+      docs.push(["movimenti", { data: t(giorno), ora, creato_il: a.creato_il, verso: "entrata", categoria: tessera ? "tesseramento" : "abbonamento",
+        descrizione: a.nome, importo_cent: v.prezzo_cent, metodo: a.metodo, cliente_id: cliente.id,
         abbonamento_id: a.id, ingresso_id: null, annullato: false, esempio: true }, a.movimento_id]);
     };
     [0, 4, 5, 6, 7].forEach((i, k) => vendi(clienti[i], periodo, -[27, 20, 14, 9, 3][k], "17:40"));   // mensili (uno scade a breve)
@@ -1931,6 +2044,7 @@ const Azioni = (() => {
         const orario = `${due(ora)}:${due(intero(0, 59))}`;
         let c = clienti[intero(0, clienti.length - 1)];
         if (presenti[c.id]) continue;
+        if (c.id === "c-esempio-15" && c.prova_il) continue;          // dopo la prova non è più tornato
         presenti[c.id] = true;
         const ing = { id: id("ingressi"), cliente_id: c.id, data: giorno, ora: orario, creato_il: `${giorno} ${orario}:00`,
                       modo: "omaggio", nome: "Ingresso omaggio", abbonamento_id: null, listino_id: null, prezzo_cent: 0,
@@ -1943,8 +2057,13 @@ const Azioni = (() => {
           Object.assign(ing, { modo: abb.tipo, nome: abb.nome, abbonamento_id: abb.id });
           if (abb.tipo === "carnet") abb.ingressi_usati++;
         } else {
-          const v = (c.id === "c-esempio-14" || c.id === "c-esempio-15") && !c.provato ? prova : singolo;
-          if (v === prova) c.provato = true;
+          const v = (c.id === "c-esempio-14" || c.id === "c-esempio-15") && !c.prova_il ? prova : singolo;
+          if (v && v === prova) c.prova_il = giorno;
+          // dal secondo ingresso serve il tesseramento: si paga insieme all'ingresso
+          if (v === singolo && tesseraV && !c.scadenza_tessera && !c.tessera_pagata_fino) {
+            vendi(c, tesseraV, g, orario);
+            c.tessera_pagata_fino = R.fineAnno(giorno); c.tessera_pagata_il = giorno;
+          }
           if (v) {
             ing.movimento_id = id("movimenti");
             Object.assign(ing, { modo: v.tipo, nome: v.nome, listino_id: v.id, prezzo_cent: v.prezzo_cent });
@@ -1975,6 +2094,7 @@ const Azioni = (() => {
         contanti -= versato;
       }
     }
+    clienti.forEach((c) => docs.push(["clienti", Object.assign({}, c), c.id]));
     ingressi.forEach((x) => docs.push(["ingressi", x, x.id]));
     abbonamenti.forEach((x) => docs.push(["abbonamenti", x, x.id]));
     movimenti.forEach((m) => docs.push(["movimenti", Object.assign({ cliente_id: null, abbonamento_id: null, ingresso_id: null,
@@ -1982,7 +2102,7 @@ const Azioni = (() => {
     docs.forEach((d) => { if (d[1].id) delete d[1].id; });
     await A.creaMolti(docs);
     return `Ho caricato un mese di attività di esempio: ${clienti.length} clienti, ${ingressi.length} ingressi, `
-      + `${abbonamenti.length} abbonamenti e carnet. Li togli da Impostazioni quando vuoi.`;
+      + `${abbonamenti.filter((a) => a.tipo !== "tesseramento").length} abbonamenti e carnet. Li togli da Impostazioni quando vuoi.`;
   }
 
   /* -------------------------------------------------- copia di sicurezza */
@@ -2475,6 +2595,8 @@ const Viste = (() => {
         ${scrive ? html`<a class="pulsante" href="#modifica-${c.id}">Modifica</a>` : ""}
       </div>
 
+      ${puo(S, "reception") ? boxIngressi(S, c, av) : ""}
+
       <section class="stato-cliente stato-box-${col}">
         <h2>${titoli[col]}</h2>
         ${col === "grigio" ? html`<p>Riattivalo se torna in palestra.</p>` : ""}
@@ -2487,7 +2609,6 @@ const Viste = (() => {
           ? html`<button type="button" class="pulsante pulsante-primario" data-azione="liberatoria" data-id="${c.id}">Liberatoria firmata oggi</button>` : ""}
       </section>
 
-      ${c.attivo && puo(S, "reception") ? boxAbbonamento(S, c, av) : ""}
       ${puo(S, "tesseramento") && !puo(S, "reception") ? boxTessera(S, c) : ""}
       ${puo(S, "certificati") ? boxCertificato(S, c) : ""}
 
@@ -2611,54 +2732,115 @@ const Viste = (() => {
       </div>`;
   }
 
-  /* ----------------------------------- abbonamento, ingresso, vendita */
-  function boxAbbonamento(S, c, avvisi) {
+  /* ------------------------------------- abbonamenti e ingressi, vendita */
+  const perOrdine = (a, b) => (a.ordine || 0) - (b.ordine || 0);
+  const vociDi = (S, tipi) => S.listino.filter((v) => v.attivo && tipi.indexOf(v.tipo) >= 0).sort(perOrdine);
+
+  // Tutto quello che serve alla reception per far entrare il cliente
+  function situazione(S, c) {
+    const oggi = R.oggiISO();
+    const anno = oggi.slice(0, 4);
     const suoi = S.abbonamenti.filter((a) => a.cliente_id === c.id);
-    const attivi = suoi.filter((a) => R.statoAbbonamento(a) === "attivo").sort((x, y) => (x.data_fine || "9") < (y.data_fine || "9") ? -1 : 1);
-    const futuri = suoi.filter((a) => R.statoAbbonamento(a) === "futuro");
     const ingressi = Azioni.tutte(S, "ingressi").filter((i) => i.cliente_id === c.id && !i.annullato)
       .sort((a, b) => (a.data + a.ora < b.data + b.ora ? 1 : -1));
-    const ultimo = ingressi[0];
-    const descrivi = (a) => {
-      if (a.tipo === "carnet") {
-        return html`<strong>${a.nome}</strong>: ${plurale(R.rimasti(a), "ingresso rimasto", "ingressi rimasti")} su ${a.ingressi_totali}${a.data_fine ? `, valido fino al ${R.dataIt(a.data_fine)}` : ""}`;
-      }
-      const giorni = R.giorniDaOggi(a.data_fine);
-      return html`<strong>${a.nome}</strong>, valido fino al ${R.dataIt(a.data_fine)} (${giorni === 0 ? "scade oggi" : plurale(giorni, "giorno", "giorni")})`;
+    return {
+      anno, suoi, ingressi,
+      attivi: suoi.filter((a) => a.tipo !== "tesseramento" && R.statoAbbonamento(a) === "attivo")
+        .sort((x, y) => ((x.data_fine || "9") < (y.data_fine || "9") ? -1 : 1)),
+      futuri: suoi.filter((a) => a.tipo !== "tesseramento" && R.statoAbbonamento(a) === "futuro"),
+      ultimo: ingressi[0] || null,
+      nellAnno: ingressi.filter((i) => String(i.data).slice(0, 4) === anno).length,
+      prova: R.provaDellAnno(c, ingressi),               // data della prova di quest'anno, o null
+      usaTessera: !!S.imp.usa_tesseramento,
+      tesseraOk: R.tesseraValida(c),
+      fineTessera: R.fineTessera(c),
     };
+  }
+
+  // Un riquadro con una cosa sola, leggibile da lontano: tono "ok" (verde), "no" (rosso), "neutro"
+  const riquadro = (etichetta, valore, nota, tono) => html`
+    <div class="riquadro riquadro-${tono}">
+      <p class="riquadro-etichetta">${etichetta}</p>
+      <p class="riquadro-valore">${valore}</p>
+      ${nota ? html`<p class="riquadro-nota">${nota}</p>` : ""}
+    </div>`;
+
+  // In cima alla scheda, sempre: abbonamenti e carnet attivi, tesseramento dell'anno, prova, ingressi
+  function boxIngressi(S, c, avvisi) {
+    const sit = situazione(S, c);
+    const riquadri = [];
+    sit.attivi.forEach((a) => {
+      if (a.tipo === "carnet") {
+        const r = R.rimasti(a);
+        riquadri.push(riquadro("Carnet", `${r} ${r === 1 ? "ingresso rimasto" : "ingressi rimasti"} su ${a.ingressi_totali}`,
+          `${a.nome}${a.data_fine ? `, valido fino al ${R.dataIt(a.data_fine)}` : ""}`, r <= 2 ? "attenzione" : "ok"));
+      } else {
+        const g = R.giorniDaOggi(a.data_fine);
+        riquadri.push(riquadro("Abbonamento", a.nome,
+          `Valido fino al ${R.dataIt(a.data_fine)} (${g === 0 ? "scade oggi" : g === 1 ? "ultimo giorno domani" : `ancora ${g} giorni`})`, g <= 7 ? "attenzione" : "ok"));
+      }
+    });
+    if (!sit.attivi.length) riquadri.push(riquadro("Abbonamento o carnet", "Nessuno attivo", "L'ingresso si paga a ogni visita.", "neutro"));
+    if (sit.usaTessera) {
+      riquadri.push(sit.tesseraOk
+        ? riquadro(`Tesseramento ${sit.anno}`, "In regola", `Valido fino al ${R.dataIt(sit.fineTessera)}${c.numero_tessera ? `, tessera ${c.numero_tessera}` : ""}`, "ok")
+        : riquadro(`Tesseramento ${sit.anno}`, "Da pagare",
+            sit.prova ? "Obbligatorio: la prova l'ha già fatta." : "Obbligatorio per entrare, tranne che per la prova.", "no"));
+    }
+    if (!sit.usaTessera || !sit.tesseraOk) {
+      riquadri.push(sit.prova
+        ? riquadro(`Ingresso di prova ${sit.anno}`, "Già fatto", `Il ${R.dataIt(sit.prova)}. Si fa una volta all'anno.`, "neutro")
+        : riquadro(`Ingresso di prova ${sit.anno}`, "Disponibile", "Una volta all'anno, senza tesseramento.", "neutro"));
+    }
+    riquadri.push(riquadro("Ingressi", `${sit.nellAnno} nel ${sit.anno}`,
+      sit.ultimo ? `Ultimo: ${sit.ultimo.data === R.oggiISO() ? "oggi" : "il " + R.dataIt(sit.ultimo.data)} alle ${sit.ultimo.ora}` : "Non è mai entrato.", "neutro"));
+
     return html`
-      <section class="sezione box-abbonamento">
-        <h2>Abbonamento</h2>
-        ${attivi.length ? html`<ul class="coperture">${attivi.map((a) => html`<li>${descrivi(a)}</li>`)}</ul>`
-          : html`<p>Nessun abbonamento attivo: l'ingresso si paga.</p>`}
-        ${futuri.map((a) => html`<p class="aiuto">${a.nome} già pagato: inizia il ${R.dataIt(a.data_inizio)}.</p>`)}
-        <p class="aiuto">${ultimo ? `Ultimo ingresso: ${ultimo.data === R.oggiISO() ? "oggi" : "il " + R.dataIt(ultimo.data)} alle ${ultimo.ora}.` : "Non è mai entrato."}</p>
-        ${puo(S, "reception") ? html`
+      <section class="box-ingressi" id="abbonamenti" aria-labelledby="titolo-ingressi">
+        <h2 id="titolo-ingressi">Abbonamenti e ingressi</h2>
+        <div class="riquadri">${riquadri}</div>
+        ${sit.futuri.map((a) => html`<p class="aiuto">${a.nome} già pagato: inizia il ${R.dataIt(a.data_inizio)}.</p>`)}
+        ${c.attivo ? html`
           <div class="azioni-modulo">
             <button type="button" class="pulsante pulsante-primario pulsante-grande" data-azione="apri-pannello" data-pannello="ingresso">Registra ingresso</button>
-            <button type="button" class="pulsante" data-azione="apri-pannello" data-pannello="vendita">Vendi abbonamento o carnet</button>
+            <button type="button" class="pulsante" data-azione="apri-pannello" data-pannello="vendita">${sit.usaTessera ? "Vendi abbonamento, carnet o tesseramento" : "Vendi abbonamento o carnet"}</button>
           </div>
-          ${S.pannello === "ingresso" ? pannelloIngresso(S, c, attivi, avvisi, ultimo) : ""}
-          ${S.pannello === "vendita" ? pannelloVendita(S, c, suoi) : ""}` : ""}
+          ${S.pannello === "ingresso" ? pannelloIngresso(S, c, sit, avvisi) : ""}
+          ${S.pannello === "vendita" ? pannelloVendita(S, c, sit) : ""}`
+        : html`<p class="aiuto">Cliente archiviato: riattivalo per registrare ingressi e vendite.</p>`}
       </section>`;
   }
 
-  function pannelloIngresso(S, c, attivi, avvisi, ultimo) {
-    const cop = R.copertura(attivi);
+  function pannelloIngresso(S, c, sit, avvisi) {
+    const cop = R.copertura(sit.attivi);
+    const conProva = vociDi(S, ["prova"]).length > 0;
+    const paganti = vociDi(S, sit.prova ? ["singolo"] : ["singolo", "prova"]);
+    const noleggi = vociDi(S, ["prodotto"]);
+    const voceTessera = vociDi(S, ["tesseramento"])[0] || null;
+    const serveTessera = sit.usaTessera && !sit.tesseraOk;
+    const giaOggi = sit.ultimo && sit.ultimo.data === R.oggiISO();
+    // Documenti che chiedono conferma. Per la prova bastano liberatoria e privacy;
+    // per gli altri ingressi il tesseramento si paga qui, quindi non conta tra i documenti.
     const rossi = avvisi.filter((a) => a.livello === "rosso");
-    const paganti = S.listino.filter((v) => v.attivo && (v.tipo === "singolo" || v.tipo === "prova")).sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
-    const noleggi = S.listino.filter((v) => v.attivo && v.tipo === "prodotto").sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
-    const giaOggi = ultimo && ultimo.data === R.oggiISO();
+    const rossiProva = rossi.filter((a) => !R.okPerProva(a));
+    const rossiNormale = rossi.filter((a) => !(a.campo === "tessera" && voceTessera));
+    // già scelto: quello chiesto (dopo l'iscrizione online), altrimenti la prova per chi non è tesserato
+    const proposto = [S.preseleziona, serveTessera && !sit.prova ? "prova" : null]
+      .filter((t) => t && paganti.some((v) => v.tipo === t))[0];
+    const scelto = proposto ? paganti.filter((v) => v.tipo === proposto)[0] : paganti[0];
+    const sceltoProva = !cop && !!scelto && scelto.tipo === "prova";
+    const solo = (quando, visibile) => (cop ? "" : crudo(`data-solo-${quando}${visibile ? "" : " hidden"}`));
+
+    const avvisoDocumenti = (lista, nome, perProva) => html`
+      <p><strong>Documenti da sistemare:</strong> ${lista.map((a) => a.testo).join("; ")}.</p>
+      ${!perProva && lista.some((a) => a.campo === "certificato")
+        ? html`<p>Dal secondo ingresso il certificato medico è obbligatorio: chiedilo. ${puo(S, "certificati") ? "Lo carichi nel riquadro Certificato medico della scheda." : "Lo carica il manager o il compilatore FASI."}</p>` : ""}
+      <label class="spunta"><input type="checkbox" name="${nome}"><span>Ho controllato: registra comunque l'ingresso</span></label>`;
+
     return html`
       <form class="pannello" data-modulo="ingresso" data-id="${c.id}" novalidate>
         <h3>Registra ingresso</h3>
-        ${giaOggi ? html`<p class="avviso-flash avviso-info">È già entrato oggi alle ${ultimo.ora}.</p>` : ""}
-        ${rossi.length ? html`
-          <div class="avviso-flash avviso-errore">
-            <p><strong>Documenti da sistemare:</strong> ${rossi.map((a) => a.testo).join("; ")}.</p>
-            ${rossi.every(R.okPerProva) ? html`<p>Per l'ingresso di prova non servono: bastano liberatoria e privacy.</p>` : ""}
-            <label class="spunta"><input type="checkbox" name="conferma_documenti" data-prova="${rossi.every(R.okPerProva) ? "ok" : "no"}"><span>Ho controllato: registra comunque l'ingresso</span></label>
-          </div>` : ""}
+        ${giaOggi ? html`<p class="avviso-flash avviso-info">È già entrato oggi alle ${sit.ultimo.ora}.</p>` : ""}
         ${cop ? html`
           <input type="hidden" name="modo" value="copertura"><input type="hidden" name="abbonamento_id" value="${cop.id}">
           <p class="copertura-scelta">${cop.tipo === "carnet"
@@ -2668,14 +2850,32 @@ const Viste = (() => {
           <fieldset class="scelta">
             <legend>Cosa paga</legend>
             ${!paganti.length ? html`<p class="aiuto">Nel listino non ci sono ingressi. <a href="#listino">Aggiungili al listino</a>.</p>` : ""}
+            ${sit.prova && conProva ? html`<p class="aiuto">Ingresso di prova già fatto il ${R.dataIt(sit.prova)}: quest'anno non si ripete.</p>` : ""}
             <div class="opzioni">
-              ${paganti.map((v, i) => html`
-                <label class="opzione"><input type="radio" name="scelta" value="${v.id}" data-prezzo="${v.prezzo_cent}" ${(S.preseleziona ? v.tipo === S.preseleziona && paganti.filter((x) => x.tipo === S.preseleziona)[0] === v : i === 0) ? crudo("checked") : ""}>
-                  <span class="opzione-nome">${v.nome}</span><span class="opzione-prezzo">${R.euro(v.prezzo_cent)}</span></label>`)}
-              <label class="opzione"><input type="radio" name="scelta" value="omaggio" data-prezzo="0" ${!paganti.length ? crudo("checked") : ""}>
+              ${paganti.map((v) => html`
+                <label class="opzione"><input type="radio" name="scelta" value="${v.id}" data-tipo="${v.tipo}" data-prezzo="${v.prezzo_cent}" ${v === scelto ? crudo("checked") : ""}>
+                  <span class="opzione-nome">${v.nome}${v.tipo === "prova" ? html` <span class="aiuto">una volta all'anno, senza tesseramento</span>` : ""}</span><span class="opzione-prezzo">${R.euro(v.prezzo_cent)}</span></label>`)}
+              <label class="opzione"><input type="radio" name="scelta" value="omaggio" data-tipo="omaggio" data-prezzo="0" ${!paganti.length ? crudo("checked") : ""}>
                 <span class="opzione-nome">Omaggio, senza pagare</span><span class="opzione-prezzo">0,00 €</span></label>
             </div>
           </fieldset>`}
+
+        ${serveTessera ? html`
+          <div class="obbligo-tessera" ${solo("normale", !sceltoProva)}>
+            ${voceTessera ? html`
+              <input type="hidden" name="tesseramento" value="${voceTessera.id}" data-prezzo="${voceTessera.prezzo_cent}">
+              <p class="obbligo-titolo"><strong>Tesseramento ${sit.anno}, obbligatorio</strong><span class="opzione-prezzo">${R.euro(voceTessera.prezzo_cent)}</span></p>
+              <p>${sit.prova ? `Ha già fatto la prova il ${R.dataIt(sit.prova)}: da ora serve il tesseramento.` : "Senza la prova serve il tesseramento."}
+                Si paga adesso insieme all'ingresso e vale fino al 31/12/${sit.anno}. Chiedi anche il certificato medico.</p>`
+            : html`<p><strong>Serve il tesseramento ${sit.anno}, ma nel listino non c'è.</strong>
+                ${puo(S, "listino") ? html`<a href="#voce-nuova">Aggiungilo al listino</a> come «Tesseramento annuale», poi torna qui.` : "Chiedi al manager di aggiungerlo al listino."}</p>`}
+          </div>` : ""}
+
+        ${!cop && conProva && !sit.prova && rossiProva.length ? html`
+          <div class="avviso-flash avviso-errore" ${solo("prova", sceltoProva)}>${avvisoDocumenti(rossiProva, "conferma_prova", true)}</div>` : ""}
+        ${rossiNormale.length ? html`
+          <div class="avviso-flash avviso-errore" ${solo("normale", !sceltoProva)}>${avvisoDocumenti(rossiNormale, "conferma_documenti", false)}</div>` : ""}
+
         ${noleggi.length ? html`
           <fieldset class="scelta">
             <legend>Noleggi e prodotti</legend>
@@ -2697,23 +2897,27 @@ const Viste = (() => {
       </form>`;
   }
 
-  function pannelloVendita(S, c, suoi) {
-    const voci = S.listino.filter((v) => v.attivo && (v.tipo === "periodo" || v.tipo === "carnet")).sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
+  function pannelloVendita(S, c, sit) {
+    const voci = vociDi(S, ["periodo", "carnet"].concat(sit.usaTessera ? ["tesseramento"] : []));
     // se ha già un abbonamento a tempo, il rinnovo parte dal giorno dopo la scadenza
-    const fine = suoi.filter((a) => a.tipo === "periodo" && ["attivo", "futuro"].indexOf(R.statoAbbonamento(a)) >= 0)
+    const fine = sit.suoi.filter((a) => a.tipo === "periodo" && ["attivo", "futuro"].indexOf(R.statoAbbonamento(a)) >= 0)
       .map((a) => a.data_fine).sort().pop();
     const rinnovo = fine ? R.aggiungiGiorni(fine, 1) : null;
-    const dettaglio = (v) => v.tipo === "carnet"
-      ? `${v.ingressi} ingressi${v.giorni ? `, validi ${v.giorni} giorni` : ""}` : `${v.giorni} giorni`;
+    const dettaglio = (v) => v.tipo === "carnet" ? `${v.ingressi} ingressi${v.giorni ? `, validi ${v.giorni} giorni` : ""}`
+      : v.tipo === "tesseramento" ? (sit.tesseraOk ? `già pagato fino al ${R.dataIt(sit.fineTessera)}` : `vale fino al 31/12/${sit.anno}`)
+      : `${v.giorni} giorni`;
+    // chi deve ancora pagare il tesseramento lo trova già scelto
+    const primo = voci.filter((v) => v.tipo === "tesseramento" && !sit.tesseraOk)[0] || voci.filter((v) => v.tipo !== "tesseramento")[0] || voci[0];
+    const titolo = sit.usaTessera ? "Vendi abbonamento, carnet o tesseramento" : "Vendi abbonamento o carnet";
     return html`
       <form class="pannello" data-modulo="vendita" data-id="${c.id}" novalidate>
-        <h3>Vendi abbonamento o carnet</h3>
-        ${!voci.length ? html`<p>Nel listino non ci sono abbonamenti né carnet. <a href="#listino">Aggiungili al listino</a>.</p>` : html`
+        <h3>${titolo}</h3>
+        ${!voci.length ? html`<p>Nel listino non c'è niente da vendere qui. <a href="#listino">Aggiungi abbonamenti, carnet${sit.usaTessera ? " e tesseramento" : ""} al listino</a>.</p>` : html`
           <fieldset class="scelta">
             <legend>Cosa compra</legend>
             <div class="opzioni">
-              ${voci.map((v, i) => html`
-                <label class="opzione"><input type="radio" name="voce" value="${v.id}" data-prezzo="${v.prezzo_cent}" ${i === 0 ? crudo("checked") : ""}>
+              ${voci.map((v) => html`
+                <label class="opzione"><input type="radio" name="voce" value="${v.id}" data-prezzo="${v.prezzo_cent}" ${v === primo ? crudo("checked") : ""}>
                   <span class="opzione-nome">${v.nome} <span class="aiuto">${dettaglio(v)}</span></span><span class="opzione-prezzo">${R.euro(v.prezzo_cent)}</span></label>`)}
             </div>
           </fieldset>
@@ -2723,6 +2927,7 @@ const Viste = (() => {
               <input id="data_inizio" name="data_inizio" type="date" value="${R.oggiISO()}">
               ${rinnovo ? html`<p class="aiuto">Ha un abbonamento fino al ${R.dataIt(fine)}.
                 <button type="button" class="pulsante-testo" data-imposta="data_inizio" data-valore="${rinnovo}">Fai partire il rinnovo dal ${R.dataIt(rinnovo)}</button></p>` : ""}
+              ${sit.usaTessera ? html`<p class="aiuto">Il tesseramento vale fino al 31 dicembre dell'anno di questa data.</p>` : ""}
             </div>
             <div class="campo">
               <label for="prezzo">Prezzo in euro</label>
@@ -2741,7 +2946,8 @@ const Viste = (() => {
 
   function boxTessera(S, c) {
     const stato = R.statoTessera(c, S.imp.giorni_preavviso);
-    const testi = { manca: "Non ancora tesserato", scaduta: `Tessera scaduta il ${R.dataIt(c.scadenza_tessera)}`,
+    const testi = { da_registrare: `Tesseramento pagato fino al ${R.dataIt(c.tessera_pagata_fino)}: da registrare in FASI`,
+                    manca: "Non ancora tesserato", scaduta: `Tessera scaduta il ${R.dataIt(c.scadenza_tessera)}`,
                     in_scadenza: `Tessera ${c.numero_tessera}, scade il ${R.dataIt(c.scadenza_tessera)}`,
                     ok: `Tessera ${c.numero_tessera}, valida fino al ${R.dataIt(c.scadenza_tessera)}` };
     const mancano = R.mancantiFasi(c);
@@ -2764,7 +2970,7 @@ const Viste = (() => {
       <div class="campo">
         <label for="scadenza-${c.id}">Valida fino al</label>
         <div class="campo-con-pulsante">
-          <input id="scadenza-${c.id}" name="scadenza" type="date" value="${c.scadenza_tessera || ""}">
+          <input id="scadenza-${c.id}" name="scadenza" type="date" value="${c.tessera_pagata_fino && (!c.scadenza_tessera || c.scadenza_tessera < c.tessera_pagata_fino) ? c.tessera_pagata_fino : (c.scadenza_tessera || "")}">
           <button type="button" class="pulsante pulsante-piccolo" data-imposta="scadenza-${c.id}" data-valore="${R.oggiISO().slice(0, 4)}-12-31">Fine anno</button>
         </div>
       </div>
@@ -2789,7 +2995,7 @@ const Viste = (() => {
         + (a.data_fine ? ` fino al ${R.dataIt(a.data_fine)}` : "") + metodo(a.prezzo_cent ? a.metodo : null),
       importo: a.prezzo_cent, cosa: "questo acquisto",
     }));
-    Azioni.tutte(S, "movimenti").filter((m) => m.cliente_id === c.id && m.categoria !== "ingresso" && m.categoria !== "abbonamento").forEach((m) => ev.push({
+    Azioni.tutte(S, "movimenti").filter((m) => m.cliente_id === c.id && ["ingresso", "abbonamento", "tesseramento"].indexOf(m.categoria) < 0).forEach((m) => ev.push({
       tipo: "movimenti", gruppo: "pagamenti", id: m.id, quando: `${m.data} ${m.ora}`, preciso: m.creato_il, annullato: m.annullato,
       testo: m.descrizione, nota: R.METODI[m.metodo], importo: m.importo_cent, cosa: "questo pagamento",
     }));
@@ -3146,7 +3352,7 @@ const VisteGestione = (() => {
     const ing = ingressiDi(p.dal, p.al);
     const ingPrima = ingressiDi(p.prima[0], p.prima[1]).length;
     const nuovi = S.clienti.filter((c) => dentro((c.creato_il || "").slice(0, 10), p.dal, p.al)).length;
-    const attivi = S.abbonamenti.filter((a) => R.statoAbbonamento(a) === "attivo");
+    const attivi = S.abbonamenti.filter((a) => a.tipo !== "tesseramento" && R.statoAbbonamento(a) === "attivo");
     const { saldo } = R.saldoContanti(S.movimenti, S.chiusure);
     const clienti = nomeDi(S);
 
@@ -3161,7 +3367,7 @@ const VisteGestione = (() => {
     const perOra = ore.map((h) => ({ breve: String(h), lungo: `dalle ${h} alle ${h + 1}`,
       valore: ing.filter((i) => parseInt(i.ora, 10) === h).length }));
     // incassi per tipo
-    const perTipo = ["abbonamento", "ingresso", "prodotto", "altro"].map((k) => ({
+    const perTipo = ["abbonamento", "tesseramento", "ingresso", "prodotto", "altro"].map((k) => ({
       nome: R.CATEGORIE[k], valore: somma(inc.filter((m) => m.categoria === k), (m) => m.importo_cent) }))
       .filter((r) => r.valore > 0);
 
@@ -3228,9 +3434,10 @@ const VisteGestione = (() => {
   }
 
   /* ============================================================== LISTINO */
-  const GRUPPI = [["Ingressi", ["singolo", "prova"]], ["Abbonamenti e carnet", ["periodo", "carnet"]], ["Noleggi e prodotti", ["prodotto"]]];
+  const GRUPPI = [["Ingressi", ["singolo", "prova"]], ["Tesseramento", ["tesseramento"]], ["Abbonamenti e carnet", ["periodo", "carnet"]], ["Noleggi e prodotti", ["prodotto"]]];
   const dettaglioVoce = (v) => v.tipo === "carnet" ? `${v.ingressi} ingressi${v.giorni ? `, validi ${v.giorni} giorni` : ", senza scadenza"}`
-    : v.tipo === "periodo" ? `${v.giorni} giorni` : R.TIPI_LISTINO[v.tipo].nome;
+    : v.tipo === "periodo" ? `${v.giorni} giorni` : v.tipo === "tesseramento" ? "vale fino al 31 dicembre"
+    : (R.TIPI_LISTINO[v.tipo] || { nome: v.tipo }).nome;
 
   function listino(S) {
     const ordinate = S.listino.slice().sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
@@ -3460,29 +3667,33 @@ const VisteGestione = (() => {
     if (!S.caricati) return caricamento("Carico i clienti…");
     const preavviso = S.imp.giorni_preavviso;
     const conStato = S.clienti.map((c) => ({ c, stato: R.statoTessera(c, preavviso) }));
-    const conta = (st) => conStato.filter((x) => x.stato === st).length;
+    const conta = (...st) => conStato.filter((x) => st.indexOf(x.stato) >= 0).length;
     const filtro = S.filtroFasi || "da-fare";
-    const lista = conStato.filter((x) => filtro === "tutti" || x.stato !== "ok")
-      .sort((a, b) => { const o = { scaduta: 0, manca: 1, in_scadenza: 2, ok: 3 }; return o[a.stato] - o[b.stato] || R.perCognome(a.c, b.c); });
-    const testi = { manca: "Da tesserare", scaduta: "Tessera scaduta", in_scadenza: "Tessera in scadenza", ok: "Tessera valida" };
-    const colori = { manca: "rosso", scaduta: "rosso", in_scadenza: "giallo", ok: "verde" };
+    const ORDINE = { da_registrare: 0, in_scadenza: 1, scaduta: 2, manca: 3, ok: 4 };
+    const lista = conStato.filter((x) => filtro === "tutti" || x.stato === "da_registrare")
+      .sort((a, b) => ORDINE[a.stato] - ORDINE[b.stato] || R.perCognome(a.c, b.c));
+    const testi = { da_registrare: "Pagato in reception: da registrare in FASI", manca: "Senza tessera", scaduta: "Tessera scaduta",
+                    in_scadenza: "Tessera in scadenza", ok: "Tessera valida" };
+    const colori = { da_registrare: "rosso", manca: "grigio", scaduta: "grigio", in_scadenza: "giallo", ok: "verde" };
+    const quando = (c, stato) => stato === "da_registrare" ? ` fino al ${R.dataIt(c.tessera_pagata_fino)}`
+      : c.scadenza_tessera ? ` (${R.dataIt(c.scadenza_tessera)})` : "";
     return html`
       <h1>Tesseramento FASI</h1>
-      <p class="aiuto">Chi va tesserato o rinnovato, con i dati da copiare nel gestionale FASI. Quando la tessera è fatta, scrivi numero e scadenza.</p>
+      <p class="aiuto">Chi ha pagato il tesseramento in reception e va registrato nel gestionale FASI, con i dati da copiare. Quando la tessera è fatta, scrivi numero e scadenza.</p>
       <section class="numeri">
-        <div class="numero"><p class="numero-etichetta">Da tesserare</p><p class="numero-valore">${conta("manca")}</p></div>
-        <div class="numero"><p class="numero-etichetta">Scadute</p><p class="numero-valore">${conta("scaduta")}</p></div>
-        <div class="numero"><p class="numero-etichetta">In scadenza entro ${preavviso} giorni</p><p class="numero-valore">${conta("in_scadenza")}</p></div>
+        <div class="numero"><p class="numero-etichetta">Pagati, da registrare</p><p class="numero-valore">${conta("da_registrare")}</p></div>
         <div class="numero"><p class="numero-etichetta">In regola</p><p class="numero-valore">${conta("ok")}</p></div>
+        <div class="numero"><p class="numero-etichetta">In scadenza entro ${preavviso} giorni</p><p class="numero-valore">${conta("in_scadenza")}</p></div>
+        <div class="numero"><p class="numero-etichetta">Senza tessera o scaduta</p><p class="numero-valore">${conta("manca", "scaduta")}</p></div>
       </section>
       <div class="intestazione">
         <div class="filtri" role="group" aria-label="Chi mostrare">
-          <button type="button" class="filtro" data-azione="filtro-fasi" data-valore="da-fare" aria-pressed="${filtro === "da-fare" ? "true" : "false"}">Da fare</button>
+          <button type="button" class="filtro" data-azione="filtro-fasi" data-valore="da-fare" aria-pressed="${filtro === "da-fare" ? "true" : "false"}">Da registrare</button>
           <button type="button" class="filtro" data-azione="filtro-fasi" data-valore="tutti" aria-pressed="${filtro === "tutti" ? "true" : "false"}">Tutti</button>
         </div>
         ${lista.length ? html`<button type="button" class="pulsante" data-azione="scarica-fasi">Scarica l'elenco (CSV)</button>` : ""}
       </div>
-      ${!lista.length ? html`<p class="vuoto">Nessuno da tesserare: tutte le tessere sono in regola.</p>` : ""}
+      ${!lista.length ? html`<p class="vuoto">Nessun tesseramento da registrare. Chi paga il tesseramento in reception compare qui.</p>` : ""}
       <div class="schede-fasi">
         ${lista.map(({ c, stato }) => {
           const mancano = R.mancantiFasi(c);
@@ -3491,7 +3702,7 @@ const VisteGestione = (() => {
               <header>
                 <span class="nastro nastro-${colori[stato]}" aria-hidden="true"></span>
                 <div><h2><a href="#cliente-${c.id}">${c.cognome} ${c.nome}</a></h2>
-                  <p class="stato-${colori[stato]} piccolo">${testi[stato]}${c.scadenza_tessera ? ` (${R.dataIt(c.scadenza_tessera)})` : ""}</p></div>
+                  <p class="stato-${colori[stato]} piccolo">${testi[stato]}${quando(c, stato)}</p></div>
                 <button type="button" class="pulsante pulsante-piccolo" data-azione="copia-dati-fasi" data-id="${c.id}">Copia i dati</button>
               </header>
               <dl class="dati">
@@ -3857,10 +4068,17 @@ const VisteGestione = (() => {
 
   // Totali che si aggiornano mentre si sceglie (ingresso, vendita al banco, chiusura)
   function aggiornaTotali() {
+    // ingresso: la prova non chiede il tesseramento, gli altri ingressi sì
+    contenuto.querySelectorAll("form[data-modulo=ingresso]").forEach((form) => {
+      const prova = valoreRadio(form, "scelta") && form.querySelector("input[name=scelta]:checked").dataset.tipo === "prova";
+      form.querySelectorAll("[data-solo-prova]").forEach((el) => { el.hidden = !prova; });
+      form.querySelectorAll("[data-solo-normale]").forEach((el) => { el.hidden = !!prova; });
+    });
     contenuto.querySelectorAll("form[data-modulo=ingresso], form[data-modulo=banco]").forEach((form) => {
       let totale = 0;
       form.querySelectorAll("input[data-prezzo]").forEach((el) => {
         if (el.type === "number") totale += (parseInt(el.value, 10) || 0) * Number(el.dataset.prezzo);
+        else if (el.type === "hidden") { if (!el.closest("[hidden]")) totale += Number(el.dataset.prezzo); }
         else if (el.checked) totale += Number(el.dataset.prezzo);
       });
       const out = form.querySelector("[data-totale]");
@@ -4092,16 +4310,22 @@ const VisteGestione = (() => {
   /* ------------------------------------------- reception: ingresso e vendita */
   async function inviaIngresso(form) {
     const c = await trovaCliente(form.dataset.id);
-    const conferma = form.elements.conferma_documenti;
     const voceScelta = S.listino.find((v) => v.id === valoreRadio(form, "scelta"));
-    const provaSenzaCertificato = conferma && conferma.dataset.prova === "ok" && voceScelta && voceScelta.tipo === "prova";
-    if (conferma && !conferma.checked && !provaSenzaCertificato)
+    const prova = !!voceScelta && voceScelta.tipo === "prova";
+    // la conferma sui documenti che conta è quella del riquadro visibile (prova o ingresso normale)
+    const conferma = prova ? form.elements.conferma_prova : form.elements.conferma_documenti;
+    if (conferma && !conferma.checked)
       return erroreModulo(form, "Spunta la conferma sui documenti per registrare comunque l'ingresso.");
     const scelta = {
       metodo: valoreRadio(form, "metodo") || "contanti",
       noleggi: Array.prototype.map.call(form.querySelectorAll("input[name=noleggi]:checked"), (el) => el.value),
-      fuori_regola: !!conferma && !provaSenzaCertificato,
+      fuori_regola: !!conferma,
     };
+    if (!prova && S.imp.usa_tesseramento && !R.tesseraValida(c)) {
+      if (!form.elements.tesseramento)
+        return erroreModulo(form, "Serve il tesseramento, ma nel listino non c'è: aggiungilo come «Tesseramento annuale» e riprova.");
+      scelta.tesseramento_id = form.elements.tesseramento.value;
+    }
     if (form.elements.modo && form.elements.modo.value === "copertura") {
       scelta.modo = "copertura";
       scelta.abbonamento_id = form.elements.abbonamento_id.value;
@@ -4390,7 +4614,7 @@ const VisteGestione = (() => {
       }
       case "scarica-fasi": {
         const preavviso = S.imp.giorni_preavviso;
-        const lista = S.clienti.filter((c) => S.filtroFasi === "tutti" || R.statoTessera(c, preavviso) !== "ok").sort(R.perCognome);
+        const lista = S.clienti.filter((c) => S.filtroFasi === "tutti" || R.statoTessera(c, preavviso) === "da_registrare").sort(R.perCognome);
         return esegui(pulsante, async () => Azioni.scaricaElencoFasi(lista));
       }
       case "testi-esempio": {
