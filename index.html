@@ -639,6 +639,36 @@ body.pagina-pubblica { display: block; }
 .istruzioni-drive ol { padding-left: 1.3rem; margin: 0 0 0.75rem; }
 .istruzioni-drive li { margin-bottom: 0.5rem; }
 
+/* ------------------------------------------- cassa: contanti, carta, Satispay */
+.saldi-cassa { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+.saldi-cassa .saldo-cassa { margin-bottom: 0; }
+.saldi-cassa .aiuto { margin: 0; }
+.saldi-cassa .saldo-cassa { border-top: 5px solid var(--barra); }
+.saldo-valore-piccolo { margin: 0.2rem 0 0.4rem; font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 700; line-height: 1.1; }
+.zona-chiusura { margin-bottom: 2rem; }
+.zona-chiusura .pannello { background: var(--pannello); }
+@media (max-width: 860px) {
+  .saldi-cassa { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .saldo-contanti { grid-column: 1 / -1; }
+}
+
+/* ------------------------------------------- scheda: un solo riquadro a righe */
+.righe-ingressi { list-style: none; margin: 0 0 1rem; padding: 0; background: var(--sfondo); border-radius: var(--raggio); overflow: hidden; }
+.riga-ingresso { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr); gap: 0.25rem 1rem; align-items: baseline;
+  padding: 0.7rem 1rem; border-left: 5px solid var(--grigio); }
+.riga-ingresso + .riga-ingresso { border-top: 1px solid var(--linea); }
+.riga-ingresso-nome { color: var(--ink-soft); font-weight: 500; }
+.riga-ingresso-valore { font-size: 1.1875rem; font-weight: 700; line-height: 1.25; }
+.riga-ingresso-nota { color: var(--ink-soft); font-size: var(--piccolo); }
+.riga-ingresso-ok { border-left-color: var(--verde); }
+.riga-ingresso-attenzione { border-left-color: var(--giallo); }
+.riga-ingresso-no { border-left-color: var(--rosso); background: var(--err-sfondo); }
+.riga-ingresso-no .riga-ingresso-valore { color: var(--rosso); }
+.campi-cap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 0.75rem; }
+@media (max-width: 600px) {
+  .riga-ingresso { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; padding: 0.6rem 0.8rem; }
+}
+
 </style>
 </head>
 <body class="senza-accesso">
@@ -778,7 +808,7 @@ const Regole = (() => {
 
   /* ------------------------------------------------- modulo cliente */
   const CAMPI_TESTO = ["nome", "cognome", "luogo_nascita", "codice_fiscale", "email", "telefono", "indirizzo",
-                       "contatto_emergenza", "numero_tessera", "note"];
+                       "comune", "cap", "provincia", "contatto_emergenza", "numero_tessera", "note"];
   const CAMPI_DATA = ["data_nascita", "scadenza_tessera", "scadenza_certificato", "liberatoria_il", "privacy_il"];
 
   // Legge i campi del modulo e li controlla. Restituisce { dati, errori }.
@@ -791,9 +821,8 @@ const Regole = (() => {
     };
     const dati = {};
     [...CAMPI_TESTO, ...CAMPI_DATA].forEach((campo) => { if (form.elements[campo]) dati[campo] = valore(campo); });
-    dati.autonomo = !!(form.elements.autonomo && form.elements.autonomo.checked);
 
-    const errori = {};
+    const errori = Object.assign({}, controllaResidenza(dati));
     if (!dati.nome) errori.nome = "Il nome è obbligatorio.";
     if (!dati.cognome) errori.cognome = "Il cognome è obbligatorio.";
     if (dati.codice_fiscale) {
@@ -813,6 +842,25 @@ const Regole = (() => {
     if (dati.data_nascita && giorniDaOggi(dati.data_nascita) > 0)
       errori.data_nascita = "La data di nascita è nel futuro.";
     return { dati, errori };
+  }
+
+  // Comune di residenza: CAP di 5 cifre e sigla della provincia (PD, VI… EE per l'estero)
+  function controllaResidenza(dati) {
+    const errori = {};
+    if (dati.cap) {
+      dati.cap = dati.cap.replace(/\s/g, "");
+      if (!/^\d{5}$/.test(dati.cap)) errori.cap = "Il CAP ha 5 cifre.";
+    }
+    if (dati.provincia) {
+      dati.provincia = dati.provincia.toUpperCase().replace(/[^A-Z]/g, "");
+      if (!/^[A-Z]{2}$/.test(dati.provincia)) errori.provincia = "Scrivi la sigla della provincia, 2 lettere (per esempio PD).";
+    }
+    return errori;
+  }
+  // "Via Roma 1, 35100 Padova (PD)"
+  function residenza(c) {
+    const luogo = [c.cap, c.comune].filter(Boolean).join(" ") + (c.provincia ? ` (${c.provincia})` : "");
+    return [c.indirizzo, luogo.trim()].filter(Boolean).join(", ");
   }
 
   // Campi che non possono essere uguali tra due clienti
@@ -869,7 +917,9 @@ const Regole = (() => {
     periodo:  { nome: "Abbonamento a tempo",     aiuto: "Ingressi liberi per un certo numero di giorni." },
     prodotto: { nome: "Noleggio o prodotto",     aiuto: "Scarpette, imbrago, magnesite e altro venduto in cassa." },
   };
-  const METODI = { contanti: "contanti", carta: "carta", bonifico: "bonifico", altro: "altro" };
+  // Come si paga. Il bonifico non si usa più: resta il nome per i pagamenti registrati prima.
+  const METODI = { contanti: "contanti", carta: "carta", satispay: "Satispay", bonifico: "bonifico", altro: "altro" };
+  const METODI_IN_USO = ["contanti", "carta", "satispay"];
   // Movimenti di cassa: cosa conta come incasso (il fondo cassa e i versamenti no)
   const CATEGORIE = {
     abbonamento: "Abbonamenti e carnet", tesseramento: "Tesseramenti", ingresso: "Ingressi", prodotto: "Noleggi e prodotti",
@@ -910,6 +960,21 @@ const Regole = (() => {
       saldo += m.verso === "entrata" ? m.importo_cent : -m.importo_cent;
     });
     return { saldo, ultima };
+  }
+
+  // Carta e Satispay: i soldi non sono nel cassetto ma sul conto del POS e sull'app Satispay.
+  // Quanto è entrato (meno le uscite) dopo l'ultima chiusura e nel giorno indicato.
+  function totaliElettronici(movimenti, chiusure, giorno) {
+    const ultima = chiusure.slice().sort((a, b) => (a.creato_il < b.creato_il ? 1 : -1))[0] || null;
+    const totali = {};
+    ["carta", "satispay"].forEach((metodo) => { totali[metodo] = { dallaChiusura: 0, delGiorno: 0 }; });
+    movimenti.forEach((m) => {
+      if (m.annullato || !totali[m.metodo] || m.categoria === "fondo") return;
+      const importo = m.verso === "entrata" ? m.importo_cent : -m.importo_cent;
+      if (!ultima || m.creato_il > ultima.creato_il) totali[m.metodo].dallaChiusura += importo;
+      if (m.data === (giorno || oggiISO())) totali[m.metodo].delGiorno += importo;
+    });
+    return totali;
   }
 
   /* ====================================================== PASSO 3 */
@@ -967,7 +1032,8 @@ const Regole = (() => {
   }
   // I dati che servono per tesserare una persona
   const DATI_FASI = [["data_nascita", "data di nascita"], ["luogo_nascita", "luogo di nascita"],
-                     ["codice_fiscale", "codice fiscale"], ["indirizzo", "indirizzo di residenza"], ["email", "email"]];
+                     ["codice_fiscale", "codice fiscale"], ["indirizzo", "indirizzo di residenza"],
+                     ["comune", "comune di residenza"], ["cap", "CAP"], ["provincia", "provincia"], ["email", "email"]];
   const mancantiFasi = (c) => DATI_FASI.filter(([campo]) => !c[campo]).map(([, nome]) => nome);
 
   /* --------------------------------------- iscrizione online -> cliente */
@@ -983,10 +1049,11 @@ const Regole = (() => {
     return {
       nome: r.nome, cognome: r.cognome, data_nascita: r.data_nascita || null, luogo_nascita: r.luogo_nascita || null,
       codice_fiscale: r.codice_fiscale || null, email: r.email || null, telefono: r.telefono || null,
-      indirizzo: r.indirizzo || null, contatto_emergenza: r.contatto_emergenza || r.genitore || null,
+      indirizzo: r.indirizzo || null, comune: r.comune || null, cap: r.cap || null, provincia: r.provincia || null,
+      contatto_emergenza: r.contatto_emergenza || r.genitore || null,
       numero_tessera: null, scadenza_tessera: null, scadenza_certificato: null,
       liberatoria_il: r.liberatoria_accettata ? giorno : null, privacy_il: r.privacy_accettata ? giorno : null,
-      autonomo: false, note: note || null, iscritto_online: true, richiesta_id: r.id,
+      note: note || null, iscritto_online: true, richiesta_id: r.id,
     };
   }
 
@@ -995,7 +1062,8 @@ const Regole = (() => {
 
   return { oggiISO, dataTra, adessoISO, okPerProva, RUOLI, ruoloInFrase, PERMESSI, puo, statoTessera, mancantiFasi,
            fineAnno, fineTessera, tesseraValida, provaDellAnno, ESPERIENZE, clienteDaRichiesta, aggiungiGiorni, oraAdesso, meseAnno, giornoBreve,
-           euro, leggiEuro, TIPI_LISTINO, METODI, CATEGORIE, eIncasso,
+           euro, leggiEuro, TIPI_LISTINO, METODI, METODI_IN_USO, CATEGORIE, eIncasso, totaliElettronici,
+           controllaResidenza, residenza,
            statoAbbonamento, rimasti, copertura, saldoContanti, aData, dataIt, giorniDaOggi, eta, avvisi, colore,
            corrisponde, perCognome, leggiModuloCliente, CAMPI_UNICI };
 })();
@@ -2116,11 +2184,13 @@ const Azioni = (() => {
 
   async function chiudiCassa(S, contati, versato, note) {
     const { saldo } = R.saldoContanti(S.movimenti, S.chiusure);
+    const el = R.totaliElettronici(S.movimenti, S.chiusure);
     const t = adesso();
     await A.crea("chiusure", {
       data: t.data, ora: t.ora, creato_il: t.creato_il,
       contanti_attesi_cent: saldo, contanti_contati_cent: contati, differenza_cent: contati - saldo,
       versato_cent: versato, fondo_cent: contati - versato, note: note || null,
+      carta_cent: el.carta.dallaChiusura, satispay_cent: el.satispay.dallaChiusura,   // incassati dall'ultima chiusura
     });
     const diff = contati - saldo;
     return "Cassa chiusa. " + (diff === 0 ? "I contanti tornano esattamente."
@@ -2253,7 +2323,7 @@ const Azioni = (() => {
         numero_tessera: "A" + String(i + 1).padStart(3, "0"),
         scadenza_tessera: R.fineAnno(), scadenza_certificato: t(intero(40, 360)),
         liberatoria_il: t(-intero(31, 300)), privacy_il: t(-intero(31, 300)),
-        autonomo: i % 4 !== 3, creato_il: t(-intero(35, 300)) + " 18:00:00",
+        creato_il: t(-intero(35, 300)) + " 18:00:00",
       };
       if (i === 1) c.scadenza_certificato = t(-5);                     // certificato scaduto
       if (i === 2) { c.liberatoria_il = null; c.contatto_emergenza = "Paolo Conti (papà) 320 1112224"; c.note = "Viene con il papà il sabato mattina."; }
@@ -2273,7 +2343,7 @@ const Azioni = (() => {
       const a = { id: id("abbonamenti"), cliente_id: cliente.id, listino_id: v.id, nome: tessera ? `${v.nome} ${t(giorno).slice(0, 4)}` : v.nome, tipo: v.tipo,
                   data_inizio: t(giorno), data_fine: tessera ? R.fineAnno(t(giorno)) : v.giorni ? R.aggiungiGiorni(t(giorno), v.giorni - 1) : null,
                   ingressi_totali: v.tipo === "carnet" ? v.ingressi : null, ingressi_usati: 0,
-                  prezzo_cent: v.prezzo_cent, metodo: giorno % 2 ? "carta" : "contanti",
+                  prezzo_cent: v.prezzo_cent, metodo: ["contanti", "carta", "satispay"][Math.abs(giorno) % 3],
                   creato_il: `${t(giorno)} ${ora}:00`, annullato: false, esempio: true };
       a.movimento_id = id("movimenti");
       abbonamenti.push(a);
@@ -2312,7 +2382,8 @@ const Azioni = (() => {
         const coperto = abbonamenti.filter((a) => a.cliente_id === c.id && a.creato_il <= ing.creato_il
           && R.statoAbbonamento(a, giorno) === "attivo");
         const abb = coperto.find((a) => a.tipo === "periodo") || coperto.find((a) => a.tipo === "carnet");
-        const metodo = caso() < 0.6 ? "contanti" : "carta";
+        const r = caso();
+        const metodo = r < 0.55 ? "contanti" : r < 0.82 ? "carta" : "satispay";
         if (abb) {
           Object.assign(ing, { modo: abb.tipo, nome: abb.nome, abbonamento_id: abb.id });
           if (abb.tipo === "carnet") abb.ingressi_usati++;
@@ -2522,7 +2593,8 @@ const Azioni = (() => {
   // Elenco per un foglio di calcolo (Excel e Numbers aprono il formato CSV con il punto e virgola)
   function scaricaElencoFasi(clienti) {
     const campi = [["cognome", "Cognome"], ["nome", "Nome"], ["data_nascita", "Data di nascita"], ["luogo_nascita", "Luogo di nascita"],
-      ["codice_fiscale", "Codice fiscale"], ["indirizzo", "Indirizzo"], ["email", "Email"], ["telefono", "Telefono"],
+      ["codice_fiscale", "Codice fiscale"], ["indirizzo", "Indirizzo"], ["cap", "CAP"], ["comune", "Comune"], ["provincia", "Provincia"],
+      ["email", "Email"], ["telefono", "Telefono"],
       ["numero_tessera", "Tessera"], ["scadenza_tessera", "Scadenza tessera"]];
     const cella = (v) => `"${String(v === null || v === undefined ? "" : v).replace(/"/g, '""')}"`;
     const righe = [campi.map(([, t]) => cella(t)).join(";")].concat(clienti.map((c) => campi.map(([k]) =>
@@ -2634,8 +2706,8 @@ const Viste = (() => {
     <fieldset class="scelta">
       <legend>Pagamento</legend>
       <div class="pillole">
-        ${["contanti", "carta", "bonifico"].map((m) => html`
-          <label class="pillola"><input type="radio" name="metodo" value="${m}" ${m === (scelto || "contanti") ? crudo("checked") : ""}><span>${maiuscola(m)}</span></label>`)}
+        ${R.METODI_IN_USO.map((m) => html`
+          <label class="pillola"><input type="radio" name="metodo" value="${m}" ${m === (scelto || "contanti") ? crudo("checked") : ""}><span>${maiuscola(R.METODI[m])}</span></label>`)}
       </div>
     </fieldset>`;
 
@@ -2905,9 +2977,6 @@ const Viste = (() => {
         ${col === "grigio" ? html`<p>Riattivalo se torna in palestra.</p>` : ""}
         ${av.length && col !== "grigio" ? html`<ul class="lista-avvisi">${av.map((a) => html`<li class="avviso-${a.livello}">${a.testo}</li>`)}</ul>` : ""}
         ${anni !== null && anni < 18 ? html`<p class="nota-minore">Minorenne: la liberatoria va firmata da un genitore o tutore.</p>` : ""}
-        <p class="autonomia">${c.autonomo
-          ? "Arrampica in autonomia: verifica di sicura superata."
-          : "Non ancora autonomo: arrampica con un istruttore o dopo la verifica di sicura."}</p>
         ${scrive && !c.liberatoria_il && c.attivo
           ? html`<button type="button" class="pulsante pulsante-primario" data-azione="liberatoria" data-id="${c.id}">Liberatoria firmata oggi</button>` : ""}
       </section>
@@ -2921,7 +2990,7 @@ const Viste = (() => {
           <dl class="dati">
             ${voce("Telefono", c.telefono, "non indicato")}
             ${voce("Email", c.email, "non indicata")}
-            ${voce("Indirizzo di residenza", c.indirizzo, "non indicato")}
+            ${voce("Residenza", R.residenza(c), "non indicata")}
             ${voce("In caso di emergenza", c.contatto_emergenza, "non indicato")}
           </dl>
         </section>
@@ -3162,49 +3231,49 @@ const Viste = (() => {
     };
   }
 
-  // Un riquadro con una cosa sola, leggibile da lontano: tono "ok" (verde), "no" (rosso), "neutro"
-  const riquadro = (etichetta, valore, nota, tono) => html`
-    <div class="riquadro riquadro-${tono}">
-      <p class="riquadro-etichetta">${etichetta}</p>
-      <p class="riquadro-valore">${valore}</p>
-      ${nota ? html`<p class="riquadro-nota">${nota}</p>` : ""}
-    </div>`;
+  // Una riga del riquadro: tono "ok" (verde), "attenzione" (giallo), "no" (rosso), "neutro"
+  const rigaIngresso = (nome, valore, nota, tono) => html`
+    <li class="riga-ingresso riga-ingresso-${tono}">
+      <span class="riga-ingresso-nome">${nome}</span>
+      <span class="riga-ingresso-valore">${valore}</span>
+      ${nota ? html`<span class="riga-ingresso-nota">${nota}</span>` : ""}
+    </li>`;
 
-  // In cima alla scheda, sempre: abbonamenti e carnet attivi, tesseramento dell'anno, prova, ingressi
+  // In cima alla scheda, sempre: in un solo riquadro tutto ciò che serve per far entrare il cliente
   function boxIngressi(S, c, avvisi) {
     const sit = situazione(S, c);
-    const riquadri = [];
+    const righe = [];
+    if (sit.usaTessera) {
+      righe.push(sit.tesseraOk
+        ? rigaIngresso(`Tesseramento ${sit.anno}`, "In regola", `fino al ${R.dataIt(sit.fineTessera)}${c.numero_tessera ? `, tessera ${c.numero_tessera}` : ""}`, "ok")
+        : rigaIngresso(`Tesseramento ${sit.anno}`, "Da pagare",
+            sit.prova ? "obbligatorio: la prova l'ha già fatta" : "obbligatorio per entrare, tranne che per la prova", "no"));
+    }
     sit.attivi.forEach((a) => {
       if (a.tipo === "carnet") {
         const r = R.rimasti(a);
-        riquadri.push(riquadro("Carnet", `${r} ${r === 1 ? "ingresso rimasto" : "ingressi rimasti"} su ${a.ingressi_totali}`,
-          `${a.nome}${a.data_fine ? `, valido fino al ${R.dataIt(a.data_fine)}` : ""}`, r <= 2 ? "attenzione" : "ok"));
+        righe.push(rigaIngresso(a.nome, `${r} ${r === 1 ? "ingresso rimasto" : "ingressi rimasti"} su ${a.ingressi_totali}`,
+          a.data_fine ? `valido fino al ${R.dataIt(a.data_fine)}` : "senza scadenza", r <= 2 ? "attenzione" : "ok"));
       } else {
         const g = R.giorniDaOggi(a.data_fine);
-        riquadri.push(riquadro("Abbonamento", a.nome,
-          `Valido fino al ${R.dataIt(a.data_fine)} (${g === 0 ? "scade oggi" : g === 1 ? "ultimo giorno domani" : `ancora ${g} giorni`})`, g <= 7 ? "attenzione" : "ok"));
+        righe.push(rigaIngresso(a.nome, `Valido fino al ${R.dataIt(a.data_fine)}`,
+          g === 0 ? "scade oggi" : g === 1 ? "scade domani" : `ancora ${g} giorni`, g <= 7 ? "attenzione" : "ok"));
       }
     });
-    if (!sit.attivi.length) riquadri.push(riquadro("Abbonamento o carnet", "Nessuno attivo", "L'ingresso si paga a ogni visita.", "neutro"));
-    if (sit.usaTessera) {
-      riquadri.push(sit.tesseraOk
-        ? riquadro(`Tesseramento ${sit.anno}`, "In regola", `Valido fino al ${R.dataIt(sit.fineTessera)}${c.numero_tessera ? `, tessera ${c.numero_tessera}` : ""}`, "ok")
-        : riquadro(`Tesseramento ${sit.anno}`, "Da pagare",
-            sit.prova ? "Obbligatorio: la prova l'ha già fatta." : "Obbligatorio per entrare, tranne che per la prova.", "no"));
+    sit.futuri.forEach((a) => righe.push(rigaIngresso(a.nome, `Inizia il ${R.dataIt(a.data_inizio)}`, "già pagato", "neutro")));
+    if (!sit.attivi.length) righe.push(rigaIngresso("Abbonamento o carnet", "Nessuno attivo", "l'ingresso si paga a ogni visita", "neutro"));
+    if (!sit.usaTessera || !sit.tesseraOk || sit.prova) {
+      righe.push(sit.prova
+        ? rigaIngresso(`Ingresso di prova ${sit.anno}`, "Già fatto", `il ${R.dataIt(sit.prova)}, una volta all'anno`, "neutro")
+        : rigaIngresso(`Ingresso di prova ${sit.anno}`, "Disponibile", "una volta all'anno, senza tesseramento", "neutro"));
     }
-    if (!sit.usaTessera || !sit.tesseraOk) {
-      riquadri.push(sit.prova
-        ? riquadro(`Ingresso di prova ${sit.anno}`, "Già fatto", `Il ${R.dataIt(sit.prova)}. Si fa una volta all'anno.`, "neutro")
-        : riquadro(`Ingresso di prova ${sit.anno}`, "Disponibile", "Una volta all'anno, senza tesseramento.", "neutro"));
-    }
-    riquadri.push(riquadro("Ingressi", `${sit.nellAnno} nel ${sit.anno}`,
-      sit.ultimo ? `Ultimo: ${sit.ultimo.data === R.oggiISO() ? "oggi" : "il " + R.dataIt(sit.ultimo.data)} alle ${sit.ultimo.ora}` : "Non è mai entrato.", "neutro"));
+    righe.push(rigaIngresso("Ingressi", `${sit.nellAnno} nel ${sit.anno}`,
+      sit.ultimo ? `ultimo ${sit.ultimo.data === R.oggiISO() ? "oggi" : "il " + R.dataIt(sit.ultimo.data)} alle ${sit.ultimo.ora}` : "non è mai entrato", "neutro"));
 
     return html`
       <section class="box-ingressi" id="abbonamenti" aria-labelledby="titolo-ingressi">
         <h2 id="titolo-ingressi">Abbonamenti e ingressi</h2>
-        <div class="riquadri">${riquadri}</div>
-        ${sit.futuri.map((a) => html`<p class="aiuto">${a.nome} già pagato: inizia il ${R.dataIt(a.data_inizio)}.</p>`)}
+        <ul class="righe-ingressi">${righe}</ul>
         ${c.attivo ? html`
           <div class="azioni-modulo">
             <button type="button" class="pulsante pulsante-primario pulsante-grande" data-azione="apri-pannello" data-pannello="ingresso">Registra ingresso</button>
@@ -3476,7 +3545,12 @@ const Viste = (() => {
           <div class="campi-due">
             ${campo("telefono", "Telefono", dati, errori, { tipo: "tel" })}
             ${campo("email", "Email", dati, errori, { tipo: "email", aiuto: "Servirà al cliente per accedere all'area online.", extra: 'autocapitalize="off"' })}
-            ${campo("indirizzo", "Indirizzo di residenza", dati, errori)}
+            ${campo("indirizzo", "Indirizzo di residenza (via e numero)", dati, errori)}
+            ${campo("comune", "Comune di residenza", dati, errori, { extra: 'autocomplete="off"' })}
+            <div class="campi-cap">
+              ${campo("cap", "CAP", dati, errori, { extra: 'inputmode="numeric" maxlength="7" autocomplete="off"' })}
+              ${campo("provincia", "Provincia", dati, errori, { extra: 'maxlength="2" autocapitalize="characters" autocomplete="off" placeholder="PD"' })}
+            </div>
             ${campo("contatto_emergenza", "Contatto in caso di emergenza", dati, errori, { aiuto: "Nome e telefono di un familiare o amico." })}
           </div>
         </fieldset>
@@ -3491,13 +3565,9 @@ const Viste = (() => {
           <p class="aiuto">Il certificato medico e la sua scadenza si inseriscono nella scheda del cliente${puo(S, "certificati") ? "" : ", dal manager o dal compilatore FASI"}.</p>
         </fieldset>
         <fieldset>
-          <legend>Arrampicata</legend>
-          <label class="spunta">
-            <input type="checkbox" name="autonomo" ${dati.autonomo ? crudo("checked") : ""}>
-            <span>Ha superato la verifica di sicura e può arrampicare in autonomia</span>
-          </label>
+          <legend>Note</legend>
           <div class="campo">
-            <label for="note">Note</label>
+            <label for="note">Annotazioni per lo staff</label>
             <textarea id="note" name="note" rows="3">${dati.note || ""}</textarea>
             <p class="aiuto">Per esempio: chi lo accompagna, corsi a cui è interessato.</p>
           </div>
@@ -3531,6 +3601,7 @@ const VisteGestione = (() => {
   function cassa(S) {
     const giorno = S.giornoCassa || R.oggiISO();
     const { saldo, ultima } = R.saldoContanti(S.movimenti, S.chiusure);
+    const elettronici = R.totaliElettronici(S.movimenti, S.chiusure);
     const delGiorno = S.movimenti.filter((m) => m.data === giorno).sort((a, b) => (a.creato_il < b.creato_il ? 1 : -1));
     const validi = delGiorno.filter((m) => !m.annullato);
     const perMetodo = (verso, metodo) => somma(validi.filter((m) => m.verso === verso && m.metodo === metodo && (verso === "uscita" || m.categoria !== "fondo")), (m) => m.importo_cent);
@@ -3540,19 +3611,37 @@ const VisteGestione = (() => {
     const clienti = nomeDi(S);
     const scrive = puo(S, "cassa");
     const ultimeChiusure = S.chiusure.slice().sort((a, b) => (a.creato_il < b.creato_il ? 1 : -1)).slice(0, 7);
+    // colonne della tabella: i metodi in uso, più quelli vecchi (bonifico) se in quel giorno ci sono
+    const metodiGiorno = R.METODI_IN_USO.concat(validi.map((m) => m.metodo).filter((m, i, a) => m && R.METODI_IN_USO.indexOf(m) < 0 && a.indexOf(m) === i));
+    const dallaChiusura = ultima ? `dalla chiusura del ${R.dataIt(ultima.data)} alle ${ultima.ora}` : "da quando usi il gestionale";
+    const elettronico = (metodo, nome, dove) => html`
+      <div class="saldo-cassa saldo-${metodo}">
+        <p class="saldo-etichetta">${nome}</p>
+        <p class="saldo-valore-piccolo">${R.euro(elettronici[metodo].dallaChiusura)}</p>
+        <p class="aiuto">Incassati ${dallaChiusura}. Oggi: ${R.euro(elettronici[metodo].delGiorno)}. ${dove}</p>
+      </div>`;
 
     return html`
       <h1>Cassa</h1>
-      <section class="saldo-cassa">
-        <p class="saldo-etichetta">Contanti in cassa adesso</p>
-        <p class="saldo-valore">${R.euro(saldo)}</p>
-        <p class="aiuto">${ultima
-          ? `Fondo di ${R.euro(ultima.fondo_cent)} lasciato alla chiusura del ${R.dataIt(ultima.data)} alle ${ultima.ora}, più le entrate e meno le uscite in contanti da allora.`
-          : "Nessuna chiusura registrata: è la somma di tutte le entrate meno le uscite in contanti."}</p>
+      <section class="saldi-cassa" aria-label="Soldi incassati">
+        <div class="saldo-cassa saldo-contanti">
+          <p class="saldo-etichetta">Contanti in cassa adesso</p>
+          <p class="saldo-valore">${R.euro(saldo)}</p>
+          <p class="aiuto">${ultima
+            ? `Fondo di ${R.euro(ultima.fondo_cent)} lasciato alla chiusura del ${R.dataIt(ultima.data)} alle ${ultima.ora}, più le entrate e meno le uscite in contanti da allora.`
+            : "Nessuna chiusura registrata: è la somma di tutte le entrate meno le uscite in contanti."}</p>
+        </div>
+        ${elettronico("carta", "Carta", "Arrivano sul conto con il POS.")}
+        ${elettronico("satispay", "Satispay", "Arrivano sull'app Satispay della palestra.")}
+      </section>
+      <section class="zona-chiusura">
         ${scrive ? html`<button type="button" class="pulsante" data-mostra="pannello-chiusura">Chiudi la cassa</button>
           <form class="pannello" id="pannello-chiusura" data-modulo="chiusura" hidden novalidate>
             <h3>Chiusura di cassa</h3>
             <p>Conta i contanti nel cassetto e scrivi quanto trovi. Il gestionale si aspetta <strong>${R.euro(saldo)}</strong>.</p>
+            <p>Dall'ultima chiusura sono entrati <strong>${R.euro(elettronici.carta.dallaChiusura)}</strong> con la carta
+               e <strong>${R.euro(elettronici.satispay.dallaChiusura)}</strong> con Satispay: confrontali con la chiusura del POS e con l'app Satispay.
+               Restano segnati nella chiusura.</p>
             <div class="campi-due">
               ${campo("contati", "Contanti contati, in euro", {}, {}, { extra: 'inputmode="decimal" autocomplete="off" required' })}
               ${campo("versato", "Di questi, quanti ne porti via (banca o cassaforte)", {}, {}, { extra: 'inputmode="decimal" autocomplete="off" placeholder="0"', aiuto: "Il resto rimane in cassa come fondo per domani." })}
@@ -3621,10 +3710,10 @@ const VisteGestione = (() => {
         </div>
         <div class="tabella-scorre">
           <table class="tabella">
-            <thead><tr><th>Incassi</th><th class="num">Contanti</th><th class="num">Carta</th><th class="num">Bonifico</th><th class="num">Totale</th></tr></thead>
+            <thead><tr><th>Incassi</th>${metodiGiorno.map((m) => html`<th class="num">${maiuscola(R.METODI[m] || m)}</th>`)}<th class="num">Totale</th></tr></thead>
             <tbody>
-              <tr><td>Entrate</td>${["contanti", "carta", "bonifico"].map((m) => html`<td class="num">${R.euro(perMetodo("entrata", m))}</td>`)}<td class="num"><strong>${R.euro(incassiTot)}</strong></td></tr>
-              <tr><td>Uscite</td>${["contanti", "carta", "bonifico"].map((m) => html`<td class="num">${R.euro(perMetodo("uscita", m))}</td>`)}<td class="num">${R.euro(usciteTot)}</td></tr>
+              <tr><td>Entrate</td>${metodiGiorno.map((m) => html`<td class="num">${R.euro(perMetodo("entrata", m))}</td>`)}<td class="num"><strong>${R.euro(incassiTot)}</strong></td></tr>
+              <tr><td>Uscite</td>${metodiGiorno.map((m) => html`<td class="num">${R.euro(perMetodo("uscita", m))}</td>`)}<td class="num">${R.euro(usciteTot)}</td></tr>
             </tbody>
           </table>
         </div>
@@ -3651,11 +3740,13 @@ const VisteGestione = (() => {
           <h2>Ultime chiusure</h2>
           <div class="tabella-scorre">
             <table class="tabella">
-              <thead><tr><th>Quando</th><th class="num">Attesi</th><th class="num">Contati</th><th class="num">Differenza</th><th class="num">Portati via</th><th class="num">Fondo</th></tr></thead>
+              <thead><tr><th>Quando</th><th class="num">Contanti attesi</th><th class="num">Contati</th><th class="num">Differenza</th><th class="num">Portati via</th><th class="num">Fondo</th><th class="num">Carta</th><th class="num">Satispay</th></tr></thead>
               <tbody>${ultimeChiusure.map((k) => html`
                 <tr><td>${R.giornoBreve(k.data)} ${k.ora}</td><td class="num">${R.euro(k.contanti_attesi_cent)}</td><td class="num">${R.euro(k.contanti_contati_cent)}</td>
                   <td class="num">${k.differenza_cent === 0 ? "nessuna" : (k.differenza_cent > 0 ? "+" : "−") + R.euro(Math.abs(k.differenza_cent))}</td>
-                  <td class="num">${R.euro(k.versato_cent)}</td><td class="num">${R.euro(k.fondo_cent)}</td></tr>`)}
+                  <td class="num">${R.euro(k.versato_cent)}</td><td class="num">${R.euro(k.fondo_cent)}</td>
+                  <td class="num">${typeof k.carta_cent === "number" ? R.euro(k.carta_cent) : "—"}</td>
+                  <td class="num">${typeof k.satispay_cent === "number" ? R.euro(k.satispay_cent) : "—"}</td></tr>`)}
               </tbody>
             </table>
           </div>
@@ -4158,7 +4249,7 @@ const VisteGestione = (() => {
               <dl class="dati">
                 <dt>Nato il</dt><dd>${R.dataIt(c.data_nascita) || html`<span class="manca">manca</span>`}${c.luogo_nascita ? ` a ${c.luogo_nascita}` : ""}</dd>
                 <dt>Codice fiscale</dt><dd>${c.codice_fiscale || html`<span class="manca">manca</span>`}</dd>
-                <dt>Residenza</dt><dd>${c.indirizzo || html`<span class="manca">manca</span>`}</dd>
+                <dt>Residenza</dt><dd>${R.residenza(c) || html`<span class="manca">manca</span>`}</dd>
                 <dt>Email</dt><dd>${c.email || html`<span class="manca">manca</span>`}</dd>
               </dl>
               ${mancano.length ? html`<p class="errore-campo">Mancano: ${mancano.join(", ")}.</p>` : ""}
@@ -4195,7 +4286,7 @@ const VisteGestione = (() => {
       <div class="griglia-dati">
         <section class="sezione"><h2>Dati</h2><dl class="dati">
           ${riga("Data di nascita", R.dataIt(r.data_nascita))}${riga("Luogo di nascita", r.luogo_nascita)}
-          ${riga("Codice fiscale", r.codice_fiscale)}${riga("Residenza", r.indirizzo)}
+          ${riga("Codice fiscale", r.codice_fiscale)}${riga("Residenza", R.residenza(r))}
         </dl></section>
         <section class="sezione"><h2>Contatti</h2><dl class="dati">
           ${riga("Telefono", r.telefono)}${riga("Email", r.email)}${riga("In caso di emergenza", r.contatto_emergenza)}
@@ -4988,7 +5079,8 @@ const VisteGestione = (() => {
 
   function datiPerFasi(c) {
     return [["Cognome", c.cognome], ["Nome", c.nome], ["Data di nascita", R.dataIt(c.data_nascita)],
-      ["Luogo di nascita", c.luogo_nascita], ["Codice fiscale", c.codice_fiscale], ["Residenza", c.indirizzo],
+      ["Luogo di nascita", c.luogo_nascita], ["Codice fiscale", c.codice_fiscale], ["Indirizzo", c.indirizzo],
+      ["CAP", c.cap], ["Comune", c.comune], ["Provincia", c.provincia],
       ["Email", c.email], ["Telefono", c.telefono]].map(([k, v]) => `${k}: ${v || ""}`).join("\n");
   }
 

@@ -592,6 +592,83 @@ body.pagina-pubblica { display: block; }
   .modulo-certificato { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* ------------------------------------- scheda: abbonamenti e ingressi (in cima) */
+.box-ingressi {
+  background: var(--pannello); border: 1px solid var(--linea); border-top: 6px solid var(--barra);
+  border-radius: var(--raggio); padding: 1.25rem 1.5rem 1.5rem; margin-bottom: 1.5rem;
+}
+.box-ingressi h2 { font-size: var(--medio); margin: 0 0 0.9rem; }
+.riquadri { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+.riquadro { background: var(--sfondo); border-left: 5px solid var(--grigio); border-radius: var(--raggio); padding: 0.75rem 1rem; min-width: 0; }
+.riquadro p { margin: 0; }
+.riquadro-etichetta { color: var(--ink-soft); font-size: var(--piccolo); font-weight: 500; }
+.riquadro-valore { font-size: 1.375rem; font-weight: 700; line-height: 1.25; margin: 0.15rem 0 0.2rem !important; overflow-wrap: anywhere; }
+.riquadro-nota { color: var(--ink-soft); font-size: var(--piccolo); }
+.riquadro-ok { border-left-color: var(--verde); }
+.riquadro-attenzione { border-left-color: var(--giallo); }
+.riquadro-no { border-left-color: var(--rosso); background: var(--err-sfondo); }
+.riquadro-no .riquadro-valore { color: var(--rosso); }
+.box-ingressi > .aiuto { margin: 0 0 0.75rem; }
+.box-ingressi .azioni-modulo { margin-top: 0.25rem; }
+
+/* tesseramento obbligatorio dentro "Registra ingresso" */
+.obbligo-tessera { margin: 0 0 1rem; padding: 0.9rem 1rem; background: var(--pannello);
+  border: 1px solid var(--linea); border-left: 5px solid var(--blu); border-radius: var(--raggio); }
+.obbligo-tessera p { margin: 0.25rem 0 0; }
+.obbligo-titolo { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; margin: 0 !important; font-size: 1.0625rem; }
+@media (max-width: 600px) {
+  .box-ingressi { padding: 1rem; }
+  .riquadri { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+  .riquadro { padding: 0.6rem 0.75rem; }
+  .riquadro-valore { font-size: 1.125rem; }
+}
+
+/* ------------------------------------------- certificato: link e controllo */
+.link-certificato { margin: 0.9rem 0 0; padding-top: 0.9rem; border-top: 1px solid var(--linea); }
+.link-certificato p { margin: 0 0 0.4rem; }
+.link-certificato .azioni-modulo { align-items: center; }
+.certificato-arrivato { margin: 0.75rem 0 1rem; padding: 1rem 1.1rem; background: var(--sopra);
+  border: 1px solid var(--linea); border-left: 5px solid var(--giallo); border-radius: var(--raggio); }
+.certificato-arrivato h3 { margin: 0 0 0.4rem; font-size: 1.0625rem; }
+.certificato-arrivato p { margin: 0 0 0.6rem; }
+.certificato-arrivato .modulo-certificato { grid-template-columns: minmax(0, 20rem); margin-top: 0.5rem; }
+.certificato-arrivato .azioni-modulo { grid-column: 1 / -1; }
+.campo-intero { grid-column: 1 / -1; margin: 0 0 0.75rem; }
+.codice { display: block; width: 100%; margin: 0.75rem 0; padding: 0.6rem 0.75rem; font: 0.8125rem/1.45 ui-monospace, Menlo, Consolas, monospace;
+  color: var(--ink); background: var(--sfondo); border: 1px solid var(--linea); border-radius: var(--raggio); resize: vertical; }
+.istruzioni-drive ol { padding-left: 1.3rem; margin: 0 0 0.75rem; }
+.istruzioni-drive li { margin-bottom: 0.5rem; }
+
+/* ------------------------------------------- cassa: contanti, carta, Satispay */
+.saldi-cassa { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); gap: 0.75rem; margin-bottom: 1rem; }
+.saldi-cassa .saldo-cassa { margin-bottom: 0; }
+.saldi-cassa .aiuto { margin: 0; }
+.saldi-cassa .saldo-cassa { border-top: 5px solid var(--barra); }
+.saldo-valore-piccolo { margin: 0.2rem 0 0.4rem; font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 700; line-height: 1.1; }
+.zona-chiusura { margin-bottom: 2rem; }
+.zona-chiusura .pannello { background: var(--pannello); }
+@media (max-width: 860px) {
+  .saldi-cassa { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .saldo-contanti { grid-column: 1 / -1; }
+}
+
+/* ------------------------------------------- scheda: un solo riquadro a righe */
+.righe-ingressi { list-style: none; margin: 0 0 1rem; padding: 0; background: var(--sfondo); border-radius: var(--raggio); overflow: hidden; }
+.riga-ingresso { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr); gap: 0.25rem 1rem; align-items: baseline;
+  padding: 0.7rem 1rem; border-left: 5px solid var(--grigio); }
+.riga-ingresso + .riga-ingresso { border-top: 1px solid var(--linea); }
+.riga-ingresso-nome { color: var(--ink-soft); font-weight: 500; }
+.riga-ingresso-valore { font-size: 1.1875rem; font-weight: 700; line-height: 1.25; }
+.riga-ingresso-nota { color: var(--ink-soft); font-size: var(--piccolo); }
+.riga-ingresso-ok { border-left-color: var(--verde); }
+.riga-ingresso-attenzione { border-left-color: var(--giallo); }
+.riga-ingresso-no { border-left-color: var(--rosso); background: var(--err-sfondo); }
+.riga-ingresso-no .riga-ingresso-valore { color: var(--rosso); }
+.campi-cap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 0.75rem; }
+@media (max-width: 600px) {
+  .riga-ingresso { grid-template-columns: minmax(0, 1fr); gap: 0.1rem; padding: 0.6rem 0.8rem; }
+}
+
 </style>
 </head>
 <body class="pagina-pubblica">
@@ -679,7 +756,7 @@ const Regole = (() => {
     const cert = scadenza("Certificato medico", c.scadenza_certificato, preavviso);
     if (cert) lista.push(Object.assign(cert, { campo: "certificato" }));
     if (imp.usa_tesseramento) {
-      const tess = scadenza("Tesseramento", c.scadenza_tessera, preavviso);
+      const tess = scadenza("Tesseramento", fineTessera(c), preavviso);
       if (tess) lista.push(Object.assign(tess, { campo: "tessera" }));
     }
     if (!c.liberatoria_il) lista.push({ livello: "rosso", testo: "Liberatoria da firmare", campo: "liberatoria" });
@@ -714,7 +791,7 @@ const Regole = (() => {
 
   /* ------------------------------------------------- modulo cliente */
   const CAMPI_TESTO = ["nome", "cognome", "luogo_nascita", "codice_fiscale", "email", "telefono", "indirizzo",
-                       "contatto_emergenza", "numero_tessera", "note"];
+                       "comune", "cap", "provincia", "contatto_emergenza", "numero_tessera", "note"];
   const CAMPI_DATA = ["data_nascita", "scadenza_tessera", "scadenza_certificato", "liberatoria_il", "privacy_il"];
 
   // Legge i campi del modulo e li controlla. Restituisce { dati, errori }.
@@ -727,9 +804,8 @@ const Regole = (() => {
     };
     const dati = {};
     [...CAMPI_TESTO, ...CAMPI_DATA].forEach((campo) => { if (form.elements[campo]) dati[campo] = valore(campo); });
-    dati.autonomo = !!(form.elements.autonomo && form.elements.autonomo.checked);
 
-    const errori = {};
+    const errori = Object.assign({}, controllaResidenza(dati));
     if (!dati.nome) errori.nome = "Il nome è obbligatorio.";
     if (!dati.cognome) errori.cognome = "Il cognome è obbligatorio.";
     if (dati.codice_fiscale) {
@@ -749,6 +825,25 @@ const Regole = (() => {
     if (dati.data_nascita && giorniDaOggi(dati.data_nascita) > 0)
       errori.data_nascita = "La data di nascita è nel futuro.";
     return { dati, errori };
+  }
+
+  // Comune di residenza: CAP di 5 cifre e sigla della provincia (PD, VI… EE per l'estero)
+  function controllaResidenza(dati) {
+    const errori = {};
+    if (dati.cap) {
+      dati.cap = dati.cap.replace(/\s/g, "");
+      if (!/^\d{5}$/.test(dati.cap)) errori.cap = "Il CAP ha 5 cifre.";
+    }
+    if (dati.provincia) {
+      dati.provincia = dati.provincia.toUpperCase().replace(/[^A-Z]/g, "");
+      if (!/^[A-Z]{2}$/.test(dati.provincia)) errori.provincia = "Scrivi la sigla della provincia, 2 lettere (per esempio PD).";
+    }
+    return errori;
+  }
+  // "Via Roma 1, 35100 Padova (PD)"
+  function residenza(c) {
+    const luogo = [c.cap, c.comune].filter(Boolean).join(" ") + (c.provincia ? ` (${c.provincia})` : "");
+    return [c.indirizzo, luogo.trim()].filter(Boolean).join(", ");
   }
 
   // Campi che non possono essere uguali tra due clienti
@@ -799,15 +894,18 @@ const Regole = (() => {
   /* ---------------------------------------------------- listino */
   const TIPI_LISTINO = {
     singolo:  { nome: "Ingresso singolo",       aiuto: "Un ingresso pagato sul momento." },
-    prova:    { nome: "Ingresso di prova",       aiuto: "Per chi viene a provare la prima volta." },
+    prova:    { nome: "Ingresso di prova",       aiuto: "Una volta all'anno, senza tesseramento né certificato." },
+    tesseramento: { nome: "Tesseramento annuale", aiuto: "Obbligatorio dal secondo ingresso. Vale fino al 31 dicembre." },
     carnet:   { nome: "Carnet a ingressi",       aiuto: "Un numero di ingressi da usare entro una scadenza." },
     periodo:  { nome: "Abbonamento a tempo",     aiuto: "Ingressi liberi per un certo numero di giorni." },
     prodotto: { nome: "Noleggio o prodotto",     aiuto: "Scarpette, imbrago, magnesite e altro venduto in cassa." },
   };
-  const METODI = { contanti: "contanti", carta: "carta", bonifico: "bonifico", altro: "altro" };
+  // Come si paga. Il bonifico non si usa più: resta il nome per i pagamenti registrati prima.
+  const METODI = { contanti: "contanti", carta: "carta", satispay: "Satispay", bonifico: "bonifico", altro: "altro" };
+  const METODI_IN_USO = ["contanti", "carta", "satispay"];
   // Movimenti di cassa: cosa conta come incasso (il fondo cassa e i versamenti no)
   const CATEGORIE = {
-    abbonamento: "Abbonamenti e carnet", ingresso: "Ingressi", prodotto: "Noleggi e prodotti",
+    abbonamento: "Abbonamenti e carnet", tesseramento: "Tesseramenti", ingresso: "Ingressi", prodotto: "Noleggi e prodotti",
     altro: "Altre entrate", fondo: "Fondo cassa", spesa: "Spese", versamento: "Versamenti in banca", uscita: "Altre uscite",
   };
   const eIncasso = (m) => !m.annullato && m.verso === "entrata" && m.categoria !== "fondo";
@@ -847,6 +945,21 @@ const Regole = (() => {
     return { saldo, ultima };
   }
 
+  // Carta e Satispay: i soldi non sono nel cassetto ma sul conto del POS e sull'app Satispay.
+  // Quanto è entrato (meno le uscite) dopo l'ultima chiusura e nel giorno indicato.
+  function totaliElettronici(movimenti, chiusure, giorno) {
+    const ultima = chiusure.slice().sort((a, b) => (a.creato_il < b.creato_il ? 1 : -1))[0] || null;
+    const totali = {};
+    ["carta", "satispay"].forEach((metodo) => { totali[metodo] = { dallaChiusura: 0, delGiorno: 0 }; });
+    movimenti.forEach((m) => {
+      if (m.annullato || !totali[m.metodo] || m.categoria === "fondo") return;
+      const importo = m.verso === "entrata" ? m.importo_cent : -m.importo_cent;
+      if (!ultima || m.creato_il > ultima.creato_il) totali[m.metodo].dallaChiusura += importo;
+      if (m.data === (giorno || oggiISO())) totali[m.metodo].delGiorno += importo;
+    });
+    return totali;
+  }
+
   /* ====================================================== PASSO 3 */
 
   /* ---------------------------------------------- ruoli e permessi */
@@ -870,8 +983,29 @@ const Regole = (() => {
   const puo = (ruolo, cosa) => !!ruolo && (PERMESSI[ruolo] || []).indexOf(cosa) >= 0;
 
   /* ------------------------------------------------- tesseramento FASI */
-  // Stato della tessera: "manca", "scaduta", "in_scadenza", "ok"
+  // Il tesseramento si paga in reception (voce del listino "tesseramento") e vale fino
+  // al 31 dicembre: con quei soldi la palestra paga la tessera alla FASI.
+  // Nella scheda del cliente: tessera_pagata_fino / tessera_pagata_il (li scrive la reception),
+  // numero_tessera / scadenza_tessera / tesserato_il (li scrive il compilatore FASI).
+  const fineAnno = (data) => `${(data || oggiISO()).slice(0, 4)}-12-31`;
+  const fineTessera = (c) => [c.scadenza_tessera, c.tessera_pagata_fino].filter(Boolean).sort().pop() || null;
+  const tesseraValida = (c, oggi) => { const f = fineTessera(c); return !!f && f >= (oggi || oggiISO()); };
+
+  // L'ingresso di prova si fa una volta sola per anno solare.
+  // Restituisce la data della prova di quest'anno, oppure null se è ancora da fare.
+  function provaDellAnno(c, ingressiCliente, oggi) {
+    const anno = (oggi || oggiISO()).slice(0, 4);
+    const date = (ingressiCliente || []).filter((i) => !i.annullato && i.modo === "prova" && String(i.data).slice(0, 4) === anno)
+      .map((i) => i.data);
+    if (c.prova_il && c.prova_il.slice(0, 4) === anno) date.push(c.prova_il);
+    return date.sort()[0] || null;
+  }
+
+  // Stato della tessera per il compilatore FASI:
+  // "da_registrare" (pagata in reception, da fare nel gestionale FASI), "manca", "scaduta", "in_scadenza", "ok"
   function statoTessera(c, preavviso) {
+    if (c.tessera_pagata_fino && giorniDaOggi(c.tessera_pagata_fino) >= 0
+        && (!c.numero_tessera || !c.scadenza_tessera || c.scadenza_tessera < c.tessera_pagata_fino)) return "da_registrare";
     if (!c.numero_tessera || !c.scadenza_tessera) return "manca";
     const g = giorniDaOggi(c.scadenza_tessera);
     if (g === null) return "manca";
@@ -881,7 +1015,8 @@ const Regole = (() => {
   }
   // I dati che servono per tesserare una persona
   const DATI_FASI = [["data_nascita", "data di nascita"], ["luogo_nascita", "luogo di nascita"],
-                     ["codice_fiscale", "codice fiscale"], ["indirizzo", "indirizzo di residenza"], ["email", "email"]];
+                     ["codice_fiscale", "codice fiscale"], ["indirizzo", "indirizzo di residenza"],
+                     ["comune", "comune di residenza"], ["cap", "CAP"], ["provincia", "provincia"], ["email", "email"]];
   const mancantiFasi = (c) => DATI_FASI.filter(([campo]) => !c[campo]).map(([, nome]) => nome);
 
   /* --------------------------------------- iscrizione online -> cliente */
@@ -897,18 +1032,21 @@ const Regole = (() => {
     return {
       nome: r.nome, cognome: r.cognome, data_nascita: r.data_nascita || null, luogo_nascita: r.luogo_nascita || null,
       codice_fiscale: r.codice_fiscale || null, email: r.email || null, telefono: r.telefono || null,
-      indirizzo: r.indirizzo || null, contatto_emergenza: r.contatto_emergenza || r.genitore || null,
+      indirizzo: r.indirizzo || null, comune: r.comune || null, cap: r.cap || null, provincia: r.provincia || null,
+      contatto_emergenza: r.contatto_emergenza || r.genitore || null,
       numero_tessera: null, scadenza_tessera: null, scadenza_certificato: null,
       liberatoria_il: r.liberatoria_accettata ? giorno : null, privacy_il: r.privacy_accettata ? giorno : null,
-      autonomo: false, note: note || null, iscritto_online: true, richiesta_id: r.id,
+      note: note || null, iscritto_online: true, richiesta_id: r.id,
     };
   }
 
   // Avvisi che non fermano un ingresso di prova: certificato o tessera non ancora consegnati
   const okPerProva = (a) => a.manca && (a.campo === "certificato" || a.campo === "tessera");
 
-  return { oggiISO, dataTra, adessoISO, okPerProva, RUOLI, ruoloInFrase, PERMESSI, puo, statoTessera, mancantiFasi, ESPERIENZE, clienteDaRichiesta, aggiungiGiorni, oraAdesso, meseAnno, giornoBreve,
-           euro, leggiEuro, TIPI_LISTINO, METODI, CATEGORIE, eIncasso,
+  return { oggiISO, dataTra, adessoISO, okPerProva, RUOLI, ruoloInFrase, PERMESSI, puo, statoTessera, mancantiFasi,
+           fineAnno, fineTessera, tesseraValida, provaDellAnno, ESPERIENZE, clienteDaRichiesta, aggiungiGiorni, oraAdesso, meseAnno, giornoBreve,
+           euro, leggiEuro, TIPI_LISTINO, METODI, METODI_IN_USO, CATEGORIE, eIncasso, totaliElettronici,
+           controllaResidenza, residenza,
            statoAbbonamento, rimasti, copertura, saldoContanti, aData, dataIt, giorniDaOggi, eta, avvisi, colore,
            corrisponde, perCognome, leggiModuloCliente, CAMPI_UNICI };
 })();
@@ -1162,7 +1300,9 @@ const ArchivioFirebase = (() => {
 
    Struttura dei dati (una "collezione" per tipo, un documento per riga):
      clienti/<id>        anagrafica e documenti
-     certificati/<id>    file del certificato medico (stesso id del cliente)
+     certificati/<id>    certificato medico del cliente (stesso id): collegamento a Google Drive
+                         (nella versione di prova il file stesso)
+     inviti_certificato/<codice>  link per far inviare il certificato al cliente
      richieste/<id>     iscrizioni arrivate dal modulo online
      listino/<id>        cosa si vende: ingressi, carnet, abbonamenti, noleggi
      abbonamenti/<id>    carnet e abbonamenti venduti a un cliente
@@ -1195,6 +1335,7 @@ const Archivio = (() => {
     giorni_preavviso: 30,       // da quanti giorni prima segnalare una scadenza
     testo_liberatoria: "",
     testo_privacy: "",
+    indirizzo_drive: "",        // app web di Google (Apps Script) che salva i certificati su Drive
   };
 
   const PREFISSI = { clienti: "c", listino: "l", abbonamenti: "a", ingressi: "i", movimenti: "m", chiusure: "k", richieste: "r", staff: "u" };
@@ -1365,7 +1506,42 @@ const Archivio = (() => {
   // se qualcosa va storto il cliente resta e si può riprovare, senza file dimenticati)
   async function eliminaCliente(id) {
     await elimina("certificati", id);
+    for (const inv of await invitiCliente(id)) await elimina("inviti_certificato", inv.id);
     await elimina("clienti", id);
+  }
+
+  /* ------------------------------------- link per inviare il certificato */
+  // inviti_certificato/<codice>: il codice è nel link che riceve il cliente.
+  // stato: "attesa" → "inviato" (dal cliente) → "accettato" | "rifiutato"; oppure "annullato", "sostituito".
+  // "aperto" è vero finché qualcuno deve ancora fare qualcosa (attesa o inviato).
+  async function creaInvito(cliente, origine) {
+    const codice = Certificati.nuovoCodice();
+    await crea("inviti_certificato", { cliente_id: cliente.id, nome: cliente.nome, cognome: cliente.cognome,
+      stato: "attesa", aperto: true, origine, scade_il: Regole.dataTra(30) }, codice);
+    return codice;
+  }
+  const chiudiInvito = (codice, stato, altro) =>
+    aggiorna("inviti_certificato", codice, Object.assign({ stato, aperto: false }, altro || {}));
+  const invitiCliente = (idCliente) => leggiDove("inviti_certificato", "cliente_id", idCliente);
+  function ascoltaInvitiAperti(suDati, suErrore) {
+    return limita(db.collection("inviti_certificato").where("aperto", "==", true))
+      .onSnapshot((snap) => suDati(snap.docs.map(conId), snap.metadata), suErrore);
+  }
+  // Dalla pagina pubblica, senza accesso: si legge solo il link che si conosce
+  async function leggiInvito(codice) {
+    const doc = await db.doc("inviti_certificato/" + codice).get();
+    return doc.exists ? conId(doc) : null;
+  }
+  // Dalla pagina pubblica: il file è su Drive, si segna il link come usato (le regole permettono solo questo)
+  async function consegnaInvito(codice, dati) {
+    await scrivi(() => db.doc("inviti_certificato/" + codice).update(Object.assign({ stato: "inviato" }, dati)));
+  }
+  // File su Google Drive: nel database resta solo il collegamento (lo leggono manager e compilatore FASI)
+  async function salvaCertificatoDrive(idCliente, info, scadenza) {
+    await scrivi(() => db.doc("certificati/" + idCliente).set(Object.assign({}, info, {
+      caricato_il: Regole.adessoISO(), caricato_da: stato.idUtente,
+    })));
+    await aggiorna("clienti", idCliente, { scadenza_certificato: scadenza, certificato_caricato: true, certificato_il: Regole.oggiISO() });
   }
 
   /* ------------------------------------------------ certificati medici */
@@ -1615,6 +1791,7 @@ const Archivio = (() => {
            ascolta, ascoltaDal, leggiDove, crea, aggiorna, elimina, creaMolti, eliminaMolti,
            ascoltaClientiAttivi, clientiArchiviati, leggiCliente, clientiCon, storicoCliente,
            creaCliente, aggiornaCliente, eliminaCliente, leggiCertificato, salvaCertificato, eliminaCertificato,
+           creaInvito, chiudiInvito, invitiCliente, ascoltaInvitiAperti, leggiInvito, consegnaInvito, salvaCertificatoDrive,
            ascoltaImpostazioni, leggiImpostazioni, salvaImpostazioni,
            ascoltaRichiesteNuove, leggiRichiesta, inviaRichiesta,
            accesso, utenti, copiaSicurezza };
@@ -1716,8 +1893,8 @@ const Viste = (() => {
     <fieldset class="scelta">
       <legend>Pagamento</legend>
       <div class="pillole">
-        ${["contanti", "carta", "bonifico"].map((m) => html`
-          <label class="pillola"><input type="radio" name="metodo" value="${m}" ${m === (scelto || "contanti") ? crudo("checked") : ""}><span>${maiuscola(m)}</span></label>`)}
+        ${R.METODI_IN_USO.map((m) => html`
+          <label class="pillola"><input type="radio" name="metodo" value="${m}" ${m === (scelto || "contanti") ? crudo("checked") : ""}><span>${maiuscola(R.METODI[m])}</span></label>`)}
       </div>
     </fieldset>`;
 
@@ -1838,6 +2015,26 @@ const Viste = (() => {
       </ol>`;
   }
 
+  // Certificati inviati dai clienti con il link, da controllare (manager e compilatore FASI)
+  function certificatiArrivati(S) {
+    if (!puo(S, "certificati")) return "";
+    const lista = S.inviti.filter((x) => x.stato === "inviato").sort((a, b) => (a.inviato_il < b.inviato_il ? -1 : 1));
+    if (!lista.length) return "";
+    return html`
+      <section class="sezione richieste">
+        <h2>Certificati inviati da controllare <span class="conteggio">${lista.length}</span></h2>
+        <p class="aiuto">Sono arrivati dal link e sono già su Google Drive. Apri la scheda, controllali e conferma la scadenza.</p>
+        <div class="elenco-clienti">
+          ${lista.map((x) => html`
+            <a class="riga-listino" href="#cliente-${x.cliente_id}">
+              <span class="riga-nome">${x.cognome} ${x.nome}</span>
+              <span class="riga-dati">${x.data_certificato ? `certificato del ${R.dataIt(x.data_certificato)}` : ""}</span>
+              <span class="riga-prezzo">${R.giornoBreve(x.inviato_il)}</span>
+            </a>`)}
+        </div>
+      </section>`;
+  }
+
   function richiesteDaAccogliere(S) {
     if (!puo(S, "richieste") || !S.richieste.length) return "";
     const lista = S.richieste.slice().sort((a, b) => (a.creato_il < b.creato_il ? 1 : -1));
@@ -1868,6 +2065,7 @@ const Viste = (() => {
     }
     if (!S.clienti.length) return html`
       ${richiesteDaAccogliere(S)}
+      ${certificatiArrivati(S)}
       <div class="vuoto"><p>Non ci sono ancora clienti.</p>
         <div class="azioni-modulo azioni-centro">
           ${puo(S, "modifica_clienti") ? html`<a class="pulsante pulsante-primario" href="#nuovo-cliente">Aggiungi il primo cliente</a>` : ""}
@@ -1880,6 +2078,7 @@ const Viste = (() => {
       .map((r) => r.c);
     return html`
       ${richiesteDaAccogliere(S)}
+      ${certificatiArrivati(S)}
       <section class="sezione">${entratiOggi(S)}</section>
       <section class="sezione">
         ${daSistemare.length ? html`
@@ -1958,21 +2157,19 @@ const Viste = (() => {
         ${scrive ? html`<a class="pulsante" href="#modifica-${c.id}">Modifica</a>` : ""}
       </div>
 
+      ${puo(S, "reception") ? boxIngressi(S, c, av) : ""}
+
       <section class="stato-cliente stato-box-${col}">
         <h2>${titoli[col]}</h2>
         ${col === "grigio" ? html`<p>Riattivalo se torna in palestra.</p>` : ""}
         ${av.length && col !== "grigio" ? html`<ul class="lista-avvisi">${av.map((a) => html`<li class="avviso-${a.livello}">${a.testo}</li>`)}</ul>` : ""}
         ${anni !== null && anni < 18 ? html`<p class="nota-minore">Minorenne: la liberatoria va firmata da un genitore o tutore.</p>` : ""}
-        <p class="autonomia">${c.autonomo
-          ? "Arrampica in autonomia: verifica di sicura superata."
-          : "Non ancora autonomo: arrampica con un istruttore o dopo la verifica di sicura."}</p>
         ${scrive && !c.liberatoria_il && c.attivo
           ? html`<button type="button" class="pulsante pulsante-primario" data-azione="liberatoria" data-id="${c.id}">Liberatoria firmata oggi</button>` : ""}
       </section>
 
-      ${c.attivo && puo(S, "reception") ? boxAbbonamento(S, c, av) : ""}
       ${puo(S, "tesseramento") && !puo(S, "reception") ? boxTessera(S, c) : ""}
-      ${puo(S, "certificati") ? boxCertificato(S, c) : ""}
+      ${puo(S, "certificati") ? boxCertificato(S, c) : boxLinkCertificato(S, c)}
 
       <div class="griglia-dati">
         <section class="sezione">
@@ -1980,7 +2177,7 @@ const Viste = (() => {
           <dl class="dati">
             ${voce("Telefono", c.telefono, "non indicato")}
             ${voce("Email", c.email, "non indicata")}
-            ${voce("Indirizzo di residenza", c.indirizzo, "non indicato")}
+            ${voce("Residenza", R.residenza(c), "non indicata")}
             ${voce("In caso di emergenza", c.contatto_emergenza, "non indicato")}
           </dl>
         </section>
@@ -2034,6 +2231,90 @@ const Viste = (() => {
     return c.certificato_caricato ? "Il documento lo vedono solo il manager e il compilatore FASI." : "";
   }
 
+  /* --------------------------------- link per far inviare il certificato */
+  const linkCertificato = (codice) => new URL("certificato.html", location.href.split("#")[0]).href + "?c=" + codice;
+  // numero per WhatsApp: solo cifre, con il prefisso dell'Italia se manca
+  function telefonoWhatsApp(t) {
+    let n = String(t || "").replace(/\D/g, "");
+    if (n.indexOf("00") === 0) n = n.slice(2);
+    else if (n.length >= 9 && n.length <= 10) n = "39" + n;
+    return n;
+  }
+  const invitoDi = (S, c, stato) => S.inviti.filter((x) => x.cliente_id === c.id && x.stato === stato && x.origine !== "staff")[0] || null;
+
+  // Per tutti i ruoli: creare il link, copiarlo, mandarlo su WhatsApp o per email
+  function zonaLinkCertificato(S, c) {
+    if (S.modalita !== "online" || !c.attivo) return "";
+    if (!S.imp.indirizzo_drive) {
+      return html`<p class="aiuto">Per mandare al cliente un link dove caricare il certificato, il manager deve prima collegare Google Drive da Impostazioni.</p>`;
+    }
+    const attesa = invitoDi(S, c, "attesa");
+    if (!attesa) {
+      return html`
+        <div class="link-certificato">
+          <button type="button" class="pulsante" data-azione="crea-link-certificato" data-id="${c.id}">Crea il link per inviare il certificato</button>
+          <p class="aiuto">Il cliente lo apre dal telefono, fotografa il certificato e lo invia. Il file va nella cartella di Google Drive della palestra.</p>
+        </div>`;
+    }
+    const link = linkCertificato(attesa.id);
+    const testo = `Ciao ${c.nome}, da questo link puoi inviarci il tuo certificato medico (una foto o un PDF): ${link}`;
+    return html`
+      <div class="link-certificato">
+        <p><strong>Link per il cliente</strong>, valido fino al ${R.dataIt(attesa.scade_il)}:</p>
+        <p class="link-da-copiare"><a href="${link}" target="_blank" rel="noopener">${link}</a></p>
+        <div class="azioni-modulo">
+          <button type="button" class="pulsante" data-azione="copia-link" data-valore="${link}">Copia il link</button>
+          <a class="pulsante" href="https://wa.me/${telefonoWhatsApp(c.telefono)}?text=${encodeURIComponent(testo)}" target="_blank" rel="noopener">Manda su WhatsApp</a>
+          ${c.email ? html`<a class="pulsante" href="mailto:${c.email}?subject=${encodeURIComponent("Certificato medico")}&amp;body=${encodeURIComponent(testo)}">Manda per email</a>` : ""}
+          <button type="button" class="pulsante-testo" data-azione="annulla-link-certificato" data-id="${attesa.id}">Annulla il link</button>
+        </div>
+      </div>`;
+  }
+
+  // Ruolo normale: solo il link (il certificato lo vedono manager e compilatore FASI)
+  function boxLinkCertificato(S, c) {
+    if (S.modalita !== "online" || !c.attivo || !puo(S, "modifica_clienti")) return "";
+    const inviato = invitoDi(S, c, "inviato");
+    return html`
+      <section class="sezione box-certificato">
+        <h2>Certificato medico</h2>
+        ${inviato
+          ? html`<p>Il cliente ha inviato il certificato il ${R.dataIt(inviato.inviato_il)}: lo controllano il manager o il compilatore FASI.</p>`
+          : zonaLinkCertificato(S, c)}
+      </section>`;
+  }
+
+  // Arrivato dal cliente: chi controlla lo apre su Drive e conferma la scadenza
+  function certificatoDaControllare(S, c, inv) {
+    const proposta = Certificati.scadenzaDa(inv.data_certificato);
+    return html`
+      <div class="certificato-arrivato">
+        <h3>Inviato dal cliente il ${R.dataIt(inv.inviato_il)}: da controllare</h3>
+        <p>${inv.data_certificato ? `Data scritta sul certificato, secondo il cliente: ${R.dataIt(inv.data_certificato)}.` : ""}
+          Aprilo, controlla che sia un certificato valido e la data, poi accettalo.</p>
+        <p><a class="pulsante" href="${inv.file_url}" target="_blank" rel="noopener">Apri su Google Drive</a></p>
+        <form class="modulo-certificato" data-modulo="accetta-certificato" data-id="${c.id}" data-invito="${inv.id}" novalidate>
+          <div class="campo">
+            <label for="scadenza-arrivato">Valido fino al</label>
+            <input id="scadenza-arrivato" name="scadenza" type="date" value="${proposta}">
+            <p class="aiuto">${proposta ? "Proposta: un anno dalla data del certificato. Correggila se sul certificato è scritto altro." : "Di solito un anno dalla data scritta sul certificato."}</p>
+          </div>
+          <p class="errore-campo" data-errore hidden></p>
+          <div class="azioni-modulo">
+            <button type="submit" class="pulsante pulsante-primario">Accetta il certificato</button>
+            <button type="button" class="pulsante pulsante-secondario" data-mostra="conferma-rifiuta-${inv.id}">Rifiuta</button>
+          </div>
+        </form>
+        <div class="conferma" id="conferma-rifiuta-${inv.id}" hidden>
+          <p><strong>Rifiutare questo certificato?</strong> Il file va nel cestino di Google Drive. Poi puoi creare un nuovo link per il cliente.</p>
+          <div class="azioni-modulo">
+            <button type="button" class="pulsante pulsante-pericolo" data-azione="rifiuta-certificato" data-id="${inv.id}">Sì, rifiuta</button>
+            <button type="button" class="pulsante pulsante-secondario" data-nascondi="conferma-rifiuta-${inv.id}">Annulla</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
   // Solo manager e compilatore FASI: vedere il file, caricarne uno nuovo, cambiare la scadenza
   function boxCertificato(S, c) {
     const g = R.giorniDaOggi(c.scadenza_certificato);
@@ -2042,22 +2323,31 @@ const Viste = (() => {
       : `Valido fino al ${R.dataIt(c.scadenza_certificato)}`;
     const aperto = S.certificato && S.certificato.id === c.id ? S.certificato : null;
     const nuovo = !c.certificato_caricato;
+    const online = S.modalita === "online";
+    const drive = online && !!S.imp.indirizzo_drive;
+    const caricaFile = drive || !online;            // online i file vanno solo su Drive
+    const inviato = invitoDi(S, c, "inviato");
     return html`
       <section class="sezione box-certificato" id="certificato">
         <h2>Certificato medico</h2>
         <p><strong>${stato}</strong>${c.certificato_caricato
           ? html` <span class="aiuto">File caricato il ${R.dataIt(c.certificato_il)}.</span>`
           : html` <span class="aiuto">Nessun file caricato.</span>`}</p>
+        ${inviato ? certificatoDaControllare(S, c, inviato) : ""}
         ${c.certificato_caricato ? html`
           ${aperto && aperto.errore ? html`<p class="avviso-flash avviso-errore">${aperto.errore}</p>` : ""}
-          ${aperto && aperto.dati ? anteprimaCertificato(aperto) : html`
+          ${aperto && (aperto.dati || aperto.drive_url) ? anteprimaCertificato(aperto) : html`
             <button type="button" class="pulsante" data-azione="vedi-certificato" data-id="${c.id}">${aperto && aperto.carica ? "Apro il certificato…" : "Vedi il certificato"}</button>`}` : ""}
+        ${!inviato ? zonaLinkCertificato(S, c) : ""}
         <form class="modulo-certificato" data-modulo="certificato" data-id="${c.id}" novalidate>
-          <div class="campo">
-            <label for="file-certificato">${nuovo ? "Foto o PDF del certificato" : "Sostituisci con un nuovo file"}</label>
-            <input id="file-certificato" name="file" type="file" accept="image/*,application/pdf">
-            <p class="aiuto">${nuovo ? "Dall'iPad puoi fare direttamente la foto." : "Facoltativo: lascialo vuoto per cambiare solo la data."} La foto viene rimpicciolita da sola; un PDF può pesare al massimo 650 KB.</p>
-          </div>
+          ${caricaFile ? html`
+            <div class="campo">
+              <label for="file-certificato">${nuovo ? "Foto o PDF del certificato" : "Sostituisci con un nuovo file"}</label>
+              <input id="file-certificato" name="file" type="file" accept="image/*,application/pdf">
+              <p class="aiuto">${nuovo ? "Dall'iPad puoi fare direttamente la foto." : "Facoltativo: lascialo vuoto per cambiare solo la data."}
+                La foto viene rimpicciolita da sola; un PDF può pesare al massimo ${drive ? "8 MB" : "650 KB"}.${drive ? " Il file va nella cartella di Google Drive della palestra." : ""}</p>
+            </div>` : html`
+            <p class="aiuto campo-intero">Per caricare il file, il manager deve prima collegare Google Drive da Impostazioni. Intanto puoi segnare la scadenza.</p>`}
           <div class="campo">
             <label for="scadenza-certificato">Valido fino al</label>
             <input id="scadenza-certificato" name="scadenza" type="date" value="${c.scadenza_certificato || ""}">
@@ -2070,7 +2360,7 @@ const Viste = (() => {
           <div class="zona-elimina-certificato">
             <button type="button" class="pulsante-testo" data-mostra="conferma-elimina-certificato">Elimina il file del certificato</button>
             <div class="conferma" id="conferma-elimina-certificato" hidden>
-              <p><strong>Eliminare il file del certificato?</strong> La data di scadenza resta: cambiala se non è più giusta.</p>
+              <p><strong>Eliminare il file del certificato?</strong> ${drive ? "Va nel cestino di Google Drive. " : ""}La data di scadenza resta: cambiala se non è più giusta.</p>
               <div class="azioni-modulo">
                 <button type="button" class="pulsante pulsante-pericolo" data-azione="elimina-certificato" data-id="${c.id}">Sì, elimina il file</button>
                 <button type="button" class="pulsante pulsante-secondario" data-nascondi="conferma-elimina-certificato">Annulla</button>
@@ -2082,6 +2372,15 @@ const Viste = (() => {
 
   function anteprimaCertificato(cert) {
     const pdf = cert.tipo === "application/pdf";
+    if (cert.drive_url) return html`
+      <div class="anteprima-certificato">
+        <p>Il certificato è su Google Drive${cert.nome_file ? `: ${cert.nome_file}` : ""}.</p>
+        <div class="azioni-modulo">
+          <a class="pulsante" href="${cert.drive_url}" target="_blank" rel="noopener">Apri su Google Drive</a>
+          <button type="button" class="pulsante-testo" data-azione="chiudi-certificato">Nascondi</button>
+        </div>
+        <p class="aiuto">Si apre con l'account Google della palestra, o con chi ha accesso alla cartella «Certificati medici».</p>
+      </div>`;
     return html`
       <div class="anteprima-certificato">
         ${pdf ? html`<p>Certificato in PDF: ${cert.nome_file || "certificato.pdf"}.</p>`
@@ -2094,54 +2393,115 @@ const Viste = (() => {
       </div>`;
   }
 
-  /* ----------------------------------- abbonamento, ingresso, vendita */
-  function boxAbbonamento(S, c, avvisi) {
+  /* ------------------------------------- abbonamenti e ingressi, vendita */
+  const perOrdine = (a, b) => (a.ordine || 0) - (b.ordine || 0);
+  const vociDi = (S, tipi) => S.listino.filter((v) => v.attivo && tipi.indexOf(v.tipo) >= 0).sort(perOrdine);
+
+  // Tutto quello che serve alla reception per far entrare il cliente
+  function situazione(S, c) {
+    const oggi = R.oggiISO();
+    const anno = oggi.slice(0, 4);
     const suoi = S.abbonamenti.filter((a) => a.cliente_id === c.id);
-    const attivi = suoi.filter((a) => R.statoAbbonamento(a) === "attivo").sort((x, y) => (x.data_fine || "9") < (y.data_fine || "9") ? -1 : 1);
-    const futuri = suoi.filter((a) => R.statoAbbonamento(a) === "futuro");
     const ingressi = Azioni.tutte(S, "ingressi").filter((i) => i.cliente_id === c.id && !i.annullato)
       .sort((a, b) => (a.data + a.ora < b.data + b.ora ? 1 : -1));
-    const ultimo = ingressi[0];
-    const descrivi = (a) => {
-      if (a.tipo === "carnet") {
-        return html`<strong>${a.nome}</strong>: ${plurale(R.rimasti(a), "ingresso rimasto", "ingressi rimasti")} su ${a.ingressi_totali}${a.data_fine ? `, valido fino al ${R.dataIt(a.data_fine)}` : ""}`;
-      }
-      const giorni = R.giorniDaOggi(a.data_fine);
-      return html`<strong>${a.nome}</strong>, valido fino al ${R.dataIt(a.data_fine)} (${giorni === 0 ? "scade oggi" : plurale(giorni, "giorno", "giorni")})`;
+    return {
+      anno, suoi, ingressi,
+      attivi: suoi.filter((a) => a.tipo !== "tesseramento" && R.statoAbbonamento(a) === "attivo")
+        .sort((x, y) => ((x.data_fine || "9") < (y.data_fine || "9") ? -1 : 1)),
+      futuri: suoi.filter((a) => a.tipo !== "tesseramento" && R.statoAbbonamento(a) === "futuro"),
+      ultimo: ingressi[0] || null,
+      nellAnno: ingressi.filter((i) => String(i.data).slice(0, 4) === anno).length,
+      prova: R.provaDellAnno(c, ingressi),               // data della prova di quest'anno, o null
+      usaTessera: !!S.imp.usa_tesseramento,
+      tesseraOk: R.tesseraValida(c),
+      fineTessera: R.fineTessera(c),
     };
+  }
+
+  // Una riga del riquadro: tono "ok" (verde), "attenzione" (giallo), "no" (rosso), "neutro"
+  const rigaIngresso = (nome, valore, nota, tono) => html`
+    <li class="riga-ingresso riga-ingresso-${tono}">
+      <span class="riga-ingresso-nome">${nome}</span>
+      <span class="riga-ingresso-valore">${valore}</span>
+      ${nota ? html`<span class="riga-ingresso-nota">${nota}</span>` : ""}
+    </li>`;
+
+  // In cima alla scheda, sempre: in un solo riquadro tutto ciò che serve per far entrare il cliente
+  function boxIngressi(S, c, avvisi) {
+    const sit = situazione(S, c);
+    const righe = [];
+    if (sit.usaTessera) {
+      righe.push(sit.tesseraOk
+        ? rigaIngresso(`Tesseramento ${sit.anno}`, "In regola", `fino al ${R.dataIt(sit.fineTessera)}${c.numero_tessera ? `, tessera ${c.numero_tessera}` : ""}`, "ok")
+        : rigaIngresso(`Tesseramento ${sit.anno}`, "Da pagare",
+            sit.prova ? "obbligatorio: la prova l'ha già fatta" : "obbligatorio per entrare, tranne che per la prova", "no"));
+    }
+    sit.attivi.forEach((a) => {
+      if (a.tipo === "carnet") {
+        const r = R.rimasti(a);
+        righe.push(rigaIngresso(a.nome, `${r} ${r === 1 ? "ingresso rimasto" : "ingressi rimasti"} su ${a.ingressi_totali}`,
+          a.data_fine ? `valido fino al ${R.dataIt(a.data_fine)}` : "senza scadenza", r <= 2 ? "attenzione" : "ok"));
+      } else {
+        const g = R.giorniDaOggi(a.data_fine);
+        righe.push(rigaIngresso(a.nome, `Valido fino al ${R.dataIt(a.data_fine)}`,
+          g === 0 ? "scade oggi" : g === 1 ? "scade domani" : `ancora ${g} giorni`, g <= 7 ? "attenzione" : "ok"));
+      }
+    });
+    sit.futuri.forEach((a) => righe.push(rigaIngresso(a.nome, `Inizia il ${R.dataIt(a.data_inizio)}`, "già pagato", "neutro")));
+    if (!sit.attivi.length) righe.push(rigaIngresso("Abbonamento o carnet", "Nessuno attivo", "l'ingresso si paga a ogni visita", "neutro"));
+    if (!sit.usaTessera || !sit.tesseraOk || sit.prova) {
+      righe.push(sit.prova
+        ? rigaIngresso(`Ingresso di prova ${sit.anno}`, "Già fatto", `il ${R.dataIt(sit.prova)}, una volta all'anno`, "neutro")
+        : rigaIngresso(`Ingresso di prova ${sit.anno}`, "Disponibile", "una volta all'anno, senza tesseramento", "neutro"));
+    }
+    righe.push(rigaIngresso("Ingressi", `${sit.nellAnno} nel ${sit.anno}`,
+      sit.ultimo ? `ultimo ${sit.ultimo.data === R.oggiISO() ? "oggi" : "il " + R.dataIt(sit.ultimo.data)} alle ${sit.ultimo.ora}` : "non è mai entrato", "neutro"));
+
     return html`
-      <section class="sezione box-abbonamento">
-        <h2>Abbonamento</h2>
-        ${attivi.length ? html`<ul class="coperture">${attivi.map((a) => html`<li>${descrivi(a)}</li>`)}</ul>`
-          : html`<p>Nessun abbonamento attivo: l'ingresso si paga.</p>`}
-        ${futuri.map((a) => html`<p class="aiuto">${a.nome} già pagato: inizia il ${R.dataIt(a.data_inizio)}.</p>`)}
-        <p class="aiuto">${ultimo ? `Ultimo ingresso: ${ultimo.data === R.oggiISO() ? "oggi" : "il " + R.dataIt(ultimo.data)} alle ${ultimo.ora}.` : "Non è mai entrato."}</p>
-        ${puo(S, "reception") ? html`
+      <section class="box-ingressi" id="abbonamenti" aria-labelledby="titolo-ingressi">
+        <h2 id="titolo-ingressi">Abbonamenti e ingressi</h2>
+        <ul class="righe-ingressi">${righe}</ul>
+        ${c.attivo ? html`
           <div class="azioni-modulo">
             <button type="button" class="pulsante pulsante-primario pulsante-grande" data-azione="apri-pannello" data-pannello="ingresso">Registra ingresso</button>
-            <button type="button" class="pulsante" data-azione="apri-pannello" data-pannello="vendita">Vendi abbonamento o carnet</button>
+            <button type="button" class="pulsante" data-azione="apri-pannello" data-pannello="vendita">${sit.usaTessera ? "Vendi abbonamento, carnet o tesseramento" : "Vendi abbonamento o carnet"}</button>
           </div>
-          ${S.pannello === "ingresso" ? pannelloIngresso(S, c, attivi, avvisi, ultimo) : ""}
-          ${S.pannello === "vendita" ? pannelloVendita(S, c, suoi) : ""}` : ""}
+          ${S.pannello === "ingresso" ? pannelloIngresso(S, c, sit, avvisi) : ""}
+          ${S.pannello === "vendita" ? pannelloVendita(S, c, sit) : ""}`
+        : html`<p class="aiuto">Cliente archiviato: riattivalo per registrare ingressi e vendite.</p>`}
       </section>`;
   }
 
-  function pannelloIngresso(S, c, attivi, avvisi, ultimo) {
-    const cop = R.copertura(attivi);
+  function pannelloIngresso(S, c, sit, avvisi) {
+    const cop = R.copertura(sit.attivi);
+    const conProva = vociDi(S, ["prova"]).length > 0;
+    const paganti = vociDi(S, sit.prova ? ["singolo"] : ["singolo", "prova"]);
+    const noleggi = vociDi(S, ["prodotto"]);
+    const voceTessera = vociDi(S, ["tesseramento"])[0] || null;
+    const serveTessera = sit.usaTessera && !sit.tesseraOk;
+    const giaOggi = sit.ultimo && sit.ultimo.data === R.oggiISO();
+    // Documenti che chiedono conferma. Per la prova bastano liberatoria e privacy;
+    // per gli altri ingressi il tesseramento si paga qui, quindi non conta tra i documenti.
     const rossi = avvisi.filter((a) => a.livello === "rosso");
-    const paganti = S.listino.filter((v) => v.attivo && (v.tipo === "singolo" || v.tipo === "prova")).sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
-    const noleggi = S.listino.filter((v) => v.attivo && v.tipo === "prodotto").sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
-    const giaOggi = ultimo && ultimo.data === R.oggiISO();
+    const rossiProva = rossi.filter((a) => !R.okPerProva(a));
+    const rossiNormale = rossi.filter((a) => !(a.campo === "tessera" && voceTessera));
+    // già scelto: quello chiesto (dopo l'iscrizione online), altrimenti la prova per chi non è tesserato
+    const proposto = [S.preseleziona, serveTessera && !sit.prova ? "prova" : null]
+      .filter((t) => t && paganti.some((v) => v.tipo === t))[0];
+    const scelto = proposto ? paganti.filter((v) => v.tipo === proposto)[0] : paganti[0];
+    const sceltoProva = !cop && !!scelto && scelto.tipo === "prova";
+    const solo = (quando, visibile) => (cop ? "" : crudo(`data-solo-${quando}${visibile ? "" : " hidden"}`));
+
+    const avvisoDocumenti = (lista, nome, perProva) => html`
+      <p><strong>Documenti da sistemare:</strong> ${lista.map((a) => a.testo).join("; ")}.</p>
+      ${!perProva && lista.some((a) => a.campo === "certificato")
+        ? html`<p>Dal secondo ingresso il certificato medico è obbligatorio: chiedilo. ${puo(S, "certificati") ? "Lo carichi nel riquadro Certificato medico della scheda." : "Lo carica il manager o il compilatore FASI."}</p>` : ""}
+      <label class="spunta"><input type="checkbox" name="${nome}"><span>Ho controllato: registra comunque l'ingresso</span></label>`;
+
     return html`
       <form class="pannello" data-modulo="ingresso" data-id="${c.id}" novalidate>
         <h3>Registra ingresso</h3>
-        ${giaOggi ? html`<p class="avviso-flash avviso-info">È già entrato oggi alle ${ultimo.ora}.</p>` : ""}
-        ${rossi.length ? html`
-          <div class="avviso-flash avviso-errore">
-            <p><strong>Documenti da sistemare:</strong> ${rossi.map((a) => a.testo).join("; ")}.</p>
-            ${rossi.every(R.okPerProva) ? html`<p>Per l'ingresso di prova non servono: bastano liberatoria e privacy.</p>` : ""}
-            <label class="spunta"><input type="checkbox" name="conferma_documenti" data-prova="${rossi.every(R.okPerProva) ? "ok" : "no"}"><span>Ho controllato: registra comunque l'ingresso</span></label>
-          </div>` : ""}
+        ${giaOggi ? html`<p class="avviso-flash avviso-info">È già entrato oggi alle ${sit.ultimo.ora}.</p>` : ""}
         ${cop ? html`
           <input type="hidden" name="modo" value="copertura"><input type="hidden" name="abbonamento_id" value="${cop.id}">
           <p class="copertura-scelta">${cop.tipo === "carnet"
@@ -2151,14 +2511,32 @@ const Viste = (() => {
           <fieldset class="scelta">
             <legend>Cosa paga</legend>
             ${!paganti.length ? html`<p class="aiuto">Nel listino non ci sono ingressi. <a href="#listino">Aggiungili al listino</a>.</p>` : ""}
+            ${sit.prova && conProva ? html`<p class="aiuto">Ingresso di prova già fatto il ${R.dataIt(sit.prova)}: quest'anno non si ripete.</p>` : ""}
             <div class="opzioni">
-              ${paganti.map((v, i) => html`
-                <label class="opzione"><input type="radio" name="scelta" value="${v.id}" data-prezzo="${v.prezzo_cent}" ${(S.preseleziona ? v.tipo === S.preseleziona && paganti.filter((x) => x.tipo === S.preseleziona)[0] === v : i === 0) ? crudo("checked") : ""}>
-                  <span class="opzione-nome">${v.nome}</span><span class="opzione-prezzo">${R.euro(v.prezzo_cent)}</span></label>`)}
-              <label class="opzione"><input type="radio" name="scelta" value="omaggio" data-prezzo="0" ${!paganti.length ? crudo("checked") : ""}>
+              ${paganti.map((v) => html`
+                <label class="opzione"><input type="radio" name="scelta" value="${v.id}" data-tipo="${v.tipo}" data-prezzo="${v.prezzo_cent}" ${v === scelto ? crudo("checked") : ""}>
+                  <span class="opzione-nome">${v.nome}${v.tipo === "prova" ? html` <span class="aiuto">una volta all'anno, senza tesseramento</span>` : ""}</span><span class="opzione-prezzo">${R.euro(v.prezzo_cent)}</span></label>`)}
+              <label class="opzione"><input type="radio" name="scelta" value="omaggio" data-tipo="omaggio" data-prezzo="0" ${!paganti.length ? crudo("checked") : ""}>
                 <span class="opzione-nome">Omaggio, senza pagare</span><span class="opzione-prezzo">0,00 €</span></label>
             </div>
           </fieldset>`}
+
+        ${serveTessera ? html`
+          <div class="obbligo-tessera" ${solo("normale", !sceltoProva)}>
+            ${voceTessera ? html`
+              <input type="hidden" name="tesseramento" value="${voceTessera.id}" data-prezzo="${voceTessera.prezzo_cent}">
+              <p class="obbligo-titolo"><strong>Tesseramento ${sit.anno}, obbligatorio</strong><span class="opzione-prezzo">${R.euro(voceTessera.prezzo_cent)}</span></p>
+              <p>${sit.prova ? `Ha già fatto la prova il ${R.dataIt(sit.prova)}: da ora serve il tesseramento.` : "Senza la prova serve il tesseramento."}
+                Si paga adesso insieme all'ingresso e vale fino al 31/12/${sit.anno}. Chiedi anche il certificato medico.</p>`
+            : html`<p><strong>Serve il tesseramento ${sit.anno}, ma nel listino non c'è.</strong>
+                ${puo(S, "listino") ? html`<a href="#voce-nuova">Aggiungilo al listino</a> come «Tesseramento annuale», poi torna qui.` : "Chiedi al manager di aggiungerlo al listino."}</p>`}
+          </div>` : ""}
+
+        ${!cop && conProva && !sit.prova && rossiProva.length ? html`
+          <div class="avviso-flash avviso-errore" ${solo("prova", sceltoProva)}>${avvisoDocumenti(rossiProva, "conferma_prova", true)}</div>` : ""}
+        ${rossiNormale.length ? html`
+          <div class="avviso-flash avviso-errore" ${solo("normale", !sceltoProva)}>${avvisoDocumenti(rossiNormale, "conferma_documenti", false)}</div>` : ""}
+
         ${noleggi.length ? html`
           <fieldset class="scelta">
             <legend>Noleggi e prodotti</legend>
@@ -2180,23 +2558,27 @@ const Viste = (() => {
       </form>`;
   }
 
-  function pannelloVendita(S, c, suoi) {
-    const voci = S.listino.filter((v) => v.attivo && (v.tipo === "periodo" || v.tipo === "carnet")).sort((a, b) => (a.ordine || 0) - (b.ordine || 0));
+  function pannelloVendita(S, c, sit) {
+    const voci = vociDi(S, ["periodo", "carnet"].concat(sit.usaTessera ? ["tesseramento"] : []));
     // se ha già un abbonamento a tempo, il rinnovo parte dal giorno dopo la scadenza
-    const fine = suoi.filter((a) => a.tipo === "periodo" && ["attivo", "futuro"].indexOf(R.statoAbbonamento(a)) >= 0)
+    const fine = sit.suoi.filter((a) => a.tipo === "periodo" && ["attivo", "futuro"].indexOf(R.statoAbbonamento(a)) >= 0)
       .map((a) => a.data_fine).sort().pop();
     const rinnovo = fine ? R.aggiungiGiorni(fine, 1) : null;
-    const dettaglio = (v) => v.tipo === "carnet"
-      ? `${v.ingressi} ingressi${v.giorni ? `, validi ${v.giorni} giorni` : ""}` : `${v.giorni} giorni`;
+    const dettaglio = (v) => v.tipo === "carnet" ? `${v.ingressi} ingressi${v.giorni ? `, validi ${v.giorni} giorni` : ""}`
+      : v.tipo === "tesseramento" ? (sit.tesseraOk ? `già pagato fino al ${R.dataIt(sit.fineTessera)}` : `vale fino al 31/12/${sit.anno}`)
+      : `${v.giorni} giorni`;
+    // chi deve ancora pagare il tesseramento lo trova già scelto
+    const primo = voci.filter((v) => v.tipo === "tesseramento" && !sit.tesseraOk)[0] || voci.filter((v) => v.tipo !== "tesseramento")[0] || voci[0];
+    const titolo = sit.usaTessera ? "Vendi abbonamento, carnet o tesseramento" : "Vendi abbonamento o carnet";
     return html`
       <form class="pannello" data-modulo="vendita" data-id="${c.id}" novalidate>
-        <h3>Vendi abbonamento o carnet</h3>
-        ${!voci.length ? html`<p>Nel listino non ci sono abbonamenti né carnet. <a href="#listino">Aggiungili al listino</a>.</p>` : html`
+        <h3>${titolo}</h3>
+        ${!voci.length ? html`<p>Nel listino non c'è niente da vendere qui. <a href="#listino">Aggiungi abbonamenti, carnet${sit.usaTessera ? " e tesseramento" : ""} al listino</a>.</p>` : html`
           <fieldset class="scelta">
             <legend>Cosa compra</legend>
             <div class="opzioni">
-              ${voci.map((v, i) => html`
-                <label class="opzione"><input type="radio" name="voce" value="${v.id}" data-prezzo="${v.prezzo_cent}" ${i === 0 ? crudo("checked") : ""}>
+              ${voci.map((v) => html`
+                <label class="opzione"><input type="radio" name="voce" value="${v.id}" data-prezzo="${v.prezzo_cent}" ${v === primo ? crudo("checked") : ""}>
                   <span class="opzione-nome">${v.nome} <span class="aiuto">${dettaglio(v)}</span></span><span class="opzione-prezzo">${R.euro(v.prezzo_cent)}</span></label>`)}
             </div>
           </fieldset>
@@ -2206,6 +2588,7 @@ const Viste = (() => {
               <input id="data_inizio" name="data_inizio" type="date" value="${R.oggiISO()}">
               ${rinnovo ? html`<p class="aiuto">Ha un abbonamento fino al ${R.dataIt(fine)}.
                 <button type="button" class="pulsante-testo" data-imposta="data_inizio" data-valore="${rinnovo}">Fai partire il rinnovo dal ${R.dataIt(rinnovo)}</button></p>` : ""}
+              ${sit.usaTessera ? html`<p class="aiuto">Il tesseramento vale fino al 31 dicembre dell'anno di questa data.</p>` : ""}
             </div>
             <div class="campo">
               <label for="prezzo">Prezzo in euro</label>
@@ -2224,7 +2607,8 @@ const Viste = (() => {
 
   function boxTessera(S, c) {
     const stato = R.statoTessera(c, S.imp.giorni_preavviso);
-    const testi = { manca: "Non ancora tesserato", scaduta: `Tessera scaduta il ${R.dataIt(c.scadenza_tessera)}`,
+    const testi = { da_registrare: `Tesseramento pagato fino al ${R.dataIt(c.tessera_pagata_fino)}: da registrare in FASI`,
+                    manca: "Non ancora tesserato", scaduta: `Tessera scaduta il ${R.dataIt(c.scadenza_tessera)}`,
                     in_scadenza: `Tessera ${c.numero_tessera}, scade il ${R.dataIt(c.scadenza_tessera)}`,
                     ok: `Tessera ${c.numero_tessera}, valida fino al ${R.dataIt(c.scadenza_tessera)}` };
     const mancano = R.mancantiFasi(c);
@@ -2247,7 +2631,7 @@ const Viste = (() => {
       <div class="campo">
         <label for="scadenza-${c.id}">Valida fino al</label>
         <div class="campo-con-pulsante">
-          <input id="scadenza-${c.id}" name="scadenza" type="date" value="${c.scadenza_tessera || ""}">
+          <input id="scadenza-${c.id}" name="scadenza" type="date" value="${c.tessera_pagata_fino && (!c.scadenza_tessera || c.scadenza_tessera < c.tessera_pagata_fino) ? c.tessera_pagata_fino : (c.scadenza_tessera || "")}">
           <button type="button" class="pulsante pulsante-piccolo" data-imposta="scadenza-${c.id}" data-valore="${R.oggiISO().slice(0, 4)}-12-31">Fine anno</button>
         </div>
       </div>
@@ -2272,7 +2656,7 @@ const Viste = (() => {
         + (a.data_fine ? ` fino al ${R.dataIt(a.data_fine)}` : "") + metodo(a.prezzo_cent ? a.metodo : null),
       importo: a.prezzo_cent, cosa: "questo acquisto",
     }));
-    Azioni.tutte(S, "movimenti").filter((m) => m.cliente_id === c.id && m.categoria !== "ingresso" && m.categoria !== "abbonamento").forEach((m) => ev.push({
+    Azioni.tutte(S, "movimenti").filter((m) => m.cliente_id === c.id && ["ingresso", "abbonamento", "tesseramento"].indexOf(m.categoria) < 0).forEach((m) => ev.push({
       tipo: "movimenti", gruppo: "pagamenti", id: m.id, quando: `${m.data} ${m.ora}`, preciso: m.creato_il, annullato: m.annullato,
       testo: m.descrizione, nota: R.METODI[m.metodo], importo: m.importo_cent, cosa: "questo pagamento",
     }));
@@ -2348,7 +2732,12 @@ const Viste = (() => {
           <div class="campi-due">
             ${campo("telefono", "Telefono", dati, errori, { tipo: "tel" })}
             ${campo("email", "Email", dati, errori, { tipo: "email", aiuto: "Servirà al cliente per accedere all'area online.", extra: 'autocapitalize="off"' })}
-            ${campo("indirizzo", "Indirizzo di residenza", dati, errori)}
+            ${campo("indirizzo", "Indirizzo di residenza (via e numero)", dati, errori)}
+            ${campo("comune", "Comune di residenza", dati, errori, { extra: 'autocomplete="off"' })}
+            <div class="campi-cap">
+              ${campo("cap", "CAP", dati, errori, { extra: 'inputmode="numeric" maxlength="7" autocomplete="off"' })}
+              ${campo("provincia", "Provincia", dati, errori, { extra: 'maxlength="2" autocapitalize="characters" autocomplete="off" placeholder="PD"' })}
+            </div>
             ${campo("contatto_emergenza", "Contatto in caso di emergenza", dati, errori, { aiuto: "Nome e telefono di un familiare o amico." })}
           </div>
         </fieldset>
@@ -2363,13 +2752,9 @@ const Viste = (() => {
           <p class="aiuto">Il certificato medico e la sua scadenza si inseriscono nella scheda del cliente${puo(S, "certificati") ? "" : ", dal manager o dal compilatore FASI"}.</p>
         </fieldset>
         <fieldset>
-          <legend>Arrampicata</legend>
-          <label class="spunta">
-            <input type="checkbox" name="autonomo" ${dati.autonomo ? crudo("checked") : ""}>
-            <span>Ha superato la verifica di sicura e può arrampicare in autonomia</span>
-          </label>
+          <legend>Note</legend>
           <div class="campo">
-            <label for="note">Note</label>
+            <label for="note">Annotazioni per lo staff</label>
             <textarea id="note" name="note" rows="3">${dati.note || ""}</textarea>
             <p class="aiuto">Per esempio: chi lo accompagna, corsi a cui è interessato.</p>
           </div>
@@ -2381,7 +2766,7 @@ const Viste = (() => {
       </form>`;
   }
 
-  return { html, crudo, esc, plurale, maiuscola, campo, sceltaMetodo, annullaConConferma, moduloTessera,
+  return { html, crudo, esc, plurale, maiuscola, campo, sceltaMetodo, annullaConConferma, moduloTessera, certificatiArrivati,
            messaggio, caricamento, nonDisponibile, nonTrovato, nonPermesso, accesso, oggi, zonaOggi, riepilogo,
            clienti, zonaElenco, scheda, modulo };
 })();
@@ -2417,7 +2802,17 @@ const Viste = (() => {
             ${campo("data_nascita", "Data di nascita", dati, errori, { tipo: "date", extra: 'autocomplete="bday" required' })}
             ${campo("luogo_nascita", "Luogo di nascita", dati, errori, { extra: 'required', aiuto: "Comune e provincia, per esempio Padova (PD)." })}
             ${campo("codice_fiscale", "Codice fiscale", dati, errori, { extra: 'maxlength="16" autocapitalize="characters" autocomplete="off"', aiuto: "Serve per il tesseramento." })}
-            ${campo("indirizzo", "Indirizzo di residenza", dati, errori, { extra: 'autocomplete="street-address"' })}
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Dove abiti</legend>
+          <div class="campi-due">
+            ${campo("comune", "Comune di residenza", dati, errori, { extra: 'autocomplete="address-level2" required' })}
+            <div class="campi-cap">
+              ${campo("cap", "CAP", dati, errori, { extra: 'inputmode="numeric" maxlength="7" autocomplete="postal-code" required' })}
+              ${campo("provincia", "Provincia", dati, errori, { extra: 'maxlength="2" autocapitalize="characters" autocomplete="off" placeholder="PD" required', aiuto: "La sigla, 2 lettere." })}
+            </div>
+            ${campo("indirizzo", "Via e numero civico", dati, errori, { extra: 'autocomplete="address-line1"' })}
           </div>
         </fieldset>
         <fieldset>
@@ -2455,14 +2850,18 @@ const Viste = (() => {
     const dati = {
       nome: v("nome"), cognome: v("cognome"), data_nascita: v("data_nascita"), luogo_nascita: v("luogo_nascita"),
       codice_fiscale: v("codice_fiscale").toUpperCase().replace(/\s/g, ""), indirizzo: v("indirizzo"),
+      comune: v("comune"), cap: v("cap"), provincia: v("provincia"),
       email: v("email").toLowerCase(), telefono: v("telefono"), contatto_emergenza: v("contatto_emergenza"),
       genitore: v("genitore"),
       liberatoria: form.elements.liberatoria.checked, privacy: form.elements.privacy.checked, trappola: v("sito"),
     };
     const errori = {};
     const obbligatori = { nome: "Scrivi il tuo nome.", cognome: "Scrivi il tuo cognome.", luogo_nascita: "Scrivi dove sei nato.",
+      comune: "Scrivi il comune dove abiti.", cap: "Scrivi il CAP.", provincia: "Scrivi la sigla della provincia.",
       telefono: "Scrivi un numero di telefono.", contatto_emergenza: "Indica chi chiamare in caso di emergenza." };
     Object.keys(obbligatori).forEach((k) => { if (!dati[k]) errori[k] = obbligatori[k]; });
+    const residenza = R.controllaResidenza(dati);           // CAP di 5 cifre, sigla di 2 lettere
+    Object.keys(residenza).forEach((k) => { if (!errori[k]) errori[k] = residenza[k]; });
     const anni = R.eta(dati.data_nascita);
     if (!R.aData(dati.data_nascita) || anni < 0 || anni > 110) errori.data_nascita = "Scrivi la tua data di nascita.";
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dati.email)) errori.email = "Scrivi un'email valida.";
@@ -2470,7 +2869,7 @@ const Viste = (() => {
     if (anni !== null && anni < 18 && !dati.genitore) errori.genitore = "Indica il genitore o tutore che accetta per te.";
     if (!dati.liberatoria) errori.liberatoria = "Per iscriverti devi accettare la liberatoria.";
     if (!dati.privacy) errori.privacy = "Per iscriverti devi accettare l'informativa sulla privacy.";
-    const lunghezze = { nome: 60, cognome: 60, luogo_nascita: 80, indirizzo: 160, email: 120, telefono: 30, contatto_emergenza: 120, genitore: 120 };
+    const lunghezze = { nome: 60, cognome: 60, luogo_nascita: 80, indirizzo: 160, email: 120, telefono: 30, contatto_emergenza: 120, genitore: 120, comune: 80 };
     Object.keys(lunghezze).forEach((k) => { if (dati[k].length > lunghezze[k]) errori[k] = "Testo troppo lungo."; });
     return { dati, errori };
   }
@@ -2489,7 +2888,8 @@ const Viste = (() => {
         await Archivio.inviaRichiesta({
           nome: dati.nome, cognome: dati.cognome, data_nascita: dati.data_nascita, luogo_nascita: dati.luogo_nascita,
           codice_fiscale: facoltativo(dati.codice_fiscale), email: dati.email, telefono: dati.telefono,
-          indirizzo: facoltativo(dati.indirizzo), contatto_emergenza: dati.contatto_emergenza,
+          indirizzo: facoltativo(dati.indirizzo), comune: dati.comune, cap: dati.cap, provincia: dati.provincia,
+          contatto_emergenza: dati.contatto_emergenza,
           genitore: anni < 18 ? dati.genitore : null,
           liberatoria_accettata: true, privacy_accettata: true, accettato_il: adesso, creato_il: adesso, stato: "nuova",
         });
